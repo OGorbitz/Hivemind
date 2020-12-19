@@ -1,0 +1,66 @@
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Text;
+
+namespace Hivemind.World.Tile
+{
+    [Serializable]
+    public abstract class BaseTile : ISerializable
+    {
+        //Static variables
+        public const string UName = "BaseTile";
+        public const Layer ULayer = Layer.NULL;
+
+        public virtual string Name => UName;
+        public virtual Layer Layer => ULayer;
+
+        //Instance variables
+        private Vector2 Position;
+        public Vector2 Pos => Position;
+
+        /// <summary>
+        /// True if tile render index needs to be updated
+        /// </summary>
+        public bool Dirty;
+
+        public TileMap Parent;
+
+        //Constructors and serializers
+        public BaseTile(Vector2 p)
+        {
+            Position = p;
+            Dirty = true;
+        }
+
+        public BaseTile(SerializationInfo info, StreamingContext context)
+        {
+            Position = ((V2S)info.GetValue("Pos", typeof(V2S))).ToVector2();
+            Dirty = true;
+        }
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Pos", new V2S(Position));
+        }
+
+        public abstract void Draw(SpriteBatch spriteBatch);
+        
+        /// <summary>
+        /// Actions to be performed if tile is destroyed
+        /// </summary>
+        public virtual void Destroy()
+        {
+            Console.WriteLine(Name + " tile broken");
+            Parent.RemoveTile(Pos, Layer);
+        }
+
+        /// <summary>
+        /// Actions to be performed on tile update call
+        /// </summary>
+        public virtual void Update()
+        {
+        }
+    }
+}

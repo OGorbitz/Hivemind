@@ -9,12 +9,12 @@ using System.Text;
 namespace Hivemind.World.Tile.Floor
 {
     [Serializable]
-    class Floor_Concrete : BaseFloor
+    class Floor_Grass : BaseFloor
     {
         //Static variables
-        public new const string UName = "Floor_Concrete";
+        public new const string UName = "Floor_Grass";
         public new const Layer ULayer = Layer.FLOOR;
-        public new const int URenderPriority = (int)FloorPriority.Floor_Concrete;
+        public new const int URenderPriority = (int)FloorPriority.Floor_Grass;
         public new const float UResistance = 1.5f;
 
         public override string Name => UName;
@@ -30,19 +30,19 @@ namespace Hivemind.World.Tile.Floor
 
 
         //Constructors and serializers
-        public Floor_Concrete(Vector2 p) : base(p)
+        public Floor_Grass(Vector2 p) : base(p)
         {
         }
-        public Floor_Concrete(SerializationInfo info, StreamingContext context) : base(info, context)
+        public Floor_Grass(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 
         public static void LoadAssets(ContentManager content)
         {
-            texture = content.Load<Texture2D>("Tiles/Floor/Floor_Concrete");
+            texture = content.Load<Texture2D>("Tiles/Floor/Floor_Grass");
             FloorMask.Textures[URenderPriority] = texture;
 
-            UIcon = content.Load<Texture2D>("Tiles/Floor/Floor_Concrete_Icon");
+            UIcon = content.Load<Texture2D>("Tiles/Floor/Floor_Grass_Icon");
         }
 
         public override void Draw(SpriteBatch spriteBatch)

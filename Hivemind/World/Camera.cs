@@ -6,8 +6,8 @@ namespace Hivemind
 {
     public class Camera
     {
-        public Vector2 Pos;
-        public float scale = 1.0f;
+        public Vector2 Pos = new Vector2(0);
+        public float Scale = 1.0f;
 
         public bool uplvl, downlvl;
 
@@ -19,7 +19,7 @@ namespace Hivemind
         {
             var offset = Matrix.CreateTranslation(GraphicsDeviceManager.DefaultBackBufferWidth / 2, GraphicsDeviceManager.DefaultBackBufferHeight / 2, 0);
             var negoffset = Matrix.CreateTranslation(-GraphicsDeviceManager.DefaultBackBufferWidth, -GraphicsDeviceManager.DefaultBackBufferHeight, 0);
-            var scalematrix = Matrix.CreateScale(scale);
+            var scalematrix = Matrix.CreateScale(Scale);
             var translate =
                 Matrix.CreateTranslation(-Pos.X + GraphicsDeviceManager.DefaultBackBufferWidth, -Pos.Y + GraphicsDeviceManager.DefaultBackBufferHeight, 0);
             Translate = translate;
@@ -27,22 +27,22 @@ namespace Hivemind
             TranslateScaleOffset = translate * negoffset * scalematrix * offset;
         }
 
-        public void Scale()
+        public void UpdateScale()
         {
             var scrollspeed = 0.002f;
 
-            scale += scrollspeed * GameInput.ScrollWheelChange();
+            Scale += scrollspeed * GameInput.ScrollWheelChange();
 
-            if (scale < 0.5f)
-                scale = 0.5f;
-            if (scale > 3.0f)
-                scale = 3.0f;
+            if (Scale < 0.5f)
+                Scale = 0.5f;
+            if (Scale > 3.0f)
+                Scale = 3.0f;
             ApplyTransform();
         }
 
         public void Move(Vector2 vel)
         {
-            var speed = 16f / (float)Math.Sqrt(scale);
+            var speed = 16f / (float)Math.Sqrt(Scale);
 
             Pos += vel * speed;
 

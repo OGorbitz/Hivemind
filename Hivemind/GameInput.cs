@@ -93,7 +93,7 @@ namespace Hivemind.Input
                             if (GuiController.GetState() == GUIState.MAIN_MENU_CREDITS)
                             {
                                 GuiController.SetState(GUIState.MAIN_MENU);
-                                GuiController.credits.Text = "HELP";
+                                GuiController.Credits.Text = "HELP";
                             }
                             break;
                         case GameState.TILEMAP:
@@ -139,7 +139,7 @@ namespace Hivemind.Input
                     break;
                 case GameState.TILEMAP:
                     if (NotOverHUD)
-                        WorldManager.GetActiveTileMap().Cam.Scale();
+                        WorldManager.GetActiveTileMap().Cam.UpdateScale();
                     WorldManager.GetActiveTileMap().Cam.Move(vel);
 
                     var tm = WorldManager.GetActiveTileMap();

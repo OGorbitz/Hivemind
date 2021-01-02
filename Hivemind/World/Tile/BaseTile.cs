@@ -13,9 +13,11 @@ namespace Hivemind.World.Tile
         //Static variables
         public const string UName = "BaseTile";
         public const Layer ULayer = Layer.NULL;
+        public const float UResistance = 0;
 
         public virtual string Name => UName;
         public virtual Layer Layer => ULayer;
+        public virtual float Resistance => UResistance;
 
         //Instance variables
         private Vector2 Position;
@@ -40,7 +42,7 @@ namespace Hivemind.World.Tile
             Position = ((V2S)info.GetValue("Pos", typeof(V2S))).ToVector2();
             Dirty = true;
         }
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("Pos", new V2S(Position));
         }
@@ -59,7 +61,7 @@ namespace Hivemind.World.Tile
         /// <summary>
         /// Actions to be performed on tile update call
         /// </summary>
-        public virtual void Update()
+        public virtual void Update(GameTime gameTime)
         {
         }
     }

@@ -4,6 +4,7 @@ using Hivemind.Input;
 using Hivemind.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
@@ -31,21 +32,18 @@ namespace Hivemind.GUI
 
     internal class GuiController
     {
-        private static SpriteBatch spriteBatch;
-        private static SpriteFont clacon;
+        private static RenderTarget2D _renderTarget2D;
 
-        private static RenderTarget2D renderTarget2D;
-
-        public static Texture2D[] symbols;
+        public static Texture2D[] Symbols;
         public static SpriteFont KarnivorSmall, KarnivorMedium, KarnivorLarge;
         public static int TooltipTime = 1000;
 
         private static Desktop _desktop;
 
-        private static Grid Main_Menu, Main_Menu_Credits;
+        private static Grid _mainMenu, _mainMenuCredits, _tilemapHud;
 
-        private static ConsoleText CreditText;
-        public static Label credits;
+        private static ConsoleText _creditText;
+        public static Label Credits, HUDText;
 
 
         private static GUIState CurrentState;
@@ -91,31 +89,31 @@ namespace Hivemind.GUI
             switch (state)
             {
                 case GUIState.MAIN_MENU:
-                    _desktop.Root = Main_Menu;
+                    _desktop.Root = _mainMenu;
                     //MusicController.PlayMusic(Music.AWAKENING);
                     break;
                 case GUIState.MAIN_MENU_CREDITS:
-                    CreditText = new ConsoleText(1000, false, Hivemind.CurrentGameTime);
-                    CreditText.AddLine("~$ cd /home", 350, false);
-                    CreditText.AddLine("/home$ cd admin", 250, false);
-                    CreditText.AddLine("/home/admin$ cd hivemind", 350, false);
-                    CreditText.AddLine("/home/admin/hivemind$ cd docs", 150, false);
-                    CreditText.AddLine("/home/admin/hivemind/docs$ echo Credits.txt", 500, false);
-                    CreditText.AddLine("", 0, false);
-                    CreditText.AddLine("Created by:", 0, false);
-                    CreditText.AddLine("Ozzie Gorbitz", 2000, false);
-                    CreditText.AddLine("", 0, false);
-                    CreditText.AddLine("This game is the product of countless hours of labor.", 2000, false);
-                    CreditText.AddLine("I hope you enjoy playing it. Thank you for giving it your time!", 2000, false);
-                    CreditText.AddLine("", 0, false);
-                    CreditText.AddLine("Please be gentle with your reviews, and be sure to report any bugs!", 2000, false);
-                    CreditText.AddLine("", 0, false);
-                    CreditText.AddLine("Press Escape to exit", 0, true);
+                    _creditText = new ConsoleText(1000, false, Hivemind.CurrentGameTime);
+                    _creditText.AddLine("~$ cd /home", 350, false);
+                    _creditText.AddLine("/home$ cd admin", 250, false);
+                    _creditText.AddLine("/home/admin$ cd hivemind", 350, false);
+                    _creditText.AddLine("/home/admin/hivemind$ cd docs", 150, false);
+                    _creditText.AddLine("/home/admin/hivemind/docs$ echo Credits.txt", 500, false);
+                    _creditText.AddLine("", 0, false);
+                    _creditText.AddLine("Created by:", 0, false);
+                    _creditText.AddLine("Ozzie Gorbitz", 2000, false);
+                    _creditText.AddLine("", 0, false);
+                    _creditText.AddLine("This game is the product of countless hours of labor.", 2000, false);
+                    _creditText.AddLine("I hope you enjoy playing it. Thank you for giving it your time!", 2000, false);
+                    _creditText.AddLine("", 0, false);
+                    _creditText.AddLine("Please be gentle with your reviews, and be sure to report any bugs!", 2000, false);
+                    _creditText.AddLine("", 0, false);
+                    _creditText.AddLine("Press Escape to exit", 0, true);
 
-                    _desktop.Root = Main_Menu_Credits;
+                    _desktop.Root = _mainMenuCredits;
                     break;
                 case GUIState.HUD_TILEMAP:
-                    //UserInterface.Active = HUD_TileMap;
+                    _desktop.Root = _tilemapHud;
                     break;
                 case GUIState.HUD_RESEARCH:
                     //UserInterface.Active = HUD_Research;
@@ -140,9 +138,21 @@ namespace Hivemind.GUI
                 case GUIState.MAIN_MENU:
                     break;
                 case GUIState.MAIN_MENU_CREDITS:
-                    credits.Text = CreditText.GetLines(50);
+                    Credits.Text = _creditText.GetLines(50);
                     break;
                 case GUIState.HUD_TILEMAP:
+                    var mouse = Mouse.GetState();
+                    var wpos = WorldManager.GetActiveTileMap().Cam.Unproject(mouse.Position.ToVector2());
+                    var tpos = TileMap.GetTileCoords(wpos);
+                    var tile = WorldManager.GetActiveTileMap().GetFloor(tpos);
+                    string name;
+                    if (tile == null)
+                        name = "Null";
+                    else
+                        name = tile.Name;
+                    HUDText.Text = "Camera position: (" + WorldManager.GetActiveTileMap().Cam.Pos.X + ", " + WorldManager.GetActiveTileMap().Cam.Pos.Y + ")\n" +
+                        "Camera scale: " + WorldManager.GetActiveTileMap().Cam.Scale + "\n" +
+                        "Pointed Block: " + name;
                     break;
                 case GUIState.HUD_RESEARCH:
                     break;
@@ -163,16 +173,16 @@ namespace Hivemind.GUI
 
         public static void InitMainMenu()
         {
-            Main_Menu = new Grid
+            _mainMenu = new Grid
             {
                 ShowGridLines = true,
                 RowSpacing = 8,
                 ColumnSpacing = 8
             };
 
-            Main_Menu.RowsProportions.Add(new Proportion(ProportionType.Part));
-            Main_Menu.RowsProportions.Add(new Proportion(ProportionType.Pixels) { Value = 500 });
-            Main_Menu.RowsProportions.Add(new Proportion(ProportionType.Part));
+            _mainMenu.RowsProportions.Add(new Proportion(ProportionType.Part));
+            _mainMenu.RowsProportions.Add(new Proportion(ProportionType.Pixels) { Value = 500 });
+            _mainMenu.RowsProportions.Add(new Proportion(ProportionType.Part));
 
 
             var panel = new Panel
@@ -191,7 +201,7 @@ namespace Hivemind.GUI
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center
             };
-            Main_Menu.Widgets.Add(title);
+            _mainMenu.Widgets.Add(title);
 
 
             var verticalMenu = new VerticalMenu()
@@ -214,6 +224,7 @@ namespace Hivemind.GUI
             };
             menuItem.Selected += (s, a) =>
             {
+                WorldManager.SetActiveTileMap(new TileMap(64));
                 GameStateManager.SetState(GameState.TILEMAP);
             };
             verticalMenu.Items.Add(menuItem);
@@ -234,7 +245,7 @@ namespace Hivemind.GUI
             };
             verticalMenu.Items.Add(menuItem);
 
-            Main_Menu.Widgets.Add(verticalMenu);
+            _mainMenu.Widgets.Add(verticalMenu);
 
             // ComboBox
             var combo = new ComboBox
@@ -247,7 +258,7 @@ namespace Hivemind.GUI
             combo.Items.Add(new ListItem("Green", Color.Green));
             combo.Items.Add(new ListItem("Blue", Color.Blue));
             combo.HorizontalAlignment = HorizontalAlignment.Center;
-            Main_Menu.Widgets.Add(combo);
+            _mainMenu.Widgets.Add(combo);
 
             // Button
             var button = new TextButton
@@ -263,7 +274,7 @@ namespace Hivemind.GUI
                 messageBox.ShowModal(_desktop);
             };
 
-            Main_Menu.Widgets.Add(button);
+            _mainMenu.Widgets.Add(button);
 
             // Spin button
             var spinButton = new SpinButton
@@ -273,100 +284,40 @@ namespace Hivemind.GUI
                 Width = 100,
                 Nullable = true
             };
-            Main_Menu.Widgets.Add(spinButton);
+            _mainMenu.Widgets.Add(spinButton);
 
 
-            Main_Menu_Credits = new Grid();
+            _mainMenuCredits = new Grid();
 
-            credits = new Label()
+            Credits = new Label()
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 Font = KarnivorSmall,
                 Padding = new Thickness(50)
             };
-            Main_Menu_Credits.Widgets.Add(credits);
-
-            /* var title = new Header("Badass Game", Anchor.TopCenter, new Vector2(0, Game1.ScreenHeight / 4));
-             title.BeforeDraw += e =>
-             {
-                 var h = (Header) e;
-                 if (UserInterface.Active.CurrGameTime.TotalGameTime.Seconds % 2 > 0)
-                     h.Text = "Hivemind.exe ";
-                 else
-                     h.Text = "Hivemind.exe_";
-             };
-             title.FillColor = Color.White;
-             title.WrapWords = false;
-             title.Scale = 2;
-             title.Size = new Vector2(1, 1);
-
-             MainMenu.AddEntity(title);
-
-             var play = new Button("Play", anchor: Anchor.TopCenter,
-                 offset: new Vector2(0, Game1.ScreenHeight / 4 + 150));
-             play.Size = new Vector2(200, 50);
-             play.OnClick = btn =>
-             {
-                 World.World.NewWorld("Test");
-
-                 GameStateManager.SetState(GameState.TILEMAP);
-             };
-             MainMenu.AddEntity(play);
-
-             var credits = new Button("Credits", anchor: Anchor.TopCenter,
-                 offset: new Vector2(0, Game1.ScreenHeight / 4 + 250));
-             credits.Size = new Vector2(200, 50);
-             credits.OnClick = btn =>
-             {
-                 MainMenu_Credits_Text.Text = "";
-                 CreditText = new ConsoleText(1000, false, UserInterface.Active.CurrGameTime);
-                 CreditText.AddLine("~$ cd /home", 250, false);
-                 CreditText.AddLine("/home$ cd admin", 250, false);
-                 CreditText.AddLine("/home/admin$ cd hivemind", 250, false);
-                 CreditText.AddLine("/home/admin/hivemind$ cd docs", 250, false);
-                 CreditText.AddLine("/home/admin/hivemind/docs$ echo Credits.txt", 500, false);
-                 CreditText.AddLine("", 0, false);
-                 CreditText.AddLine("Created by:", 0, false);
-                 CreditText.AddLine("Ozzie Gorbitz", 2000, false);
-                 CreditText.AddLine("", 0, false);
-                 CreditText.AddLine("This game is the product of countless hours of labor.", 2000, false);
-                 CreditText.AddLine("I hope you enjoy playing it. Thank you for giving it your time!", 2000, false);
-                 CreditText.AddLine("", 0, false);
-                 CreditText.AddLine("Please be gentle with your reviews, and be sure to report any bugs!", 2000, false);
-                 CreditText.AddLine("", 0, false);
-                 CreditText.AddLine("Press Escape to exit", 0, true);
-
-                 SetState(GUIState.MAIN_MENU_CREDITS);
-             };
-             MainMenu.AddEntity(credits);
-
-             var Exit = new Button(string.Empty, ButtonSkin.Default, Anchor.TopRight, new Vector2(70, 70));
-             var ExitIcon = new Icon(IconType.None, Anchor.Center);
-             ExitIcon.Texture = symbols[(int) Symbols.X_ICON];
-             Exit.AddChild(ExitIcon, true);
-             Exit.OnClick = btn => { GameStateManager.Exit(); };
-             MainMenu.AddEntity(Exit);
-
-             MainMenu_Credits_Text = new RichParagraph("Blah", Anchor.BottomLeft);
-             MainMenu_Credits_Text.Scale = 1.5f;
-             MainMenu_Credits_Text.Offset = new Vector2(25);
-             MainMenu_Credits_Text.AfterUpdate = e =>
-             {
-                 var p = (RichParagraph) e;
-                 p.Text = CreditText.GetLines(UserInterface.Active.ScreenHeight / (int) p.GetCharacterActualSize().Y + 1,
-                     UserInterface.Active.CurrGameTime);
-             };
-             MainMenu_Credits.AddEntity(MainMenu_Credits_Text);*/
-        }
-
-        private static void Console_Char(object sender, Myra.Utility.GenericEventArgs<char> e)
-        {
-            throw new NotImplementedException();
+            _mainMenuCredits.Widgets.Add(Credits);
         }
 
         private static void InitHUD_Tilemap()
         {
+            _tilemapHud = new Grid()
+            {
+                ShowGridLines = true,
+                RowSpacing = 8,
+                ColumnSpacing = 8
+            };
+
+            HUDText = new Label()
+            {
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                Font = KarnivorSmall,
+                Padding = new Thickness(25)
+            };
+
+            _tilemapHud.Widgets.Add(HUDText);
+
             /*var DebugPanel = new Panel(new Vector2(300, 100), PanelSkin.None, Anchor.TopLeft);
             var MouseCoords = new Paragraph("Pos:", Anchor.TopLeft);
             DebugPanel.Padding = Vector2.Zero;

@@ -21,8 +21,8 @@ namespace Hivemind.World.Tile.Floor
         /// <summary>
         /// A float resistance modifier for pathfinding. 1 is normal movement, lower is easier, higher is more difficult.
         /// </summary>
-        public virtual float Resistance => UResistance;
-        public virtual Layer Layer => ULayer;
+        public override float Resistance => UResistance;
+        public override Layer Layer => ULayer;
 
         //Instance variables
 

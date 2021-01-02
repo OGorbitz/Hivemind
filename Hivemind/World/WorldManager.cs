@@ -34,7 +34,7 @@ namespace Hivemind.World
 
         internal static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
-            throw new NotImplementedException();
+            ActiveTileMap.Draw(spriteBatch, graphicsDevice, gameTime);
         }
     }
 }

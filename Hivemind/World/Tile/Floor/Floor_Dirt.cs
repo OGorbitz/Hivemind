@@ -9,12 +9,12 @@ using System.Text;
 namespace Hivemind.World.Tile.Floor
 {
     [Serializable]
-    class Floor_Concrete : BaseFloor
+    class Floor_Dirt : BaseFloor
     {
         //Static variables
-        public new const string UName = "Floor_Concrete";
+        public new const string UName = "Floor_Dirt";
         public new const Layer ULayer = Layer.FLOOR;
-        public new const int URenderPriority = (int)FloorPriority.Floor_Concrete;
+        public new const int URenderPriority = (int)FloorPriority.Floor_Dirt;
         public new const float UResistance = 1.5f;
 
         public override string Name => UName;
@@ -30,25 +30,25 @@ namespace Hivemind.World.Tile.Floor
 
 
         //Constructors and serializers
-        public Floor_Concrete(Vector2 p) : base(p)
+        public Floor_Dirt(Vector2 p) : base(p)
         {
         }
-        public Floor_Concrete(SerializationInfo info, StreamingContext context) : base(info, context)
+        public Floor_Dirt(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 
         public static void LoadAssets(ContentManager content)
         {
-            texture = content.Load<Texture2D>("Tiles/Floor/Floor_Concrete");
+            texture = content.Load<Texture2D>("Tiles/Floor/Floor_Dirt");
             FloorMask.Textures[URenderPriority] = texture;
 
-            UIcon = content.Load<Texture2D>("Tiles/Floor/Floor_Concrete_Icon");
+            UIcon = content.Load<Texture2D>("Tiles/Floor/Floor_Dirt_Icon");
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            var sourcepos = new Rectangle((int)Pos.X % 8 * TileManager.TileSize,
-                (int)Pos.Y % 8 * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);
+            var sourcepos = new Rectangle((int)Pos.X % 4 * TileManager.TileSize,
+                (int)Pos.Y % 4 * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);
             spriteBatch.Draw(texture, new Vector2(Pos.X * TileManager.TileSize, Pos.Y * TileManager.TileSize),
                 sourceRectangle: sourcepos, color: Color.White);
         }

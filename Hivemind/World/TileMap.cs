@@ -1,6 +1,7 @@
 ﻿using Hivemind.World.Generator;
 using Hivemind.World.Tile;
 using Hivemind.World.Tile.Floor;
+using Hivemind.World.Tile.Wall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -65,6 +66,9 @@ namespace Hivemind.World
                     var rr = new Rectangle(5, 5, 5, 3);
 
                     var t = WorldGenerator.GetTemperature(pos);
+
+                    if (t > 0.35)
+                        SetTile(new Wall_Cinderblock(pos));
 
                     if (t > 0.25)
                         SetTile(new Floor_Concrete(pos));
@@ -167,6 +171,7 @@ namespace Hivemind.World
             if (InBounds(tile.Pos))
             {
                 Tiles[(int)tile.Pos.X, (int)tile.Pos.Y, (int)tile.Layer] = tile;
+                tile.Parent = this;
                 DirtySurroundingTiles(tile.Pos, tile.Layer);
             }
         }
@@ -263,6 +268,7 @@ namespace Hivemind.World
                         }
                     }
                 }
+
                 spriteBatch.End();
 
                 spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: StencilBlendState);
@@ -279,14 +285,24 @@ namespace Hivemind.World
                 spriteBatch.End();
 
                 graphicsDevice.SetRenderTarget(FloorBuffer);
-                if (l == 0)
-                    graphicsDevice.Clear(Color.Transparent);
 
                 spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
                 spriteBatch.Draw(RenderBuffer, Vector2.Zero, Color.White);
                 spriteBatch.End();
             }
+
+            for (int x = 0; x < Size; x++)
+            {
+                for (int y = 0; y < Size; y++)
+                {
+                    var tile = GetFloor(new Vector2(x, y));
+                    if (tile == null)
+                        continue;
+                    tile.Dirty = false;
+                }
+            }
         }
+
 
         public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
@@ -302,12 +318,16 @@ namespace Hivemind.World
                     DepthFormat.Depth24);
 
             //TODO: Render floors
+            int width = 1 + (int) Math.Ceiling((float)RenderTarget.Width / (float)TileManager.TileSize);
+            int height = 1 + (int)Math.Ceiling((float)RenderTarget.Height / (float)TileManager.TileSize);
+
+            width *= TileManager.TileSize;
+            height *= TileManager.TileSize;
 
             if (FloorBuffer == null)
-                FloorBuffer = new RenderTarget2D(graphicsDevice, Size * TileManager.TileSize, Size * TileManager.TileSize, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents); ;
-
+                FloorBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents); ;
             if (RenderBuffer == null)
-                RenderBuffer = new RenderTarget2D(graphicsDevice, Size * TileManager.TileSize, Size * TileManager.TileSize);
+                RenderBuffer = new RenderTarget2D(graphicsDevice, width, height);
 
             DrawFloor(spriteBatch, graphicsDevice, gameTime);
 
@@ -320,6 +340,20 @@ namespace Hivemind.World
             //TODO: Render entities
 
             //TODO: Render walls
+
+            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            for(int x = 0; x < Size; x++)
+            {
+                for(int y = 0; y < Size; y++)
+                {
+                    BaseTile t = GetTile(new Vector2(x, y), Layer.WALL);
+                    if(t != null)
+                    {
+                        t.Draw(spriteBatch);
+                    }
+                }
+            }
+            spriteBatch.End();
 
             //TODO: Render particles
 

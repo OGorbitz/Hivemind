@@ -59,6 +59,7 @@ namespace Hivemind
             _computerLines = Content.Load<Texture2D>("computer_lines");
 
             FloorMask.LoadContent(Content, GraphicsDevice);
+            TextureAtlas.Init(GraphicsDevice);
             TileManager.LoadTiles(Content, GraphicsDevice);
         }
 

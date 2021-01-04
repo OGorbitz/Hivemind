@@ -144,8 +144,10 @@ namespace Hivemind.GUI
                     var mouse = Mouse.GetState();
                     var wpos = WorldManager.GetActiveTileMap().Cam.Unproject(mouse.Position.ToVector2());
                     var tpos = TileMap.GetTileCoords(wpos);
-                    var tile = WorldManager.GetActiveTileMap().GetFloor(tpos);
+                    var tile = WorldManager.GetActiveTileMap().GetTile(tpos, Layer.WALL);
                     string name;
+                    if (tile == null)
+                        tile = WorldManager.GetActiveTileMap().GetFloor(tpos);
                     if (tile == null)
                         name = "Null";
                     else
@@ -224,7 +226,7 @@ namespace Hivemind.GUI
             };
             menuItem.Selected += (s, a) =>
             {
-                WorldManager.SetActiveTileMap(new TileMap(64));
+                WorldManager.SetActiveTileMap(new TileMap(200));
                 GameStateManager.SetState(GameState.TILEMAP);
             };
             verticalMenu.Items.Add(menuItem);

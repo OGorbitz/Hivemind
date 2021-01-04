@@ -36,13 +36,13 @@ namespace Hivemind.World
 
         internal static void LoadContent(ContentManager content, GraphicsDevice gdevice)
         {
-            Texture2D[] Masks = new Texture2D[9];
-            for (int n = 0; n < 9; n++)
+            Texture2D[] Masks = new Texture2D[13];
+            for (int n = 0; n < 13; n++)
             {
                 Masks[n] = content.Load<Texture2D>("Tiles/Masks/FloorMask1_" + (n + 1));
             }
 
-            Solid = Masks[8];
+            Solid = Masks[12];
 
             MaskAtlas = new RenderTarget2D(gdevice, 256 * 64, 64);
             gdevice.SetRenderTarget(MaskAtlas);
@@ -59,6 +59,22 @@ namespace Hivemind.World
                     if ((i & (1 << j)) != 0)
                     {
                         spriteBatch.Draw(Masks[j], new Vector2(64 * i, 0), Color.White);
+                    }
+                    if (((i & (1 << 1)) != 0) && ((i & (1 << 3)) != 0))
+                    {
+                        spriteBatch.Draw(Masks[8], new Vector2(64 * i, 0), Color.White);
+                    }
+                    if (((i & (1 << 1)) != 0) && ((i & (1 << 4)) != 0))
+                    {
+                        spriteBatch.Draw(Masks[9], new Vector2(64 * i, 0), Color.White);
+                    }
+                    if (((i & (1 << 6)) != 0) && ((i & (1 << 3)) != 0))
+                    {
+                        spriteBatch.Draw(Masks[10], new Vector2(64 * i, 0), Color.White);
+                    }
+                    if (((i & (1 << 6)) != 0) && ((i & (1 << 4)) != 0))
+                    {
+                        spriteBatch.Draw(Masks[11], new Vector2(64 * i, 0), Color.White);
                     }
                 }
             }

@@ -14,6 +14,8 @@ namespace Hivemind
 
         private Texture2D _icon, _computerLines;
 
+        public static int ScreenWidth, ScreenHeight;
+
         public static GameTime CurrentGameTime;
 
         public Hivemind()
@@ -28,6 +30,9 @@ namespace Hivemind
             _graphics.PreferredBackBufferWidth = r.Width;
             _graphics.PreferredBackBufferHeight = r.Height;
             _graphics.ApplyChanges();
+
+            ScreenWidth = r.Width;
+            ScreenHeight = r.Height;
 
             Window.AllowAltF4 = true;
             Window.IsBorderless = true;

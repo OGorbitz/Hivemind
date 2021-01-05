@@ -151,10 +151,11 @@ namespace Hivemind.GUI
                     if (tile == null)
                         name = "Null";
                     else
-                        name = tile.Name;
+                        name = tile.Name + " " + tile.Pos.ToString();
                     HUDText.Text = "Camera position: (" + WorldManager.GetActiveTileMap().Cam.Pos.X + ", " + WorldManager.GetActiveTileMap().Cam.Pos.Y + ")\n" +
                         "Camera scale: " + WorldManager.GetActiveTileMap().Cam.Scale + "\n" +
-                        "Pointed Block: " + name;
+                        "Pointed Block: " + name + "\n" +
+                        "BufferPos: " + WorldManager.GetActiveTileMap().BufferPosition.ToString() + " BufferOffset: " + WorldManager.GetActiveTileMap().BufferOffset.ToString();
                     break;
                 case GUIState.HUD_RESEARCH:
                     break;

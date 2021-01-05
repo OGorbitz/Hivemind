@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Hivemind": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

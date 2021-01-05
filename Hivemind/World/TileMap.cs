@@ -46,7 +46,7 @@ namespace Hivemind.World
         {
             Size = s;
             Tiles = new BaseTile[s, s, (int) Layer.LENGTH];
-            Cam = new Camera();
+            Cam = new Camera(this);
             WorldGenerator = new WorldGenerator(69l, this);
 
             FloorBuffer = null;
@@ -216,6 +216,17 @@ namespace Hivemind.World
         }
 
         /// <summary>
+        /// Requests the floor at the given position to be rerendered
+        /// </summary>
+        /// <param name="position"></param>
+        public void RenderFloor(Vector2 position)
+        {
+            BaseFloor f = GetFloor(position);
+            if (f != null)
+                f.NeedsRender = true;
+        }
+
+        /// <summary>
         /// Updates the render index of the tile at the given position
         /// </summary>
         public void UpdateRenderIndex(Vector2 position, Layer layer)
@@ -227,27 +238,101 @@ namespace Hivemind.World
             }
         }
 
+        public Vector2 BufferPosition = Vector2.Zero, BufferOffset = Vector2.Zero, BufferSize = Vector2.Zero;
+
         public void DrawFloor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
+            Rectangle toRender = new Rectangle(0, 0, 0, 0);
+            Rectangle cam = Cam.GetBounds();
+
+            Vector2 diff = new Vector2(cam.Left, cam.Top) - (BufferPosition * TileManager.TileSize);
+            Vector2 bdiff = new Vector2((float)Math.Floor(diff.X / TileManager.TileSize), (float)Math.Floor(diff.Y / TileManager.TileSize));
+
+
+            if (bdiff.X > BufferOffset.X)
+            {
+                BufferOffset.X += 1;
+                float x = BufferPosition.X + BufferOffset.X + BufferSize.X - 1;
+                for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
+                {
+                    RenderFloor(new Vector2(x, y));
+                    Console.WriteLine("Set from " + new Vector2(BufferPosition.X + BufferOffset.X + BufferSize.X, BufferPosition.Y + BufferOffset.Y).ToString() + " to " + new Vector2(BufferPosition.X + BufferOffset.X + BufferSize.X, BufferPosition.Y + BufferOffset.Y + BufferSize.Y).ToString());
+                }
+            }
+            if (bdiff.X < BufferOffset.X)
+            {
+                BufferOffset.X -= 1;
+                float x = BufferPosition.X + BufferOffset.X;
+                for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
+                {
+                    RenderFloor(new Vector2(x, y));
+                }
+            }
+            if (bdiff.Y > BufferOffset.Y)
+            {
+                BufferOffset.Y += 1;
+                float y = BufferPosition.Y + BufferOffset.Y + BufferSize.Y - 1;
+                for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
+                {
+                    RenderFloor(new Vector2(x, y));
+                }
+            }
+            if (bdiff.Y < BufferOffset.Y)
+            {
+                BufferOffset.Y -= 1;
+                float y = BufferPosition.Y + BufferOffset.Y;
+                for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
+                {
+                    RenderFloor(new Vector2(x, y));
+                }
+            }
+
+            if (BufferOffset.X >= BufferSize.X)
+            {
+                BufferOffset.X -= BufferSize.X;
+                BufferPosition.X += BufferSize.X;
+            }
+            if (BufferOffset.X < 0)
+            {
+                BufferOffset.X += BufferSize.X;
+                BufferPosition.X -= BufferSize.X;
+            }
+            if (BufferOffset.Y >= BufferSize.Y)
+            {
+                BufferOffset.Y -= BufferSize.Y;
+                BufferPosition.Y += BufferSize.Y;
+            }
+            if (BufferOffset.Y < 0)
+            {
+                BufferOffset.Y += BufferSize.Y;
+                BufferPosition.Y -= BufferSize.Y;
+            }
+
             for (int l = 0; l < (int)FloorPriority.COUNT; l++)
             {
                 graphicsDevice.SetRenderTarget(RenderBuffer);
                 graphicsDevice.Clear(Color.Transparent);
 
                 spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-                for (int x = 0; x < Size; x++)
+                for (float x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
                 {
-                    for (int y = 0; y < Size; y++)
+                    for (float y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                     {
                         var tile = GetFloor(new Vector2(x, y));
                         if (tile == null)
                             continue;
-                        if (!tile.Dirty)
+                        if (!tile.NeedsRender)
                             continue;
 
+                        Vector2 converted_coords = new Vector2(x - BufferPosition.X, y - BufferPosition.Y);
+                        if (converted_coords.X >= BufferSize.X)
+                            converted_coords.X -= BufferSize.X;
+                        if (converted_coords.Y >= BufferSize.Y)
+                            converted_coords.Y -= BufferSize.Y;
+                        
                         if (tile.RenderPriority == l)
                         {
-                            spriteBatch.Draw(FloorMask.Solid, new Vector2(x * TileManager.TileSize, y * TileManager.TileSize), Color.White);
+                            spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), Color.White);
                         }
                         else if (tile.RenderPriority < l)
                         {
@@ -263,7 +348,7 @@ namespace Hivemind.World
                                 }
                             }
 
-                            spriteBatch.Draw(FloorMask.MaskAtlas, new Vector2(x * TileManager.TileSize, y * TileManager.TileSize),
+                            spriteBatch.Draw(FloorMask.MaskAtlas, converted_coords * TileManager.TileSize,
                                 sourceRectangle: new Rectangle(index * 64, 0, 64, 64), Color.White);
                         }
                     }
@@ -274,11 +359,19 @@ namespace Hivemind.World
                 spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: StencilBlendState);
 
                 Texture2D t = FloorMask.Textures[l];
-                for (int x = 0; x < Size * TileManager.TileSize; x += t.Width) //Replace with reference to current layer
+
+                for (float x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
                 {
-                    for (int y = 0; y < Size * TileManager.TileSize; y += t.Height)
+                    for (float y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                     {
-                        spriteBatch.Draw(t, new Vector2(x, y), Color.White);
+                        Vector2 converted_coords = new Vector2(x - BufferPosition.X, y - BufferPosition.Y);
+                        if (converted_coords.X >= BufferSize.X)
+                            converted_coords.X -= BufferSize.X;
+                        if (converted_coords.Y >= BufferSize.Y)
+                            converted_coords.Y -= BufferSize.Y;
+
+                        Rectangle sourceRectangle = new Rectangle((int)(x * TileManager.TileSize % t.Width), (int)(y * TileManager.TileSize % t.Height), TileManager.TileSize, TileManager.TileSize);
+                        spriteBatch.Draw(t, position: converted_coords * TileManager.TileSize, sourceRectangle: sourceRectangle, Color.White);
                     }
                 }
 
@@ -291,14 +384,14 @@ namespace Hivemind.World
                 spriteBatch.End();
             }
 
-            for (int x = 0; x < Size; x++)
+            for (float x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
             {
-                for (int y = 0; y < Size; y++)
+                for (float y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                 {
                     var tile = GetFloor(new Vector2(x, y));
                     if (tile == null)
                         continue;
-                    tile.Dirty = false;
+                    tile.NeedsRender = false;
                 }
             }
         }
@@ -321,6 +414,8 @@ namespace Hivemind.World
             int width = 1 + (int) Math.Ceiling((float)RenderTarget.Width / (float)TileManager.TileSize);
             int height = 1 + (int)Math.Ceiling((float)RenderTarget.Height / (float)TileManager.TileSize);
 
+            BufferSize = new Vector2(width, height);
+
             width *= TileManager.TileSize;
             height *= TileManager.TileSize;
 
@@ -334,7 +429,10 @@ namespace Hivemind.World
             graphicsDevice.SetRenderTarget(RenderTarget);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            spriteBatch.Draw(FloorBuffer, Vector2.Zero, Color.White);
+            spriteBatch.Draw(FloorBuffer, BufferPosition * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FloorBuffer, (BufferPosition + new Vector2(BufferSize.X, 0)) * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FloorBuffer, (BufferPosition + new Vector2(0, BufferSize.Y)) * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FloorBuffer, (BufferPosition + BufferSize) * TileManager.TileSize, Color.White);
             spriteBatch.End();
 
             //TODO: Render entities

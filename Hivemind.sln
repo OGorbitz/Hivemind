@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hivemind", "Hivemind\Hivemind.csproj", "{D9D7CB89-21DC-420C-B19A-AF77EA9CA52F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hivemind", "Hivemind\Hivemind.csproj", "{D9D7CB89-21DC-420C-B19A-AF77EA9CA52F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BF6B89BB-2656-48B4-A8CD-36D6CD332753}"
 	ProjectSection(SolutionItems) = preProject

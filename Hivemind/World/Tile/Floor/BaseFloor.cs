@@ -25,6 +25,7 @@ namespace Hivemind.World.Tile.Floor
         public override Layer Layer => ULayer;
 
         //Instance variables
+        public bool NeedsRender = true;
 
 
         //Constructors and serializers

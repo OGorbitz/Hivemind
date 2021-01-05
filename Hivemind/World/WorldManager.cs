@@ -34,7 +34,14 @@ namespace Hivemind.World
 
         internal static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
-            ActiveTileMap.Draw(spriteBatch, graphicsDevice, gameTime);
+            if (ActiveTileMap != null)
+                ActiveTileMap.Draw(spriteBatch, graphicsDevice, gameTime);
+        }
+
+        internal static void Update(GameTime gameTime)
+        {
+            if (ActiveTileMap != null)
+                ActiveTileMap.Update(gameTime);
         }
     }
 }

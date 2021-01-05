@@ -23,7 +23,7 @@ namespace Hivemind.Sprite
 
         public void SetAnimation(string name)
         {
-            if (Animations.ContainsKey(name))
+            if (Animations.ContainsKey(name) && CurrentAnimation != name)
             {
                 CurrentAnimation = name;
                 Animations[CurrentAnimation].DirtyTime = true;

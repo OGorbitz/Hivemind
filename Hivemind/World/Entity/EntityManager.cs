@@ -10,7 +10,7 @@ namespace Hivemind.World.Entity
     class EntityManager
     {
         public static Dictionary<string, Texture2D[]> sprites;
-        private static int CurrentID;
+        private static int CurrentID = 0;
 
         public static void LoadAssets(ContentManager content)
         {
@@ -19,6 +19,7 @@ namespace Hivemind.World.Entity
             Bush1.LoadAssets(content);
             Rock1.LoadAssets(content);
 
+            SmallDrone.LoadAssets(content);
             //Entity_BasicComputerClump.LoadAssets(content);
             //Entity_BasicComputer.LoadAssets(content);
             //Entity_PowerBreaker.LoadAssets(content);

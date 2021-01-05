@@ -60,6 +60,10 @@ namespace Hivemind.World.Entity
         {
             var frame = Controller.GetFrame(gameTime);
             var sprite = EntityManager.GetSprite(Type, frame);
+            spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X - sprite.Width / 2), (int)(Pos.Y - sprite.Height / 2), sprite.Width, sprite.Height),
+                new Rectangle(0, 0, sprite.Width, sprite.Height),
+                Color.White, 0f, Vector2.Zero, SpriteEffects.None,
+                layerDepth: Parent.GetLayerDepth((int) Pos.Y / TileManager.TileSize) + 0.0005f);
         }
     }
 }

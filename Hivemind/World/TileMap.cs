@@ -91,7 +91,7 @@ namespace Hivemind.World
                         var d = Generator.GetNoise1(pos);
                         if (d > Generator.BushOffset && d < Generator.BushOffset + Generator.BushChance)
                         {
-                            SetTileEntity(pos, new Bush1(pos));
+                            //SetTileEntity(pos, new Bush1(pos));
                         }
                     }
                     if(t < 0.25)
@@ -99,12 +99,14 @@ namespace Hivemind.World
                         var d = Generator.GetNoise2(pos);
                         if (d > Generator.RockOffset && d < Generator.RockOffset + Generator.RockChance)
                         {
-                            if (GetTileEntity(pos) == null)
-                                SetTileEntity(pos, new Rock1(pos));
+                            //if (GetTileEntity(pos) == null)
+                                //SetTileEntity(pos, new Rock1(pos));
                         }
                     }
+
                 }
             }
+            AddEntity(new SmallDrone(new Vector2(10 * TileManager.TileSize, 10 * TileManager.TileSize)));
         }
 
         public TileMap(SerializationInfo info, StreamingContext context)
@@ -222,7 +224,7 @@ namespace Hivemind.World
             return null;
         }
 
-        public void SetEntity(BaseEntity entity)
+        public void AddEntity(BaseEntity entity)
         {
             if (!Entities.ContainsKey(entity.ID))
             {
@@ -313,10 +315,8 @@ namespace Hivemind.World
         {
             Updated = !Updated;
 
-            for (var x = Entities.Count - 1; x >= 0; x--)
-            {
-                var e = (BaseEntity)Entities[x];
-                e.Update(gameTime);
+            foreach (KeyValuePair<int, BaseEntity> e in Entities) { 
+                e.Value.Update(gameTime);
             }
 
             foreach (var e in TileEntities)
@@ -541,15 +541,18 @@ namespace Hivemind.World
                         e.Draw(spriteBatch, gameTime);
                     }
 
-            for (var x = Entities.Count - 1; x >= 0; x--)
+            foreach (KeyValuePair<int, BaseEntity> e in Entities)
             {
-                var e = (BaseEntity)Entities[x];
-                e.Draw(spriteBatch, gameTime);
+                e.Value.Draw(spriteBatch, gameTime);
             }
 
             spriteBatch.End();
 
             //TODO: Render walls
+
+            var b = Cam.GetScaledBounds();
+            Vector2 p1 = GetTileCoords(new Vector2(b.Left, b.Top)) - new Vector2(1);
+            Vector2 p2 = GetTileCoords(new Vector2(b.Right, b.Bottom)) + new Vector2(1);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             for(int x = 0; x < Size; x++)

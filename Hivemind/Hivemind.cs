@@ -77,6 +77,8 @@ namespace Hivemind
             GameInput.Update(gameTime);
             GuiController.Update(gameTime);
 
+            WorldManager.Update(gameTime);
+
             base.Update(gameTime);
         }
 

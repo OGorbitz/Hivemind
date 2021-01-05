@@ -37,6 +37,30 @@
 /processorParam:TextureFormat=Color
 /build:cpu.png
 
+#begin Entity/TileEntity/Flora/Bush1.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Entity/TileEntity/Flora/Bush1.png
+
+#begin Entity/TileEntity/Natural/Rock1.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Entity/TileEntity/Natural/Rock1.png
+
 #begin Tiles/Floor/Floor_Concrete.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -121,18 +145,6 @@
 /processorParam:TextureFormat=Color
 /build:Tiles/Masks/FloorMask1_1.png
 
-#begin Tiles/Masks/FloorMask1_1.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_1.png
-
 #begin Tiles/Masks/FloorMask1_10.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -193,18 +205,6 @@
 /processorParam:TextureFormat=Color
 /build:Tiles/Masks/FloorMask1_2.png
 
-#begin Tiles/Masks/FloorMask1_2.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_2.png
-
 #begin Tiles/Masks/FloorMask1_3.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -216,30 +216,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Tiles/Masks/FloorMask1_3.png
-
-#begin Tiles/Masks/FloorMask1_3.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_3.png
-
-#begin Tiles/Masks/FloorMask1_4.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_4.png
 
 #begin Tiles/Masks/FloorMask1_4.png
 /importer:TextureImporter
@@ -265,30 +241,6 @@
 /processorParam:TextureFormat=Color
 /build:Tiles/Masks/FloorMask1_5.png
 
-#begin Tiles/Masks/FloorMask1_5.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_5.png
-
-#begin Tiles/Masks/FloorMask1_6.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_6.png
-
 #begin Tiles/Masks/FloorMask1_6.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -313,18 +265,6 @@
 /processorParam:TextureFormat=Color
 /build:Tiles/Masks/FloorMask1_7.png
 
-#begin Tiles/Masks/FloorMask1_7.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_7.png
-
 #begin Tiles/Masks/FloorMask1_8.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -336,30 +276,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Tiles/Masks/FloorMask1_8.png
-
-#begin Tiles/Masks/FloorMask1_8.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_8.png
-
-#begin Tiles/Masks/FloorMask1_9.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Tiles/Masks/FloorMask1_9.png
 
 #begin Tiles/Masks/FloorMask1_9.png
 /importer:TextureImporter

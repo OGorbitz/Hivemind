@@ -1,4 +1,5 @@
-﻿using Hivemind.World.Generator;
+﻿using Hivemind.World.Entity;
+using Hivemind.World.Generator;
 using Hivemind.World.Tile;
 using Hivemind.World.Tile.Floor;
 using Hivemind.World.Tile.Wall;
@@ -18,7 +19,7 @@ namespace Hivemind.World
         //Owned objects
         public Camera Cam;
         private RenderTarget2D RenderTarget;
-        public WorldGenerator WorldGenerator;
+        public WorldGenerator Generator;
 
         //Holds pre rendered floor
         public RenderTarget2D FloorBuffer;
@@ -40,6 +41,12 @@ namespace Hivemind.World
         //Specific data
         public int Size;
         private BaseTile[,,] Tiles;
+        private TileEntity[,] TileEntities;
+        private Dictionary<int, BaseEntity> Entities;
+
+        public Vector2 BufferPosition = Vector2.Zero, BufferOffset = Vector2.Zero, BufferSize = Vector2.Zero;
+        public bool Updated, Rendered;
+
 
         //Creation, Destruction
         public TileMap(int s)
@@ -47,7 +54,9 @@ namespace Hivemind.World
             Size = s;
             Tiles = new BaseTile[s, s, (int) Layer.LENGTH];
             Cam = new Camera(this);
-            WorldGenerator = new WorldGenerator(69l, this);
+            Generator = new WorldGenerator(69l, this);
+            Entities = new Dictionary<int, BaseEntity>();
+            TileEntities = new TileEntity[s, s];
 
             FloorBuffer = null;
 
@@ -65,7 +74,7 @@ namespace Hivemind.World
                     var r = new Rectangle(4, 4, 7, 5);
                     var rr = new Rectangle(5, 5, 5, 3);
 
-                    var t = WorldGenerator.GetTemperature(pos);
+                    var t = Generator.GetTemperature(pos);
 
                     if (t > 0.35)
                         SetTile(new Wall_Cinderblock(pos));
@@ -73,9 +82,27 @@ namespace Hivemind.World
                     if (t > 0.25)
                         SetTile(new Floor_Concrete(pos));
                     else if (t > -0.25)
+                    {
                         SetTile(new Floor_Dirt(pos));
+                    }
                     else
+                    {
                         SetTile(new Floor_Grass(pos));
+                        var d = Generator.GetNoise1(pos);
+                        if (d > Generator.BushOffset && d < Generator.BushOffset + Generator.BushChance)
+                        {
+                            SetTileEntity(pos, new Bush1(pos));
+                        }
+                    }
+                    if(t < 0.25)
+                    {
+                        var d = Generator.GetNoise2(pos);
+                        if (d > Generator.RockOffset && d < Generator.RockOffset + Generator.RockChance)
+                        {
+                            if (GetTileEntity(pos) == null)
+                                SetTileEntity(pos, new Rock1(pos));
+                        }
+                    }
                 }
             }
         }
@@ -188,6 +215,50 @@ namespace Hivemind.World
             }
         }
 
+        public BaseEntity GetEntity(int id)
+        {
+            if (Entities.ContainsKey(id))
+                return Entities[id];
+            return null;
+        }
+
+        public void SetEntity(BaseEntity entity)
+        {
+            if (!Entities.ContainsKey(entity.ID))
+            {
+                Entities.Add(entity.ID, entity);
+                entity.Parent = this;
+            }
+        }
+
+        public void RemoveEntity(BaseEntity entity)
+        {
+            if (Entities.ContainsKey(entity.ID))
+                Entities.Remove(entity.ID);
+        }
+
+        public TileEntity GetTileEntity(Vector2 pos)
+        {
+            if (InBounds(pos))
+                return TileEntities[(int)pos.X, (int)pos.Y];
+            return null;
+        }
+
+        public void SetTileEntity(Vector2 pos, TileEntity entity)
+        {
+            if (InBounds(pos))
+            {
+                TileEntities[(int)pos.X, (int)pos.Y] = entity;
+                entity.Parent = this;
+            }
+        }
+
+        public void RemoveTileEntity(Vector2 pos)
+        {
+            if (InBounds(pos))
+                TileEntities[(int)pos.X, (int)pos.Y] = null;
+        }
+
         /// <summary>
         /// Sets surrounding tiles as dirty, to have their render indices updated
         /// </summary>
@@ -238,7 +309,29 @@ namespace Hivemind.World
             }
         }
 
-        public Vector2 BufferPosition = Vector2.Zero, BufferOffset = Vector2.Zero, BufferSize = Vector2.Zero;
+        public void Update(GameTime gameTime)
+        {
+            Updated = !Updated;
+
+            for (var x = Entities.Count - 1; x >= 0; x--)
+            {
+                var e = (BaseEntity)Entities[x];
+                e.Update(gameTime);
+            }
+
+            foreach (var e in TileEntities)
+                if (e != null)
+                    if (e.Updated = Updated)
+                    {
+                        e.Updated = !e.Updated;
+                        e.Update(gameTime);
+                    }
+
+            foreach (var t in Tiles)
+                if (t != null)
+                    t.Update(gameTime);
+
+        }
 
         public void DrawFloor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
@@ -436,6 +529,25 @@ namespace Hivemind.World
             spriteBatch.End();
 
             //TODO: Render entities
+            Rendered = !Rendered;
+
+            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+
+            foreach (var e in TileEntities)
+                if (e != null)
+                    if (e.Rendered == null || e.Rendered == Rendered)
+                    {
+                        e.Rendered = !Rendered;
+                        e.Draw(spriteBatch, gameTime);
+                    }
+
+            for (var x = Entities.Count - 1; x >= 0; x--)
+            {
+                var e = (BaseEntity)Entities[x];
+                e.Draw(spriteBatch, gameTime);
+            }
+
+            spriteBatch.End();
 
             //TODO: Render walls
 

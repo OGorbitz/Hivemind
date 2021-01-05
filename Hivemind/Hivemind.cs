@@ -1,6 +1,7 @@
 ﻿using Hivemind.GUI;
 using Hivemind.Input;
 using Hivemind.World;
+using Hivemind.World.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -66,6 +67,7 @@ namespace Hivemind
             FloorMask.LoadContent(Content, GraphicsDevice);
             TextureAtlas.Init(GraphicsDevice);
             TileManager.LoadTiles(Content, GraphicsDevice);
+            EntityManager.LoadAssets(Content);
         }
 
         protected override void Update(GameTime gameTime)

@@ -107,6 +107,7 @@ namespace Hivemind.World
                 }
             }
             AddEntity(new SmallDrone(new Vector2(10 * TileManager.TileSize, 10 * TileManager.TileSize)));
+            AddEntity(new Nommer(new Vector2(30 * TileManager.TileSize, 25 * TileManager.TileSize)));
         }
 
         public TileMap(SerializationInfo info, StreamingContext context)

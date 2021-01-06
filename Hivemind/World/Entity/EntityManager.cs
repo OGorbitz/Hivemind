@@ -20,6 +20,7 @@ namespace Hivemind.World.Entity
             Rock1.LoadAssets(content);
 
             SmallDrone.LoadAssets(content);
+            Nommer.LoadAssets(content);
             //Entity_BasicComputerClump.LoadAssets(content);
             //Entity_BasicComputer.LoadAssets(content);
             //Entity_PowerBreaker.LoadAssets(content);

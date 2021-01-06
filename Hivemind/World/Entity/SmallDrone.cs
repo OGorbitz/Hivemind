@@ -28,16 +28,16 @@ namespace Hivemind.World.Entity
             Controller.AddAnimation("IDLE", new[] { 0, 1}, 3, true);
             Controller.AddAnimation("LEFT", new[] { 2, 3, 4, 5, 6}, 5, true);
             Controller.AddAnimation("RIGHT", new[] { 7, 8, 9, 10, 11}, 5, true);
-            Controller.AddAnimation("UP", new[] { 12, 13, 14 }, 4, true);
-            Controller.AddAnimation("DOWN", new[] { 15, 16, 17 }, 4, true);
+            Controller.AddAnimation("DOWN", new[] { 12, 13, 14 }, 4, true);
+            Controller.AddAnimation("UP", new[] { 15, 16, 17 }, 4, true);
             Controller.SetAnimation("IDLE");
         }
 
         public SmallDrone(SerializationInfo info, StreamingContext context) : base(info, context)
         {
-            Controller.AddAnimation("IDLE", new[] { 0, 1 }, 3, true);
-            Controller.AddAnimation("LEFT", new[] { 2, 3, 4, 5, 6 }, 5, true);
-            Controller.AddAnimation("RIGHT", new[] { 7, 8, 9, 10, 11 }, 5, true);
+            Controller.AddAnimation("IDLE", new[] { 0, 1}, 3, true);
+            Controller.AddAnimation("LEFT", new[] { 2, 3, 4, 5, 6}, 5, true);
+            Controller.AddAnimation("RIGHT", new[] { 7, 8, 9, 10, 11}, 5, true);
             Controller.AddAnimation("UP", new[] { 12, 13, 14 }, 4, true);
             Controller.AddAnimation("DOWN", new[] { 15, 16, 17 }, 4, true);
             Controller.SetAnimation("IDLE");
@@ -60,7 +60,7 @@ namespace Hivemind.World.Entity
             {
                 if (wait)
                 {
-                    NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 4000 + 4000));
+                    NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 4000 + 2000));
                     wait = false;
                     double rand = Helper.Random() * 2 * Math.PI;
                     Vel = new Vector2((float)Math.Cos(rand), (float)Math.Sin(rand));
@@ -68,7 +68,7 @@ namespace Hivemind.World.Entity
                 }
                 else
                 {
-                    NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 4000 + 4000));
+                    NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 2000 + 1000));
                     wait = true;
                     Vel = Vector2.Zero;
                 }
@@ -80,7 +80,7 @@ namespace Hivemind.World.Entity
             v.Normalize();
             double angle = Math.Atan2(v.X, - v.Y);
             if (angle < -(3f / 4f) * Math.PI || angle > (3f / 4f) * Math.PI)
-                Controller.SetAnimation("UP");
+                Controller.SetAnimation("DOWN");
             if (angle >= (-3f / 4f) * Math.PI && angle < (-1f / 4f) * Math.PI)
                 Controller.SetAnimation("LEFT");
             if (angle >= (-1f / 4f) * Math.PI && angle < (1f / 4f) * Math.PI)

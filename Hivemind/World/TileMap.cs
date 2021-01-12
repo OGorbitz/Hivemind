@@ -43,6 +43,7 @@ namespace Hivemind.World
         private BaseTile[,,] Tiles;
         private TileEntity[,] TileEntities;
         private Dictionary<int, BaseEntity> Entities;
+        private SpacialHash<BaseEntity> EntityHash;
 
         public Vector2 BufferPosition = Vector2.Zero, BufferOffset = Vector2.Zero, BufferSize = Vector2.Zero;
         public bool Updated, Rendered;
@@ -56,6 +57,7 @@ namespace Hivemind.World
             Cam = new Camera(this);
             Generator = new WorldGenerator(69l, this);
             Entities = new Dictionary<int, BaseEntity>();
+            EntityHash = new SpacialHash<BaseEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
             TileEntities = new TileEntity[s, s];
 
             FloorBuffer = null;
@@ -91,7 +93,7 @@ namespace Hivemind.World
                         var d = Generator.GetNoise1(pos);
                         if (d > Generator.BushOffset && d < Generator.BushOffset + Generator.BushChance)
                         {
-                            //SetTileEntity(pos, new Bush1(pos));
+                            SetTileEntity(pos, new Bush1(pos));
                         }
                     }
                     if(t < 0.25)
@@ -99,8 +101,8 @@ namespace Hivemind.World
                         var d = Generator.GetNoise2(pos);
                         if (d > Generator.RockOffset && d < Generator.RockOffset + Generator.RockChance)
                         {
-                            //if (GetTileEntity(pos) == null)
-                                //SetTileEntity(pos, new Rock1(pos));
+                            if (GetTileEntity(pos) == null)
+                                SetTileEntity(pos, new Rock1(pos));
                         }
                     }
 
@@ -225,12 +227,18 @@ namespace Hivemind.World
             return null;
         }
 
+        public List<BaseEntity> GetEntities(Rectangle region)
+        {
+            return EntityHash.GetMembers(region);
+        }
+
         public void AddEntity(BaseEntity entity)
         {
             if (!Entities.ContainsKey(entity.ID))
             {
                 Entities.Add(entity.ID, entity);
                 entity.Parent = this;
+                entity.Cell = EntityHash.AddMember(entity.Pos, entity);
             }
         }
 
@@ -245,6 +253,43 @@ namespace Hivemind.World
             if (InBounds(pos))
                 return TileEntities[(int)pos.X, (int)pos.Y];
             return null;
+        }
+
+        public List<TileEntity> GetTileEntities(Rectangle region)
+        {
+            Vector2 start = new Vector2(region.Left, region.Top);
+            Vector2 end = new Vector2(region.Right, region.Bottom);
+
+            if (start.X < 0)
+                start.X = 0;
+            if (end.X < 0)
+                end.X = 0;
+            if (start.X > Size)
+                start.X = Size;
+            if (end.X > Size)
+                end.X = Size;
+            if (start.Y < 0)
+                start.Y = 0;
+            if (end.Y < 0)
+                end.Y = 0;
+            if (end.Y > Size)
+                end.Y = Size;
+            if (start.Y > Size)
+                start.Y = Size;
+
+            List<TileEntity> Fetched = new List<TileEntity>();
+
+            for (int x = (int)start.X; x < end.X; x++)
+            {
+                for (int y = (int)start.Y; y < end.Y; y++)
+                {
+                    TileEntity te = GetTileEntity(new Vector2(x, y));
+                    if (te != null)
+                        Fetched.Add(te);
+                }
+            }
+
+            return Fetched;
         }
 
         public void SetTileEntity(Vector2 pos, TileEntity entity)

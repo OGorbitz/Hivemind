@@ -21,6 +21,7 @@ namespace Hivemind.World.Entity
         public int ID;
 
         public TileMap Parent;
+        public HashCell<BaseEntity> Cell;
         public SpriteController Controller;
 
         public Vector2 Pos;
@@ -46,7 +47,19 @@ namespace Hivemind.World.Entity
 
         public virtual void Update(GameTime gameTime)
         {
+            if (!IsTileEntity)
+            {
+                if (Cell != null)
+                    if (!(Pos.X > Cell.Position.X && Pos.X < Cell.Position.X + Cell.Size.X &&
+                            Pos.Y > Cell.Position.Y && Pos.Y < Cell.Position.Y + Cell.Size.Y))
+                    {
 
+                        Cell.RemoveMember(this);
+                        Cell = Cell.Parent.AddMember(Pos, this);
+                    }
+                else
+                        Cell = Cell.Parent.AddMember(Pos, this);
+            }
         }
 
         public virtual void Destroy()

@@ -53,12 +53,12 @@ namespace Hivemind.World.Entity
                     if (!(Pos.X > Cell.Position.X && Pos.X < Cell.Position.X + Cell.Size.X &&
                             Pos.Y > Cell.Position.Y && Pos.Y < Cell.Position.Y + Cell.Size.Y))
                     {
-
                         Cell.RemoveMember(this);
-                        Cell = Cell.Parent.AddMember(Pos, this);
+                        Cell = null;
                     }
-                else
-                        Cell = Cell.Parent.AddMember(Pos, this);
+                if(Cell == null)
+                    if(Pos.X >= 0 && Pos.X < Parent.Size * TileManager.TileSize && Pos.Y >= 0 && Pos.Y < Parent.Size * TileManager.TileSize)
+                        Parent.AddEntity(this);
             }
         }
 

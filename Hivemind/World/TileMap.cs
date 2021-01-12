@@ -577,33 +577,56 @@ namespace Hivemind.World
             //TODO: Render entities
             Rendered = !Rendered;
 
+            var b = Cam.GetScaledBounds();
+            Vector2 p1 = GetTileCoords(new Vector2(b.Left, b.Top));
+            Vector2 p2 = GetTileCoords(new Vector2(b.Right, b.Bottom)) + new Vector2(2);
+
+            if (p1.X < 0)
+                p1.X = 0;
+            if (p1.X >= Size)
+                p1.X = Size;
+            if (p1.Y < 0)
+                p1.Y = 0;
+            if (p1.Y >= Size)
+                p1.Y = Size;
+            if (p2.X < 0)
+                p2.X = 0;
+            if (p2.X >= Size)
+                p2.X = Size;
+            if (p2.Y < 0)
+                p2.Y = 0;
+            if (p2.Y >= Size)
+                p2.Y = Size;
+
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
 
-            foreach (var e in TileEntities)
-                if (e != null)
-                    if (e.Rendered == null || e.Rendered == Rendered)
-                    {
-                        e.Rendered = !Rendered;
-                        e.Draw(spriteBatch, gameTime);
-                    }
+            for (int x = (int)p1.X; x < p2.X; x++)
+            {
+                for (int y = (int)p1.Y; y < p2.Y; y++)
+                {
+
+
+                    TileEntity e = TileEntities[x, y];
+                    if (e != null)
+                        if (e.Rendered == null || e.Rendered == Rendered)
+                        {
+                            e.Rendered = !Rendered;
+                            e.Draw(spriteBatch, gameTime);
+                        }
+                }
+            }
+
 
             foreach (KeyValuePair<int, BaseEntity> e in Entities)
             {
                 e.Value.Draw(spriteBatch, gameTime);
             }
 
-            spriteBatch.End();
-
             //TODO: Render walls
 
-            var b = Cam.GetScaledBounds();
-            Vector2 p1 = GetTileCoords(new Vector2(b.Left, b.Top)) - new Vector2(1);
-            Vector2 p2 = GetTileCoords(new Vector2(b.Right, b.Bottom)) + new Vector2(1);
-
-            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            for(int x = 0; x < Size; x++)
+            for (int x = (int)p1.X; x < p2.X; x++)
             {
-                for(int y = 0; y < Size; y++)
+                for (int y = (int)p1.Y; y < p2.Y; y++)
                 {
                     BaseTile t = GetTile(new Vector2(x, y), Layer.WALL);
                     if(t != null)

@@ -70,9 +70,9 @@ namespace Hivemind.World.Entity
                         NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 2000 + 1000));
                     if (gameTime.TotalGameTime > NextAction)
                     {
-                        Vector2 goal = Vector2.Zero;
-
                         Vector2 tpos = new Vector2((int)Math.Floor(Pos.X / TileManager.TileSize), (int)Math.Floor(Pos.Y / TileManager.TileSize));
+
+                        Vector2 goal = tpos + new Vector2((int)(Helper.Random() * 10 - 5), (int)(Helper.Random() * 10 - 5));
 
                         List<TileEntity> returned = Parent.GetTileEntities(new Rectangle((int)tpos.X - 4, (int)tpos.Y - 4, 8, 8));
 
@@ -102,7 +102,6 @@ namespace Hivemind.World.Entity
                                 }
 
                                 goal = returned[smallestindex].Pos;
-
                             }
                         }
 
@@ -131,7 +130,7 @@ namespace Hivemind.World.Entity
                         DesiredVel *= USpeed;
 
                         //Check if within a certain distance of next node
-                        if (dist.Length() < USpeed / 2)
+                        if (dist.Length() < USpeed / 4)
                         {
                             if (CurrentPathNode == 0)
                             {
@@ -148,6 +147,13 @@ namespace Hivemind.World.Entity
                         //Shift velocity towards desired velocity
                         Vel = (Vel * 4 + DesiredVel) / 5;
                         Pos += Vel * (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
+
+                        if (Vel.Y > 0)
+                            Controller.SetAnimation("DOWN");
+                        if (Vel.Y < 0)
+                            Controller.SetAnimation("UP");
+                        if (Vel.Y == 0)
+                            Controller.SetAnimation("IDLE");
                     }
                     else
                     {
@@ -171,13 +177,6 @@ namespace Hivemind.World.Entity
                     }
                     break;
             }
-
-            if (Vel.Y > 0)
-                Controller.SetAnimation("DOWN");
-            if (Vel.Y < 0)
-                Controller.SetAnimation("UP");
-            if (Vel.Y == 0)
-                Controller.SetAnimation("IDLE");
 
             base.Update(gameTime);
         }

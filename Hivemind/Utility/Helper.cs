@@ -8,11 +8,11 @@ namespace Hivemind.Utility
     {
         public static Random Rand;
 
-        public static double Random()
+        public static float Random()
         {
             if (Rand == null)
                 Rand = new Random((int)Hivemind.CurrentGameTime.TotalGameTime.TotalMilliseconds);
-            return Rand.NextDouble();
+            return (float)Rand.NextDouble();
         }
     }
 }

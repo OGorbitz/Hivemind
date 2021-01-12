@@ -10,10 +10,7 @@ namespace Hivemind.World.Entity
     [Serializable]
     public class TileEntity : BaseEntity
     {
-        public const bool UIsTileEntity = true;
         public readonly Point USize = new Point(1, 1);
-
-        public override bool IsTileEntity => UIsTileEntity;
         public virtual Point Size => USize;
 
         public bool Updated = false, Rendered = false;
@@ -28,7 +25,7 @@ namespace Hivemind.World.Entity
 
         public new virtual void Update(GameTime gameTime)
         {
-            //Do nothing currently, overrides the update from baseentity
+            base.Update(gameTime);
         }
 
         public override void Draw(SpriteBatch spriteBatch, GameTime gameTime)

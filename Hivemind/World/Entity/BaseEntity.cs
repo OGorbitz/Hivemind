@@ -13,22 +13,16 @@ namespace Hivemind.World.Entity
     {
         //Entity type specific variables
         public const string UType = "BaseEntity";
-        public const bool UIsTileEntity = false;
         
         public virtual string Type => UType;
-        public virtual bool IsTileEntity => UIsTileEntity;
-
-        public int ID;
 
         public TileMap Parent;
-        public HashCell<BaseEntity> Cell;
         public SpriteController Controller;
 
         public Vector2 Pos;
 
         public BaseEntity(Vector2 pos)
         {
-            ID = EntityManager.GetID();
             Pos = pos;
             Controller = new SpriteController();
         }
@@ -36,35 +30,19 @@ namespace Hivemind.World.Entity
         public BaseEntity(SerializationInfo info, StreamingContext context)
         {
             Pos = ((V2S)info.GetValue("Pos", typeof(V2S))).ToVector2();
-            ID = info.GetInt32("ID");
         }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("Pos", new V2S(Pos));
-            info.AddValue("ID", ID);
         }
 
         public virtual void Update(GameTime gameTime)
         {
-            if (!IsTileEntity)
-            {
-                if (Cell != null)
-                    if (!(Pos.X > Cell.Position.X && Pos.X < Cell.Position.X + Cell.Size.X &&
-                            Pos.Y > Cell.Position.Y && Pos.Y < Cell.Position.Y + Cell.Size.Y))
-                    {
-                        Cell.RemoveMember(this);
-                        Cell = null;
-                    }
-                if(Cell == null)
-                    if(Pos.X >= 0 && Pos.X < Parent.Size * TileManager.TileSize && Pos.Y >= 0 && Pos.Y < Parent.Size * TileManager.TileSize)
-                        Parent.AddEntity(this);
-            }
         }
 
         public virtual void Destroy()
         {
-            Parent.RemoveEntity(this);
 
             GC.SuppressFinalize(this);
         }

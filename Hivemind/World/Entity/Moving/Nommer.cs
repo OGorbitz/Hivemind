@@ -12,7 +12,7 @@ namespace Hivemind.World.Entity
     public enum NommerState { IDLE, MOVING, ATTACKING }
 
     [Serializable]
-    public class Nommer : BaseEntity
+    public class Nommer : MovingEntity
     {
         public const string UType = "Nommer";
         public const int USpeed = 50;

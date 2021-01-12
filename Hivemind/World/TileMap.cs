@@ -42,8 +42,8 @@ namespace Hivemind.World
         public int Size;
         private BaseTile[,,] Tiles;
         private TileEntity[,] TileEntities;
-        private Dictionary<int, BaseEntity> Entities;
-        private SpacialHash<BaseEntity> EntityHash;
+        private Dictionary<int, MovingEntity> Entities;
+        private SpacialHash<MovingEntity> EntityHash;
 
         public Vector2 BufferPosition = Vector2.Zero, BufferOffset = Vector2.Zero, BufferSize = Vector2.Zero;
         public bool Updated, Rendered;
@@ -56,8 +56,8 @@ namespace Hivemind.World
             Tiles = new BaseTile[s, s, (int) Layer.LENGTH];
             Cam = new Camera(this);
             Generator = new WorldGenerator(69l, this);
-            Entities = new Dictionary<int, BaseEntity>();
-            EntityHash = new SpacialHash<BaseEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
+            Entities = new Dictionary<int, MovingEntity>();
+            EntityHash = new SpacialHash<MovingEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
             TileEntities = new TileEntity[s, s];
 
             FloorBuffer = null;
@@ -220,19 +220,19 @@ namespace Hivemind.World
             }
         }
 
-        public BaseEntity GetEntity(int id)
+        public MovingEntity GetEntity(int id)
         {
             if (Entities.ContainsKey(id))
                 return Entities[id];
             return null;
         }
 
-        public List<BaseEntity> GetEntities(Rectangle region)
+        public List<MovingEntity> GetEntities(Rectangle region)
         {
             return EntityHash.GetMembers(region);
         }
 
-        public void AddEntity(BaseEntity entity)
+        public void AddEntity(MovingEntity entity)
         {
             if (!Entities.ContainsKey(entity.ID))
             {
@@ -242,7 +242,7 @@ namespace Hivemind.World
             }
         }
 
-        public void RemoveEntity(BaseEntity entity)
+        public void RemoveEntity(MovingEntity entity)
         {
             if (Entities.ContainsKey(entity.ID))
                 Entities.Remove(entity.ID);
@@ -361,7 +361,7 @@ namespace Hivemind.World
         {
             Updated = !Updated;
 
-            foreach (KeyValuePair<int, BaseEntity> e in Entities) { 
+            foreach (KeyValuePair<int, MovingEntity> e in Entities) { 
                 e.Value.Update(gameTime);
             }
 
@@ -617,7 +617,7 @@ namespace Hivemind.World
             }
 
 
-            foreach (KeyValuePair<int, BaseEntity> e in Entities)
+            foreach (KeyValuePair<int, MovingEntity> e in Entities)
             {
                 e.Value.Draw(spriteBatch, gameTime);
             }

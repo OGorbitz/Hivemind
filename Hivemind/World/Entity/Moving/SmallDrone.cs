@@ -10,7 +10,7 @@ using System.Text;
 namespace Hivemind.World.Entity
 {
     [Serializable]
-    public class SmallDrone : BaseEntity
+    public class SmallDrone : MovingEntity
     {
         public const string UType = "SmallDrone";
         public const int USpeed = 40;

@@ -21,13 +21,13 @@ namespace Hivemind
 
         public Hivemind()
         {
-            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
-
             _graphics = new GraphicsDeviceManager(this);
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
             _graphics.ApplyChanges();
 
-            _graphics.IsFullScreen = false;
+            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
+
+            _graphics.IsFullScreen = true;
             _graphics.PreferredBackBufferWidth = r.Width;
             _graphics.PreferredBackBufferHeight = r.Height;
             _graphics.ApplyChanges();

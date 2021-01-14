@@ -1,8 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Hivemind.World.Entity
 {
@@ -22,18 +20,21 @@ namespace Hivemind.World.Entity
             {
                 for (int y = 0; y < hashSize.Y; y++)
                 {
-                    Cells[x, y] = new HashCell<T>(this);
+                    var cell = new HashCell<T>(this, new Vector2(x, y));
+                    Cells[x, y] = cell;
                 }
             }
         }
 
         public HashCell<T> AddMember(Vector2 position, T member)
         {
-            Vector2 cpos = new Vector2((int)Math.Floor(position.X / CellSize.X), (int)Math.Floor(position.Y / CellSize.Y));
+            Point cpos = new Point((int)Math.Floor(position.X / CellSize.X), (int)Math.Floor(position.Y / CellSize.Y));
 
             if (cpos.X < Cells.GetLength(0) && cpos.Y < Cells.GetLength(1) && cpos.X >= 0 && cpos.Y >= 0)
             {
-                return Cells[(int)cpos.X, (int)cpos.Y].AddMember(member);
+                HashCell<T> cell = Cells[cpos.X, cpos.Y];
+                cell.AddMember(member);
+                return cell;
             }
             return null;
         }
@@ -62,9 +63,9 @@ namespace Hivemind.World.Entity
 
             List<T> Fetched = new List<T>();
 
-            for (int x = (int)start.X; x < end.X; x++)
+            for (int x = (int)start.X; x <= end.X; x++)
             {
-                for (int y = (int)start.Y; y < end.Y; y++)
+                for (int y = (int)start.Y; y <= end.Y; y++)
                 {
                     Fetched.AddRange(Cells[x, y].Members);
                 }
@@ -79,23 +80,24 @@ namespace Hivemind.World.Entity
         public SpacialHash<T> Parent;
         public List<T> Members;
 
+        public Vector2 CPos;
         public Vector2 Position;
         public Vector2 Size => Parent.CellSize;
 
-        public HashCell(SpacialHash<T> parent)
+        public HashCell(SpacialHash<T> parent, Vector2 cpos)
         {
             Members = new List<T>();
             Parent = parent;
+            CPos = cpos;
+            Position = CPos * Parent.CellSize;
         }
 
-        public HashCell<T> AddMember(T member)
+        public void AddMember(T member)
         {
             if (!Members.Contains(member))
             {
                 Members.Add(member);
-                return this;
             }
-            return null;
         }
 
         public void RemoveMember(T member)

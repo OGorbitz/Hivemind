@@ -15,10 +15,13 @@ namespace Hivemind.World.Entity
     public class Nommer : MovingEntity
     {
         public const string UType = "Nommer";
+        public readonly Point USize = new Point(48, 48);
+        public override Point Size => USize;
+        public override string Type => UType;
+
         public const int USpeed = 50;
         public static Texture2D UIcon;
-
-        public override string Type => UType;
+        public static Texture2D pixel;
 
         public Vector2 Vel = Vector2.Zero, DesiredVel = Vector2.Zero;
         public NommerState State = NommerState.IDLE, NextState = NommerState.IDLE;
@@ -70,7 +73,7 @@ namespace Hivemind.World.Entity
                         NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 2000 + 1000));
                     if (gameTime.TotalGameTime > NextAction)
                     {
-                        Vector2 tpos = new Vector2((int)Math.Floor(Pos.X / TileManager.TileSize), (int)Math.Floor(Pos.Y / TileManager.TileSize));
+                        Vector2 tpos = TileMap.GetTileCoords(Pos);
 
                         Vector2 goal = tpos + new Vector2((int)(Helper.Random() * 10 - 5), (int)(Helper.Random() * 10 - 5));
 
@@ -105,7 +108,7 @@ namespace Hivemind.World.Entity
                             }
                         }
 
-                        Pathfind = new Pathfinder(new Vector2((int)Pos.X / TileManager.TileSize, (int)Pos.Y / TileManager.TileSize), goal, 1000);
+                        Pathfind = new Pathfinder(TileMap.GetTileCoords(Pos), goal, 1000);
 
                         State = NommerState.MOVING;
                         NextState = NommerState.ATTACKING;
@@ -115,7 +118,7 @@ namespace Hivemind.World.Entity
 
                     break;
                 case NommerState.ATTACKING:
-                    Parent.RemoveTileEntity(Target);
+                    Parent.GetTileEntity(Target).Destroy();
                     State = NommerState.IDLE;
                     break;
                 case NommerState.MOVING:
@@ -179,6 +182,26 @@ namespace Hivemind.World.Entity
             }
 
             base.Update(gameTime);
+        }
+
+        public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
+        {
+            if(pixel == null)
+            {
+                pixel = new Texture2D(graphicsDevice, 1, 1);
+                pixel.SetData(new[] { Color.White });
+            }
+
+            if(State == NommerState.MOVING && Pathfind.Finished && Pathfind.Solution)
+            {
+                for (int i = CurrentPathNode - 1; i >= 0; i--)
+                {
+                    Helper.DrawLine(spriteBatch, pixel, Pathfind.Path[i].Pos * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pathfind.Path[i + 1].Pos * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Color.White);
+                }
+                Helper.DrawLine(spriteBatch, pixel, Pathfind.Path[CurrentPathNode].Pos * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pos, Color.White);
+            }
+
+            base.DrawSelected(spriteBatch, graphicsDevice, gameTime);
         }
     }
 }

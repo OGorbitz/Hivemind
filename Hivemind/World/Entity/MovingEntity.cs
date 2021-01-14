@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -12,10 +13,13 @@ namespace Hivemind.World.Entity
         public const string UType = "MovingEntity";
         public override string Type => UType;
 
+        public readonly Point USize = new Point(TileManager.TileSize, TileManager.TileSize);
+        public virtual Point Size => USize;
+
         public HashCell<MovingEntity> Cell;
         public int ID;
 
-        public MovingEntity(Vector2 p) : base(p)
+        public MovingEntity(Vector2 pos) : base(pos)
         {
             ID = EntityManager.GetID();
         }
@@ -33,8 +37,8 @@ namespace Hivemind.World.Entity
         public override void Update(GameTime gameTime)
         {
             if (Cell != null)
-                if (!(Pos.X > Cell.Position.X && Pos.X < Cell.Position.X + Cell.Size.X &&
-                        Pos.Y > Cell.Position.Y && Pos.Y < Cell.Position.Y + Cell.Size.Y))
+                if (!(Pos.X >= Cell.Position.X && Pos.X <= Cell.Position.X + Cell.Size.X &&
+                        Pos.Y >= Cell.Position.Y && Pos.Y <= Cell.Position.Y + Cell.Size.Y))
                 {
                     Cell.RemoveMember(this);
                     Cell = null;
@@ -49,6 +53,18 @@ namespace Hivemind.World.Entity
         public virtual void Destroy()
         {
             Parent.RemoveEntity(this);
+
+            base.Destroy();
+        }
+
+        public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
+        {
+            spriteBatch.Draw(EntityManager.Selected, GetBounds(), Color.White);
+        }
+
+        public virtual Rectangle GetBounds()
+        {
+            return new Rectangle((int)(Pos.X - Size.X / 2), (int)(Pos.Y - Size.Y / 2), Size.X, Size.Y);
         }
     }
 }

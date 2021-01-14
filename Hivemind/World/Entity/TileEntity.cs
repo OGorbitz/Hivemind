@@ -44,14 +44,19 @@ namespace Hivemind.World.Entity
             for (var x = r.X; x < r.Right; x++)
                 for (var y = r.Y; y < r.Bottom; y++)
                     Parent.RemoveTileEntity(new Vector2(x, y));
+
+            base.Destroy();
         }
 
         public virtual Rectangle GetBounds()
         {
-            return new Rectangle(
-                new Point((int)Pos.X, (int)Pos.Y),
-                new Point(Size.X, Size.Y));
+            return new Rectangle((int)Pos.X, (int)Pos.Y, Size.X, Size.Y);
         }
 
+        public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
+        {
+            Rectangle r = new Rectangle((int)(Pos.X * TileManager.TileSize), (int)(Pos.Y * TileManager.TileSize), Size.X * TileManager.TileSize, Size.Y * TileManager.TileSize);
+            spriteBatch.Draw(EntityManager.Selected, r, Color.White);
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Hivemind.GUI;
 using Hivemind.World;
+using Hivemind.World.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -28,7 +29,6 @@ namespace Hivemind.Input
 
         public static bool ctrl, Editing;
         private static Vector2 mousepos, worldpos, tileclick;
-        private static readonly bool[] mouse_isdown = new bool[3];
         private static bool wireview = false;
         private static int scrollWheelValue, scrollWheelChange;
 
@@ -36,6 +36,9 @@ namespace Hivemind.Input
         //public static string SelectedTile = Wall_Cinderblock.UName;
         public static PlacingType selectedType = PlacingType.TILE;
         public static int Rotation;
+
+        private static bool DMOUSE_LEFT = false;
+        private static bool DMOUSE_RIGHT = false;
 
         private static readonly Keys KEY_UP = Keys.W;
         private static bool DKEY_UP = false;
@@ -68,7 +71,6 @@ namespace Hivemind.Input
 
             scrollWheelChange = Mouse.GetState().ScrollWheelValue - scrollWheelValue;
             scrollWheelValue = Mouse.GetState().ScrollWheelValue;
-
 
             var vel = new Vector2();
             if (Keyboard.GetState().IsKeyDown(KEY_UP)) vel.Y += -1;
@@ -131,7 +133,6 @@ namespace Hivemind.Input
             var mouse = Mouse.GetState();
             mousepos = mouse.Position.ToVector2();
 
-
             switch (GameStateManager.State())
             {
                 case GameState.MAIN_MENU:
@@ -143,6 +144,66 @@ namespace Hivemind.Input
                     WorldManager.GetActiveTileMap().Cam.Move(vel);
 
                     var tm = WorldManager.GetActiveTileMap();
+                    var worldpos = tm.Cam.Unproject(mousepos);
+                    var tilepos = TileMap.GetTileCoords(worldpos);
+
+
+                    if (NotOverHUD)
+                    {
+                        if (!DMOUSE_LEFT)
+                        {
+                            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                            {
+                                //New mouse click
+                                DMOUSE_LEFT = true;
+                                var pointed = WorldManager.GetActiveTileMap().GetEntities(new Rectangle(worldpos.ToPoint(), new Point(1, 1)));
+
+                                List<Selectable> selected = new List<Selectable>();
+                                foreach (MovingEntity e in pointed)
+                                {
+                                    if (e.GetBounds().Contains(worldpos))
+                                        selected.Add(e);
+                                }
+
+                                if (selected.Count > 0)
+                                {
+                                    if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
+                                    {
+                                        Selection.AddSelect(selected);
+                                    }
+                                    else
+                                    {
+                                        Selection.Select(selected);
+                                    }
+                                }
+                                else
+                                {
+                                    var e = WorldManager.GetActiveTileMap().GetTileEntity(tilepos);
+                                    if (e != null)
+                                    {
+                                        if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
+                                        {
+                                            Selection.AddSelect(e);
+                                        }
+                                        else
+                                        {
+                                            Selection.Select(e);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Selection.Selected.Clear();
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (Mouse.GetState().LeftButton == ButtonState.Released)
+                                DMOUSE_LEFT = false;
+                        }
+                    }
+
 
                     break;
                 case GameState.RESEARCH:

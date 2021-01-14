@@ -166,6 +166,11 @@ namespace Hivemind.Utility
                                     break;
                                 }
                             }
+
+                            if(Nodes[End].State != NodeState.OPEN)
+                            {
+                                Solution = false;
+                            }
                         }
                     }
                     CurrentCycle += 1;

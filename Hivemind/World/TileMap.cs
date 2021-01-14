@@ -1,4 +1,5 @@
-﻿using Hivemind.World.Entity;
+﻿using Hivemind.Input;
+using Hivemind.World.Entity;
 using Hivemind.World.Generator;
 using Hivemind.World.Tile;
 using Hivemind.World.Tile.Floor;
@@ -237,9 +238,9 @@ namespace Hivemind.World
             if (!Entities.ContainsKey(entity.ID))
             {
                 Entities.Add(entity.ID, entity);
-                entity.Parent = this;
-                entity.Cell = EntityHash.AddMember(entity.Pos, entity);
             }
+            entity.Parent = this;
+            entity.Cell = EntityHash.AddMember(entity.Pos, entity);
         }
 
         public void RemoveEntity(MovingEntity entity)
@@ -385,7 +386,7 @@ namespace Hivemind.World
             Rectangle cam = Cam.GetBounds();
 
             Vector2 diff = new Vector2(cam.Left, cam.Top) - (BufferPosition * TileManager.TileSize);
-            Vector2 bdiff = new Vector2((float)Math.Floor(diff.X / TileManager.TileSize), (float)Math.Floor(diff.Y / TileManager.TileSize));
+            Vector2 bdiff = GetTileCoords(diff);
 
 
             if (bdiff.X > BufferOffset.X)
@@ -637,7 +638,12 @@ namespace Hivemind.World
             }
             spriteBatch.End();
 
+            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            Selection.DrawSelectionRectangles(spriteBatch, graphicsDevice, gameTime);
+            spriteBatch.End();
+
             //TODO: Render particles
+
 
             graphicsDevice.SetRenderTarget(null);
             graphicsDevice.Clear(Color.Black);

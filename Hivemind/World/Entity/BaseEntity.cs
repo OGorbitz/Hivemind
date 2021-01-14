@@ -1,4 +1,5 @@
-﻿using Hivemind.Sprite;
+﻿using Hivemind.Input;
+using Hivemind.Sprite;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -9,7 +10,7 @@ using System.Text;
 namespace Hivemind.World.Entity
 {
     [Serializable]
-    public abstract class BaseEntity : ISerializable
+    public abstract class BaseEntity : ISerializable, Selectable
     {
         //Entity type specific variables
         public const string UType = "BaseEntity";
@@ -43,7 +44,8 @@ namespace Hivemind.World.Entity
 
         public virtual void Destroy()
         {
-
+            if (Selection.Selected.Contains(this))
+                Selection.Selected.Remove(this);
             GC.SuppressFinalize(this);
         }
 
@@ -55,6 +57,19 @@ namespace Hivemind.World.Entity
                 new Rectangle(0, 0, sprite.Width, sprite.Height),
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None,
                 layerDepth: Parent.GetLayerDepth((int) Pos.Y / TileManager.TileSize) + 0.0005f);
+        }
+
+        /// <summary>
+        /// Draws the rectangle around this object if it is selected
+        /// </summary>
+        /// <param name="spriteBatch"></param>
+        /// <param name="graphicsDevice"></param>
+        /// <param name="gameTime"></param>
+        public abstract void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime);
+
+        public void Command(Vector2 position)
+        {
+            throw new NotImplementedException();
         }
     }
 }

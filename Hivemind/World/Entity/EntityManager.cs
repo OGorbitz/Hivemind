@@ -9,11 +9,13 @@ namespace Hivemind.World.Entity
 {
     class EntityManager
     {
+        public static Texture2D Selected;
         public static Dictionary<string, Texture2D[]> sprites;
         private static int CurrentID = 0;
 
         public static void LoadAssets(ContentManager content)
         {
+            Selected = content.Load<Texture2D>("selected");
             sprites = new Dictionary<string, Texture2D[]>();
 
             Bush1.LoadAssets(content);

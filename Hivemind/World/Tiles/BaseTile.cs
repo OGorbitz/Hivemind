@@ -64,5 +64,10 @@ namespace Hivemind.World.Tile
         public virtual void Update(GameTime gameTime)
         {
         }
+
+        public virtual Rectangle Collider()
+        {
+            return new Rectangle((int)Pos.X * TileManager.TileSize, (int)Pos.Y * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);
+        }
     }
 }

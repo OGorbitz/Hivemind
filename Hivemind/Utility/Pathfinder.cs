@@ -18,7 +18,11 @@ namespace Hivemind.Utility
         public static readonly Vector2 DOWN = new Vector2(0, 1);
         public static readonly Vector2 LEFT = new Vector2(-1, 0);
         public static readonly Vector2 RIGHT = new Vector2(1, 0);
-        public static readonly Vector2[] Neighbor = { UP, DOWN, LEFT, RIGHT };
+        public static readonly Vector2 UPLEFT = new Vector2(-1, -1);
+        public static readonly Vector2 UPRIGHT = new Vector2(1, -1);
+        public static readonly Vector2 DOWNRIGHT = new Vector2(1, 1);
+        public static readonly Vector2 DOWNLEFT = new Vector2(-1, 1);
+        public static readonly Vector2[] Neighbor = { UP, DOWN, LEFT, RIGHT , UPLEFT, UPRIGHT, DOWNRIGHT, DOWNLEFT };
 
         Vector2 Start, End;
         public Dictionary<Vector2, PathNode> Nodes;
@@ -26,6 +30,7 @@ namespace Hivemind.Utility
         public bool Finished = false;
         public bool Solution = false;
         public int MaxCycles = 0, CurrentCycle = 0;
+
         public Pathfinder(Vector2 start, Vector2 end, int maxCycles)
         {
             Start = start;

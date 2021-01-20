@@ -118,7 +118,10 @@ namespace Hivemind.World.Entity
 
                     break;
                 case NommerState.ATTACKING:
-                    Parent.GetTileEntity(Target).Destroy();
+                    var e = Parent.GetTileEntity(Target);
+                    if(e != null)
+                        e.Destroy();
+
                     State = NommerState.IDLE;
                     break;
                 case NommerState.MOVING:
@@ -148,7 +151,9 @@ namespace Hivemind.World.Entity
                         }
 
                         //Shift velocity towards desired velocity
-                        Vel = (Vel * 4 + DesiredVel) / 5;
+                        float v = (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
+                        v *= 4;
+                        Vel = (Vel + DesiredVel * v) / (1 + v);
                         Pos += Vel * (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
 
                         if (Vel.Y > 0)

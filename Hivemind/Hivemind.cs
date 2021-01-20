@@ -25,9 +25,9 @@ namespace Hivemind
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
             _graphics.ApplyChanges();
 
-            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
+            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
 
-            _graphics.IsFullScreen = true;
+            _graphics.IsFullScreen = false;
             _graphics.PreferredBackBufferWidth = r.Width;
             _graphics.PreferredBackBufferHeight = r.Height;
             _graphics.ApplyChanges();

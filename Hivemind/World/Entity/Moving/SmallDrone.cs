@@ -10,13 +10,15 @@ using System.Text;
 namespace Hivemind.World.Entity
 {
     [Serializable]
-    public class SmallDrone : MovingEntity
+    public class SmallDrone : MovingEntity, IControllable
     {
         public const string UType = "SmallDrone";
-        public const int USpeed = 40;
+        public readonly Point USize = new Point(48);
+        public const int USpeed = 100;
         public static Texture2D UIcon;
 
         public override string Type => UType;
+        public override Point Size => USize;
 
         public Vector2 Vel = Vector2.Zero;
         public bool wait = false;
@@ -54,29 +56,13 @@ namespace Hivemind.World.Entity
 
         public override void Update(GameTime gameTime)
         {
-            if (NextAction == null)
-                NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 4000 + 4000));
-            if (gameTime.TotalGameTime > NextAction)
-            {
-                if (wait)
-                {
-                    NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 4000 + 2000));
-                    wait = false;
-                    double rand = Helper.Random() * 2 * Math.PI;
-                    Vel = new Vector2((float)Math.Cos(rand), (float)Math.Sin(rand));
-                    Vel *= USpeed;
-                }
-                else
-                {
-                    NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 2000 + 1000));
-                    wait = true;
-                    Vel = Vector2.Zero;
-                }
-            }
+            Vector2 CheckedVel = Vel * (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
 
-            Pos += Vel * (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
+            CheckedVel = Collision.CheckWorld(CheckedVel, GetBounds());
 
-            Vector2 v = new Vector2(Vel.X, Vel.Y);
+            Pos += CheckedVel;
+
+            Vector2 v = new Vector2(CheckedVel.X, CheckedVel.Y);
             v.Normalize();
             double angle = Math.Atan2(v.X, - v.Y);
             if (angle < -(3f / 4f) * Math.PI || angle > (3f / 4f) * Math.PI)
@@ -91,6 +77,15 @@ namespace Hivemind.World.Entity
                 Controller.SetAnimation("IDLE");
 
             base.Update(gameTime);
+        }
+
+        public void ControllerMove(Vector2 vel)
+        {
+            Vel = vel;
+            Vel *= USpeed;
+
+            Parent.Cam.Pos = Pos;
+            Parent.Cam.ApplyTransform();
         }
     }
 }

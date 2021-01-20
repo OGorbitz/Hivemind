@@ -109,7 +109,10 @@ namespace Hivemind.World
 
                 }
             }
-            AddEntity(new SmallDrone(new Vector2(10 * TileManager.TileSize, 10 * TileManager.TileSize)));
+            AddEntity(new SmallDrone(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
+            SetTile(new Wall_Cinderblock(new Vector2(10, 10)));
+            
+            
             AddEntity(new Nommer(new Vector2(30 * TileManager.TileSize, 25 * TileManager.TileSize)));
         }
 
@@ -382,71 +385,81 @@ namespace Hivemind.World
 
         public void DrawFloor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
-            Rectangle toRender = new Rectangle(0, 0, 0, 0);
             Rectangle cam = Cam.GetBounds();
 
-            Vector2 diff = new Vector2(cam.Left, cam.Top) - (BufferPosition * TileManager.TileSize);
-            Vector2 bdiff = GetTileCoords(diff);
+            bool run = true;
 
+            while(run)
+            {
+                run = false;
 
-            if (bdiff.X > BufferOffset.X)
-            {
-                BufferOffset.X += 1;
-                float x = BufferPosition.X + BufferOffset.X + BufferSize.X - 1;
-                for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
+                Vector2 diff = new Vector2(cam.Left, cam.Top) - (BufferPosition * TileManager.TileSize);
+                Vector2 bdiff = GetTileCoords(diff);
+
+                if (bdiff.X > BufferOffset.X)
                 {
-                    RenderFloor(new Vector2(x, y));
-                    Console.WriteLine("Set from " + new Vector2(BufferPosition.X + BufferOffset.X + BufferSize.X, BufferPosition.Y + BufferOffset.Y).ToString() + " to " + new Vector2(BufferPosition.X + BufferOffset.X + BufferSize.X, BufferPosition.Y + BufferOffset.Y + BufferSize.Y).ToString());
+                    run = true;
+                    BufferOffset.X += 1;
+                    float x = BufferPosition.X + BufferOffset.X + BufferSize.X - 1;
+                    for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
+                    {
+                        RenderFloor(new Vector2(x, y));
+                        Console.WriteLine("Set from " + new Vector2(BufferPosition.X + BufferOffset.X + BufferSize.X, BufferPosition.Y + BufferOffset.Y).ToString() + " to " + new Vector2(BufferPosition.X + BufferOffset.X + BufferSize.X, BufferPosition.Y + BufferOffset.Y + BufferSize.Y).ToString());
+                    }
                 }
-            }
-            if (bdiff.X < BufferOffset.X)
-            {
-                BufferOffset.X -= 1;
-                float x = BufferPosition.X + BufferOffset.X;
-                for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
+                if (bdiff.X < BufferOffset.X)
                 {
-                    RenderFloor(new Vector2(x, y));
+                    run = true;
+                    BufferOffset.X -= 1;
+                    float x = BufferPosition.X + BufferOffset.X;
+                    for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
+                    {
+                        RenderFloor(new Vector2(x, y));
+                    }
                 }
-            }
-            if (bdiff.Y > BufferOffset.Y)
-            {
-                BufferOffset.Y += 1;
-                float y = BufferPosition.Y + BufferOffset.Y + BufferSize.Y - 1;
-                for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
+                if (bdiff.Y > BufferOffset.Y)
                 {
-                    RenderFloor(new Vector2(x, y));
+                    run = true;
+                    BufferOffset.Y += 1;
+                    float y = BufferPosition.Y + BufferOffset.Y + BufferSize.Y - 1;
+                    for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
+                    {
+                        RenderFloor(new Vector2(x, y));
+                    }
                 }
-            }
-            if (bdiff.Y < BufferOffset.Y)
-            {
-                BufferOffset.Y -= 1;
-                float y = BufferPosition.Y + BufferOffset.Y;
-                for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
+                if (bdiff.Y < BufferOffset.Y)
                 {
-                    RenderFloor(new Vector2(x, y));
+                    run = true;
+                    BufferOffset.Y -= 1;
+                    float y = BufferPosition.Y + BufferOffset.Y;
+                    for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
+                    {
+                        RenderFloor(new Vector2(x, y));
+                    }
+                }
+
+                if (BufferOffset.X >= BufferSize.X)
+                {
+                    BufferOffset.X -= BufferSize.X;
+                    BufferPosition.X += BufferSize.X;
+                }
+                if (BufferOffset.X < 0)
+                {
+                    BufferOffset.X += BufferSize.X;
+                    BufferPosition.X -= BufferSize.X;
+                }
+                if (BufferOffset.Y >= BufferSize.Y)
+                {
+                    BufferOffset.Y -= BufferSize.Y;
+                    BufferPosition.Y += BufferSize.Y;
+                }
+                if (BufferOffset.Y < 0)
+                {
+                    BufferOffset.Y += BufferSize.Y;
+                    BufferPosition.Y -= BufferSize.Y;
                 }
             }
 
-            if (BufferOffset.X >= BufferSize.X)
-            {
-                BufferOffset.X -= BufferSize.X;
-                BufferPosition.X += BufferSize.X;
-            }
-            if (BufferOffset.X < 0)
-            {
-                BufferOffset.X += BufferSize.X;
-                BufferPosition.X -= BufferSize.X;
-            }
-            if (BufferOffset.Y >= BufferSize.Y)
-            {
-                BufferOffset.Y -= BufferSize.Y;
-                BufferPosition.Y += BufferSize.Y;
-            }
-            if (BufferOffset.Y < 0)
-            {
-                BufferOffset.Y += BufferSize.Y;
-                BufferPosition.Y -= BufferSize.Y;
-            }
 
             for (int l = 0; l < (int)FloorPriority.COUNT; l++)
             {

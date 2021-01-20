@@ -141,7 +141,7 @@ namespace Hivemind.Input
                 case GameState.TILEMAP:
                     if (NotOverHUD)
                         WorldManager.GetActiveTileMap().Cam.UpdateScale();
-                    WorldManager.GetActiveTileMap().Cam.Move(vel);
+
 
                     var tm = WorldManager.GetActiveTileMap();
                     var worldpos = tm.Cam.Unproject(mousepos);
@@ -204,6 +204,28 @@ namespace Hivemind.Input
                         }
                     }
 
+                    if(Selection.Selected.Count == 1)
+                    {
+                        Type[] interfaces = Selection.Selected[0].GetType().GetInterfaces();
+                        bool Controllable = false;
+                        for(int i = 0; i < interfaces.Length; i++)
+                        {
+                            if (interfaces[i] == typeof(IControllable))
+                            {
+                                Controllable = true;
+                            }
+                        }
+                        if (Controllable)
+                        {
+                            ((IControllable)Selection.Selected[0]).ControllerMove(vel);
+                        }
+                        else
+                        {
+                            WorldManager.GetActiveTileMap().Cam.Move(vel);
+                        }
+                    }
+                    else
+                        WorldManager.GetActiveTileMap().Cam.Move(vel);
 
                     break;
                 case GameState.RESEARCH:

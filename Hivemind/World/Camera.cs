@@ -82,8 +82,25 @@ namespace Hivemind
                 Pos.X -= Sponginess * ((r.Right - (Parent.Size * TileManager.TileSize - TileManager.TileSize * 2)) / 2);
             if (r.Bottom > Parent.Size * TileManager.TileSize)
                 Pos.Y = Parent.Size * TileManager.TileSize - Hivemind.ScreenHeight / Scale;
-            else if(r.Bottom > Parent.Size * TileManager.TileSize - TileManager.TileSize * 2)
+            else if (r.Bottom > Parent.Size * TileManager.TileSize - TileManager.TileSize * 2)
                 Pos.Y -= Sponginess * ((r.Bottom - (Parent.Size * TileManager.TileSize - TileManager.TileSize * 2)) / 2);
+            
+            ApplyTransform();
+        }
+
+        public void MoveTo(Vector2 pos)
+        {
+            Pos = pos;
+
+            Rectangle r = GetScaledBounds();
+            if (r.Left < 0)
+                Pos.X = Hivemind.ScreenWidth / Scale / 2;
+            if (r.Top < 0)
+                Pos.Y = Hivemind.ScreenHeight / Scale / 2;
+            if (r.Right > Parent.Size * TileManager.TileSize)
+                Pos.X = Parent.Size * TileManager.TileSize - Hivemind.ScreenWidth / Scale;
+            if (r.Bottom > Parent.Size * TileManager.TileSize)
+                Pos.Y = Parent.Size * TileManager.TileSize - Hivemind.ScreenHeight / Scale;
 
             ApplyTransform();
         }

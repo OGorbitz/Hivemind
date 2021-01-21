@@ -13,7 +13,7 @@ namespace Hivemind.World.Entity
     public class SmallDrone : MovingEntity, IControllable
     {
         public const string UType = "SmallDrone";
-        public readonly Point USize = new Point(48);
+        public readonly Point USize = new Point(32);
         public const int USpeed = 100;
         public static Texture2D UIcon;
 
@@ -57,10 +57,10 @@ namespace Hivemind.World.Entity
         public override void Update(GameTime gameTime)
         {
             Vector2 CheckedVel = Vel * (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
-
             CheckedVel = Collision.CheckWorld(CheckedVel, GetBounds());
-
             Pos += CheckedVel;
+
+            Vel = Vector2.Zero;
 
             Vector2 v = new Vector2(CheckedVel.X, CheckedVel.Y);
             v.Normalize();
@@ -73,7 +73,7 @@ namespace Hivemind.World.Entity
                 Controller.SetAnimation("UP");
             if (angle >= (1f / 4f) * Math.PI && angle < (3f / 4f) * Math.PI)
                 Controller.SetAnimation("RIGHT");
-            if (Vel == Vector2.Zero)
+            if (CheckedVel == Vector2.Zero)
                 Controller.SetAnimation("IDLE");
 
             base.Update(gameTime);
@@ -83,9 +83,6 @@ namespace Hivemind.World.Entity
         {
             Vel = vel;
             Vel *= USpeed;
-
-            Parent.Cam.Pos = Pos;
-            Parent.Cam.ApplyTransform();
         }
     }
 }

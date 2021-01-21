@@ -20,21 +20,15 @@ namespace Hivemind.Utility
 
             Vector2 calculated_move = move;
 
-            /*for (int x = (int)Start.X; x < End.X; x++)
+            for (int x = (int)Start.X; x <= End.X; x++)
             {
-                for(int y = (int)Start.Y; y < End.Y; y++)
+                for (int y = (int)Start.Y; y <= End.Y; y++)
                 {
                     BaseTile tile = WorldManager.GetActiveTileMap().GetTile(new Vector2(x, y), Layer.WALL);
                     if(tile != null)
-                    {
                         calculated_move = Check(calculated_move, moving, tile.Collider());
-                    }
                 }
-            }*/
-
-            BaseTile tile = WorldManager.GetActiveTileMap().GetTile(new Vector2(10, 10), Layer.WALL);
-
-            calculated_move = Check(calculated_move, moving, tile.Collider());
+            }
 
             return calculated_move;
         }
@@ -106,9 +100,9 @@ namespace Hivemind.Utility
             else if(TNear.X < TNear.Y)
                 normal = new Vector2(0, 1);
 
-            Vector2 diff = move * normal * (1 - THitNear);
+            Vector2 diff = -move * normal * (1 - THitNear);
 
-            return move - diff;
+            return move + diff;
         }
 
     }

@@ -5,12 +5,15 @@ using Hivemind.World.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Windows.Forms;
 
 namespace Hivemind
 {
     public class Hivemind : Game
     {
-        private GraphicsDeviceManager _graphics;
+        private static Hivemind _instance;
+
+        private static GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
         private Texture2D _icon, _computerLines;
@@ -21,6 +24,8 @@ namespace Hivemind
 
         public Hivemind()
         {
+            _instance = this;
+
             _graphics = new GraphicsDeviceManager(this);
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
             _graphics.ApplyChanges();
@@ -44,6 +49,16 @@ namespace Hivemind
             Content.RootDirectory = "Content";
 
             Window.Title = "Hivemind";
+        }
+
+        public static void ToggleFullscreen()
+        {
+            Point p = _instance.Window.Position;
+            Screen screen = System.Windows.Forms.Screen.FromPoint(new System.Drawing.Point(p.X, p.Y));
+            _graphics.PreferredBackBufferWidth = screen.Bounds.Width;
+            _graphics.PreferredBackBufferHeight = screen.Bounds.Height;
+            _graphics.ApplyChanges();
+            _graphics.ToggleFullScreen();
         }
 
         protected override void Initialize()

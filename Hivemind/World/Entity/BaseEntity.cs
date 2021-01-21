@@ -10,7 +10,7 @@ using System.Text;
 namespace Hivemind.World.Entity
 {
     [Serializable]
-    public abstract class BaseEntity : ISerializable, Selectable
+    public abstract class BaseEntity : ISerializable, ISelectable
     {
         //Entity type specific variables
         public const string UType = "BaseEntity";
@@ -21,6 +21,8 @@ namespace Hivemind.World.Entity
         public SpriteController Controller;
 
         public Vector2 Pos;
+        public bool Focused = false;
+
 
         public BaseEntity(Vector2 pos)
         {
@@ -40,6 +42,13 @@ namespace Hivemind.World.Entity
 
         public virtual void Update(GameTime gameTime)
         {
+            if (Focused)
+            {
+                Vector2 FPos = Pos;
+                FPos.Floor();
+                Parent.Cam.MoveTo(FPos);
+                Focused = false;
+            }
         }
 
         public virtual void Destroy()
@@ -70,6 +79,12 @@ namespace Hivemind.World.Entity
         public void Command(Vector2 position)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual bool SetFocused(bool focused)
+        {
+            Focused = focused;
+            return true;
         }
     }
 }

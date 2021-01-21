@@ -48,18 +48,18 @@ namespace Hivemind.World.Entity
                 start.X = 0;
             if (end.X < 0)
                 end.X = 0;
-            if (start.X > Cells.GetLength(0))
-                start.X = Cells.GetLength(0);
-            if (end.X > Cells.GetLength(0))
-                end.X = Cells.GetLength(0);
+            if (start.X >= Cells.GetLength(0))
+                start.X = Cells.GetLength(0) - 1;
+            if (end.X >= Cells.GetLength(0))
+                end.X = Cells.GetLength(0) - 1;
             if (start.Y < 0)
                 start.Y = 0;
             if (end.Y < 0)
                 end.Y = 0;
-            if (end.Y > Cells.GetLength(1))
-                end.Y = Cells.GetLength(1);
-            if (start.Y > Cells.GetLength(1))
-                start.Y = Cells.GetLength(1);
+            if (end.Y >= Cells.GetLength(1))
+                end.Y = Cells.GetLength(1) - 1;
+            if (start.Y >= Cells.GetLength(1))
+                start.Y = Cells.GetLength(1) - 1;
 
             List<T> Fetched = new List<T>();
 

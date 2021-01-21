@@ -37,6 +37,8 @@ namespace Hivemind.Input
         public static PlacingType selectedType = PlacingType.TILE;
         public static int Rotation;
 
+        private static bool FSCREEN = false;
+
         private static bool DMOUSE_LEFT = false;
         private static bool DMOUSE_RIGHT = false;
 
@@ -68,6 +70,23 @@ namespace Hivemind.Input
                 GameStateManager.Exit();
                 return;
             }
+
+            if (!FSCREEN)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter) && Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
+                {
+                    Hivemind.ToggleFullscreen();
+                    FSCREEN = true;
+                }
+            }
+            else
+            {
+                if(!(Keyboard.GetState().IsKeyDown(Keys.Enter) && Keyboard.GetState().IsKeyDown(Keys.LeftAlt)))
+                {
+                    FSCREEN = false;
+                }
+            }
+            
 
             scrollWheelChange = Mouse.GetState().ScrollWheelValue - scrollWheelValue;
             scrollWheelValue = Mouse.GetState().ScrollWheelValue;
@@ -158,7 +177,7 @@ namespace Hivemind.Input
                                 DMOUSE_LEFT = true;
                                 var pointed = WorldManager.GetActiveTileMap().GetEntities(new Rectangle(worldpos.ToPoint(), new Point(1, 1)));
 
-                                List<Selectable> selected = new List<Selectable>();
+                                List<ISelectable> selected = new List<ISelectable>();
                                 foreach (MovingEntity e in pointed)
                                 {
                                     if (e.GetBounds().Contains(worldpos))
@@ -219,12 +238,9 @@ namespace Hivemind.Input
                         {
                             ((IControllable)Selection.Selected[0]).ControllerMove(vel);
                         }
-                        else
-                        {
-                            WorldManager.GetActiveTileMap().Cam.Move(vel);
-                        }
                     }
-                    else
+
+                    if(!Selection.UpdateCam())
                         WorldManager.GetActiveTileMap().Cam.Move(vel);
 
                     break;

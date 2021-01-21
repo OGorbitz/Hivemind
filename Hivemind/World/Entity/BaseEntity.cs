@@ -42,13 +42,6 @@ namespace Hivemind.World.Entity
 
         public virtual void Update(GameTime gameTime)
         {
-            if (Focused)
-            {
-                Vector2 FPos = Pos;
-                FPos.Floor();
-                Parent.Cam.MoveTo(FPos);
-                Focused = false;
-            }
         }
 
         public virtual void Destroy()

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Hivemind.GUI;
+using Hivemind.Input;
 using Hivemind.World;
 
 namespace Hivemind
@@ -26,6 +27,7 @@ namespace Hivemind
             {
                 case GameState.MAIN_MENU:
                     GuiController.SetState(GUIState.MAIN_MENU);
+                    Selection.Selected.Clear();
                     break;
                 case GameState.TILEMAP:
                     GuiController.SetState(GUIState.HUD_TILEMAP);

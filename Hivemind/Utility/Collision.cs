@@ -93,9 +93,10 @@ namespace Hivemind.Utility
                 return move;
 
 
-            Vector2 normal = Vector2.Zero;
+            Vector2 normal = new Vector2(1, 0);
 
-            if(TNear.X > TNear.Y)
+
+            if (TNear.X > TNear.Y)
                 normal = new Vector2(1, 0);
             else if(TNear.X < TNear.Y)
                 normal = new Vector2(0, 1);

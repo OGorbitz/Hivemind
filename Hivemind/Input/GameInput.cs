@@ -183,8 +183,14 @@ namespace Hivemind.Input
                                     if (e.GetBounds().Contains(worldpos))
                                         selected.Add(e);
                                 }
-
-                                if (selected.Count > 0)
+                                if(selected.Count == 1)
+                                {
+                                    if(selected[0].GetType() == typeof(SmallDrone))
+                                    {
+                                        Selection.SelectFocus(selected[0]);
+                                    }
+                                }
+                                else if (selected.Count > 0)
                                 {
                                     if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
                                     {

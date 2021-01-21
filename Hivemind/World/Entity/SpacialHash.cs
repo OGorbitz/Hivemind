@@ -41,8 +41,8 @@ namespace Hivemind.World.Entity
 
         public List<T> GetMembers(Rectangle region)
         {
-            Vector2 start = new Vector2((int)Math.Floor(region.Left / CellSize.X), (int)Math.Floor(region.Top / CellSize.Y));
-            Vector2 end = new Vector2((int)Math.Floor(region.Right / CellSize.X), (int)Math.Floor(region.Bottom / CellSize.Y));
+            Vector2 start = new Vector2((int)Math.Floor(region.Left / CellSize.X), (int)Math.Floor(region.Top / CellSize.Y)) - new Vector2(1);
+            Vector2 end = new Vector2((int)Math.Floor(region.Right / CellSize.X), (int)Math.Floor(region.Bottom / CellSize.Y)) + new Vector2(1);
 
             if (start.X < 0)
                 start.X = 0;

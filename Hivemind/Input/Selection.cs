@@ -19,36 +19,51 @@ namespace Hivemind.Input
     {
         public static List<ISelectable> Selected = new List<ISelectable>();
         public static int SelectionIndex = 0;
+        public static bool ShouldFocus = false;
 
         public static bool UpdateCam()
         {
-            if(Selected.Count == 1)
+            if (ShouldFocus)
             {
-                return Selected[0].SetFocused(true);
+                if (Selected.Count == 1)
+                {
+                    return Selected[0].SetFocused(true);
+                }
             }
             return false;
+        }
+
+        public static void SelectFocus(ISelectable selection)
+        {
+            Selected.Clear();
+            Selected.Add(selection);
+            ShouldFocus = true;
         }
 
         public static void Select(ISelectable selection)
         {
             Selected.Clear();
             Selected.Add(selection);
+            ShouldFocus = false;
         }
 
         public static void Select(List<ISelectable> selection)
         {
             Selected.Clear();
             Selected.AddRange(selection);
+            ShouldFocus = false;
         }
 
         public static void AddSelect(ISelectable selection)
         {
             Selected.Add(selection);
+            ShouldFocus = false;
         }
 
         public static void AddSelect(List<ISelectable> selection)
         {
             Selected.AddRange(selection);
+            ShouldFocus = false;
         }
 
         public static void DrawSelectionRectangles(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)

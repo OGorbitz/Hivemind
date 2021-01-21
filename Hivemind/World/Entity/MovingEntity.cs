@@ -47,6 +47,14 @@ namespace Hivemind.World.Entity
                 if (Pos.X >= 0 && Pos.X < Parent.Size * TileManager.TileSize && Pos.Y >= 0 && Pos.Y < Parent.Size * TileManager.TileSize)
                     Parent.AddEntity(this);
 
+            if (Focused)
+            {
+                Vector2 FPos = Pos;
+                FPos.Floor();
+                Parent.Cam.MoveTo(FPos);
+                Focused = false;
+            }
+
             base.Update(gameTime);
         }
 

@@ -25,6 +25,14 @@ namespace Hivemind.World.Entity
 
         public new virtual void Update(GameTime gameTime)
         {
+            if (Focused)
+            {
+                Vector2 FPos = (Pos + new Vector2(0.5f)) * TileManager.TileSize;
+                FPos.Floor();
+                Parent.Cam.MoveTo(FPos);
+                Focused = false;
+            }
+
             base.Update(gameTime);
         }
 

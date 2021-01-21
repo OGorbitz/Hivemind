@@ -16,7 +16,7 @@ namespace Hivemind
         private static GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private Texture2D _icon, _computerLines;
+        public static Texture2D _icon, ComputerLines;
 
         public static int ScreenWidth, ScreenHeight;
 
@@ -30,7 +30,7 @@ namespace Hivemind
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
             _graphics.ApplyChanges();
 
-            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
+            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
 
             _graphics.IsFullScreen = false;
             _graphics.PreferredBackBufferWidth = r.Width;
@@ -57,6 +57,8 @@ namespace Hivemind
             Screen screen = System.Windows.Forms.Screen.FromPoint(new System.Drawing.Point(p.X, p.Y));
             _graphics.PreferredBackBufferWidth = screen.Bounds.Width;
             _graphics.PreferredBackBufferHeight = screen.Bounds.Height;
+            ScreenWidth = screen.Bounds.Width;
+            ScreenHeight = screen.Bounds.Height;
             _graphics.ApplyChanges();
             _graphics.ToggleFullScreen();
         }
@@ -77,7 +79,7 @@ namespace Hivemind
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             _icon = Content.Load<Texture2D>("cpu");
-            _computerLines = Content.Load<Texture2D>("computer_lines");
+            ComputerLines = Content.Load<Texture2D>("computer_lines");
 
             FloorMask.LoadContent(Content, GraphicsDevice);
             TextureAtlas.Init(GraphicsDevice);
@@ -116,16 +118,16 @@ namespace Hivemind
                     var ms = gameTime.TotalGameTime.Seconds * 1000 + gameTime.TotalGameTime.Milliseconds;
                     var n = (int)(ms % 3000 / 3000f * 96f);
                     _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-                    for (var x = -n; x <= GraphicsDevice.Viewport.Height; x += _computerLines.Height * 3)
-                        _spriteBatch.Draw(_computerLines,
+                    for (var x = -n; x <= GraphicsDevice.Viewport.Height; x += ComputerLines.Height * 3)
+                        _spriteBatch.Draw(ComputerLines,
                             new Rectangle(new Point(0, x),
-                                new Point(GraphicsDevice.Viewport.Width, _computerLines.Height * 3)),
+                                new Point(GraphicsDevice.Viewport.Width, ComputerLines.Height * 3)),
                             new Color(1f, 1f, 1f, 0.3f));
                     n = (int)(ms % 2000 / 2000f * 64f);
-                    for (var x = n - 64; x <= GraphicsDevice.Viewport.Height; x += _computerLines.Height * 2)
-                        _spriteBatch.Draw(_computerLines,
+                    for (var x = n - 64; x <= GraphicsDevice.Viewport.Height; x += ComputerLines.Height * 2)
+                        _spriteBatch.Draw(ComputerLines,
                             new Rectangle(new Point(0, x),
-                                new Point(GraphicsDevice.Viewport.Width, _computerLines.Height * 2)),
+                                new Point(GraphicsDevice.Viewport.Width, ComputerLines.Height * 2)),
                             new Color(1f, 1f, 1f, 0.25f));
                     _spriteBatch.End();
                     break;

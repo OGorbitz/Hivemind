@@ -14,8 +14,16 @@ using System.Text;
 
 namespace Hivemind.World
 {
+    public interface ITileMap
+    {
+        public BaseTile GetTile(Vector2 position, Layer layer);
+        public BaseFloor GetFloor(Vector2 position);
+        public void RemoveTile(Vector2 position, Layer layer);
+        public float GetLayerDepth(int y);
+    }
+
     [Serializable]
-    public class TileMap
+    public class TileMap : ITileMap
     {
         //Owned objects
         public Camera Cam;
@@ -134,7 +142,7 @@ namespace Hivemind.World
             info.AddValue("Tiles", Tiles);
         }
 
-        internal float GetLayerDepth(int y)
+        public float GetLayerDepth(int y)
         {
             return (float) y / (float) Size;
         }
@@ -579,7 +587,6 @@ namespace Hivemind.World
                     graphicsDevice.PresentationParameters.BackBufferFormat,
                     DepthFormat.Depth24);
 
-            //TODO: Render floors
             int width = 1 + (int) Math.Ceiling((float)RenderTarget.Width / (float)TileManager.TileSize);
             int height = 1 + (int)Math.Ceiling((float)RenderTarget.Height / (float)TileManager.TileSize);
 
@@ -651,8 +658,6 @@ namespace Hivemind.World
             {
                 e.Value.Draw(spriteBatch, gameTime);
             }
-
-            //TODO: Render walls
 
             for (int x = (int)p1.X; x < p2.X; x++)
             {

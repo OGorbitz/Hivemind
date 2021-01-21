@@ -11,6 +11,7 @@ namespace Hivemind.World
     class WorldManager
     {
         private static TileMap ActiveTileMap;
+        private static EditorTileMap EditorTileMap = new EditorTileMap();
 
         public static void SetActiveTileMap(TileMap tileMap)
         {
@@ -20,6 +21,11 @@ namespace Hivemind.World
         public static TileMap GetActiveTileMap()
         {
             return ActiveTileMap;
+        }
+
+        public static EditorTileMap GetEditorTileMap()
+        {
+            return EditorTileMap;
         }
 
         internal static void RenderEditor(object spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
@@ -34,8 +40,12 @@ namespace Hivemind.World
 
         internal static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
+            EditorTileMap.Render(spriteBatch, graphicsDevice, gameTime);
+            EditorTileMap.ClearTiles();
+
             if (ActiveTileMap != null)
                 ActiveTileMap.Draw(spriteBatch, graphicsDevice, gameTime);
+            EditorTileMap.Draw(spriteBatch, graphicsDevice, gameTime);
         }
 
         internal static void Update(GameTime gameTime)

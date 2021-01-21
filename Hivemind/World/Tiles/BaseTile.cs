@@ -26,21 +26,19 @@ namespace Hivemind.World.Tile
         /// <summary>
         /// True if tile render index needs to be updated
         /// </summary>
-        public bool Dirty;
+        public bool Dirty = true;
 
-        public TileMap Parent;
+        public ITileMap Parent;
 
         //Constructors and serializers
         public BaseTile(Vector2 p)
         {
             Position = p;
-            Dirty = true;
         }
 
         public BaseTile(SerializationInfo info, StreamingContext context)
         {
             Position = ((V2S)info.GetValue("Pos", typeof(V2S))).ToVector2();
-            Dirty = true;
         }
         public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
         {

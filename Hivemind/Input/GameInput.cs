@@ -4,6 +4,7 @@ using Hivemind.GUI;
 using Hivemind.World;
 using Hivemind.World.Entity;
 using Hivemind.World.Tile;
+using Hivemind.World.Tile.Floor;
 using Hivemind.World.Tile.Wall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -37,8 +38,8 @@ namespace Hivemind.Input
         private static Action CurrentAction = Action.SELECT;
         //public static string SelectedTile = Wall_Cinderblock.UName;
         public static PlacingType SelectedType = PlacingType.TILE;
-        public static Layer SelectedLayer = Layer.WALL;
-        public static Type Selected = typeof(Wall_Cinderblock);
+        public static Layer SelectedLayer = Layer.FLOOR;
+        public static Type Selected = typeof(Floor_Concrete);
         public static int Rotation;
         public static Vector2 StartBuild;
 
@@ -257,7 +258,7 @@ namespace Hivemind.Input
                                                     WorldManager.GetEditorTileMap().SetTile(
                                                         (BaseTile)Activator.CreateInstance(WorldManager
                                                             .GetActiveTileMap()
-                                                            .GetTile(new Vector2(x, y), Layer.WALL)
+                                                            .GetTile(new Vector2(x, y), SelectedLayer)
                                                             .GetType(), new Vector2(x, y)));
                                             }
                                             else
@@ -278,7 +279,7 @@ namespace Hivemind.Input
                                                     WorldManager.GetEditorTileMap().SetTile(
                                                         (BaseTile)Activator.CreateInstance(WorldManager
                                                             .GetActiveTileMap()
-                                                            .GetTile(new Vector2(x, y), Layer.WALL)
+                                                            .GetTile(new Vector2(x, y), SelectedLayer)
                                                             .GetType(), new Vector2(x, y)));
                                             }
                                             else
@@ -303,7 +304,7 @@ namespace Hivemind.Input
                                                     WorldManager.GetEditorTileMap().SetTile(
                                                         (BaseTile)Activator.CreateInstance(WorldManager
                                                             .GetActiveTileMap()
-                                                            .GetTile(new Vector2(x, y), Layer.WALL)
+                                                            .GetTile(new Vector2(x, y), SelectedLayer)
                                                             .GetType(), new Vector2(x, y)));
                                             }
                                             else
@@ -324,7 +325,7 @@ namespace Hivemind.Input
                                                     WorldManager.GetEditorTileMap().SetTile(
                                                         (BaseTile)Activator.CreateInstance(WorldManager
                                                             .GetActiveTileMap()
-                                                            .GetTile(new Vector2(x, y), Layer.WALL)
+                                                            .GetTile(new Vector2(x, y), SelectedLayer)
                                                             .GetType(), new Vector2(x, y)));
                                             }
                                             else

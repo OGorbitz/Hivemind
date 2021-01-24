@@ -354,7 +354,7 @@ namespace Hivemind.World
         {
             BaseFloor f = GetFloor(position);
             if (f != null)
-                f.NeedsRender = true;
+                f.Dirty = true;
         }
 
         /// <summary>
@@ -498,7 +498,7 @@ namespace Hivemind.World
                         var tile = GetFloor(new Vector2(x, y));
                         if (tile == null)
                             continue;
-                        if (!tile.NeedsRender)
+                        if (!tile.Dirty)
                             continue;
 
                         Vector2 converted_coords = new Vector2(x - BufferPosition.X, y - BufferPosition.Y);
@@ -507,11 +507,11 @@ namespace Hivemind.World
                         if (converted_coords.Y >= BufferSize.Y)
                             converted_coords.Y -= BufferSize.Y;
                         
-                        if (tile.RenderPriority == l)
+                        if (tile.FloorLayer == l)
                         {
                             spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), Color.White);
                         }
-                        else if (tile.RenderPriority < l)
+                        else if (tile.FloorLayer < l)
                         {
                             int index = 0;
                             for (int n = 0; n < 8; n++)
@@ -519,11 +519,13 @@ namespace Hivemind.World
                                 var ctile = GetFloor(new Vector2(x + FloorMask.indices[n, 0], y + FloorMask.indices[n, 1]));
                                 if (ctile == null)
                                     continue;
-                                if (ctile.RenderPriority >= l) //Tile is "solid" for layer
+                                if (ctile.FloorLayer >= l) //Tile is "solid" for layer
                                 {
                                     index += 1 << n;
                                 }
                             }
+                            if (index == 0)
+                                continue;
 
                             spriteBatch.Draw(FloorMask.MaskAtlas, converted_coords * TileManager.TileSize,
                                 sourceRectangle: new Rectangle(index * 64, 0, 64, 64), Color.White);
@@ -568,7 +570,7 @@ namespace Hivemind.World
                     var tile = GetFloor(new Vector2(x, y));
                     if (tile == null)
                         continue;
-                    tile.NeedsRender = false;
+                    tile.Dirty = false;
                 }
             }
         }

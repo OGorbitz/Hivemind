@@ -17,15 +17,12 @@ namespace Hivemind.World.Tile.Floor
         /// <summary>
         /// Integer for what order this floor layer should be rendered. Increasing values are rendered later
         /// </summary>
-        public virtual int RenderPriority => URenderPriority;
+        public virtual int FloorLayer => URenderPriority;
         /// <summary>
         /// A float resistance modifier for pathfinding. 1 is normal movement, lower is easier, higher is more difficult.
         /// </summary>
         public override float Resistance => UResistance;
         public override Layer Layer => ULayer;
-
-        //Instance variables
-        public bool NeedsRender = true;
 
 
         //Constructors and serializers

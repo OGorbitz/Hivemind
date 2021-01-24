@@ -98,12 +98,15 @@ namespace Hivemind.Utility
 
             if (TNear.X > TNear.Y)
                 normal = new Vector2(1, 0);
-            else if(TNear.X < TNear.Y)
+            else
                 normal = new Vector2(0, 1);
 
-            Vector2 diff = -move * normal * (1 - THitNear);
+            if (!float.IsFinite(THitNear))
+                return Vector2.Zero;
 
-            return move + diff;
+            Vector2 diff = move * normal * (1 - THitNear);
+
+            return move - diff;
         }
 
     }

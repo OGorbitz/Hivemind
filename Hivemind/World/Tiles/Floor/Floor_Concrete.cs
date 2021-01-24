@@ -20,7 +20,7 @@ namespace Hivemind.World.Tile.Floor
         public override string Name => UName;
         public override Layer Layer => ULayer;
         public override float Resistance => UResistance;
-        public override int RenderPriority => URenderPriority;
+        public override int FloorLayer => URenderPriority;
 
         //Assets
         public static Texture2D UIcon;

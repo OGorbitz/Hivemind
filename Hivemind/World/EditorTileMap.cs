@@ -80,21 +80,6 @@ namespace Hivemind.World
         {
             if (InBounds(tile.Pos))
             {
-                if (tile.Layer == Layer.FLOOR)
-                {
-                    for (int n = 0; n < 8; n++)
-                    {
-                        var tpos = new Vector2(FloorMask.indices[n, 0], FloorMask.indices[n, 1]);
-                        if (!Floors.ContainsKey(tpos))
-                        {
-                            Floors.Add(tpos, null);
-                        }
-                        else
-                        {
-                            var f = Floors[tpos];
-                        }
-                    }
-                }
                 if (Tiles[(int)tile.Layer].TryAdd(tile.Pos, tile))
                     tile.Parent = this;
             }
@@ -113,189 +98,6 @@ namespace Hivemind.World
             if (Tiles[(int)layer].ContainsKey(position))
                 Tiles[(int)layer].Remove(position);
         }
-
-        public void RenderFloor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
-        {
-            Rectangle cam = Cam.GetBounds();
-
-            bool run = true;
-
-            while (run)
-            {
-                run = false;
-
-                Vector2 diff = new Vector2(cam.Left, cam.Top) - (BufferPosition * TileManager.TileSize);
-                Vector2 bdiff = GetTileCoords(diff);
-
-                if (Math.Abs(bdiff.X - BufferOffset.X) > BufferSize.X || Math.Abs(bdiff.Y - BufferOffset.Y) > BufferSize.Y)
-                {
-                    BufferPosition.X += (bdiff.X - (bdiff.X % BufferSize.X));
-                    BufferOffset.X = bdiff.X % BufferSize.X;
-                    BufferPosition.Y += bdiff.Y - (bdiff.Y % BufferSize.Y);
-                    BufferOffset.Y = bdiff.Y % BufferSize.Y;
-
-                    for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
-                    {
-                        for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
-                        {
-                            RenderFloor(new Vector2(x, y));
-                        }
-                    }
-                }
-                else
-                {
-                    if (bdiff.X > BufferOffset.X)
-                    {
-                        run = true;
-                        BufferOffset.X += 1;
-                        float x = BufferPosition.X + BufferOffset.X + BufferSize.X - 1;
-                        for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
-                        {
-                            RenderFloor(new Vector2(x, y));
-                        }
-                    }
-                    if (bdiff.X < BufferOffset.X)
-                    {
-                        run = true;
-                        BufferOffset.X -= 1;
-                        float x = BufferPosition.X + BufferOffset.X;
-                        for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
-                        {
-                            RenderFloor(new Vector2(x, y));
-                        }
-                    }
-                    if (bdiff.Y > BufferOffset.Y)
-                    {
-                        run = true;
-                        BufferOffset.Y += 1;
-                        float y = BufferPosition.Y + BufferOffset.Y + BufferSize.Y - 1;
-                        for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
-                        {
-                            RenderFloor(new Vector2(x, y));
-                        }
-                    }
-                    if (bdiff.Y < BufferOffset.Y)
-                    {
-                        run = true;
-                        BufferOffset.Y -= 1;
-                        float y = BufferPosition.Y + BufferOffset.Y;
-                        for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
-                        {
-                            RenderFloor(new Vector2(x, y));
-                        }
-                    }
-                }
-                if (BufferOffset.X >= BufferSize.X)
-                {
-                    BufferOffset.X -= BufferSize.X;
-                    BufferPosition.X += BufferSize.X;
-                }
-                if (BufferOffset.X < 0)
-                {
-                    BufferOffset.X += BufferSize.X;
-                    BufferPosition.X -= BufferSize.X;
-                }
-                if (BufferOffset.Y >= BufferSize.Y)
-                {
-                    BufferOffset.Y -= BufferSize.Y;
-                    BufferPosition.Y += BufferSize.Y;
-                }
-                if (BufferOffset.Y < 0)
-                {
-                    BufferOffset.Y += BufferSize.Y;
-                    BufferPosition.Y -= BufferSize.Y;
-                }
-            }
-
-            for (int l = 0; l < (int)FloorPriority.COUNT; l++)
-            {
-                graphicsDevice.SetRenderTarget(RenderBuffer);
-                graphicsDevice.Clear(Color.Transparent);
-
-                spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-                
-                foreach (KeyValuePair<Vector2, BaseTile> f in Floors)
-                {
-                    var tile = (BaseFloor)f.Value;
-
-                    if (!tile.NeedsRender)
-                        continue;
-
-                    Vector2 converted_coords = f.Key - BufferPosition;
-                    if (converted_coords.X >= BufferSize.X)
-                        converted_coords.X -= BufferSize.X;
-                    if (converted_coords.Y >= BufferSize.Y)
-                        converted_coords.Y -= BufferSize.Y;
-
-                    if(tile != null && tile.RenderPriority == l)
-                    {
-                        spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), Color.White);
-                    }
-                    else if (tile == null || tile.RenderPriority < l)
-                    {
-                        int index = 0;
-                        for (int n = 0; n < 8; n++)
-                        {
-                            var pos = new Vector2(f.Key.X + FloorMask.indices[n, 0], f.Key.Y + FloorMask.indices[n, 1]);
-                            if (Floors.ContainsKey(pos))
-                            {
-                                var ctile = (BaseFloor)Floors[pos];
-                                if (ctile == null)
-                                    continue;
-                                if (ctile.RenderPriority == l) //Tile is "solid" for layer
-                                {
-                                    index += 1 << n;
-                                }
-                            }
-
-                        }
-
-                        spriteBatch.Draw(FloorMask.MaskAtlas, converted_coords * TileManager.TileSize,
-                            sourceRectangle: new Rectangle(index * 64, 0, 64, 64), Color.White);
-                    }
-                }
-                
-
-
-                spriteBatch.End();
-
-                spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: TileMap.StencilBlendState);
-
-                Texture2D t = FloorMask.Textures[l];
-
-                foreach(KeyValuePair<Vector2, BaseTile> f in Floors)
-                {
-                    Vector2 converted_coords = f.Key - BufferPosition;
-                    if (converted_coords.X >= BufferSize.X)
-                        converted_coords.X -= BufferSize.X;
-                    if (converted_coords.Y >= BufferSize.Y)
-                        converted_coords.Y -= BufferSize.Y;
-
-                    Rectangle sourceRectangle = new Rectangle((int)(f.Key.X * TileManager.TileSize % t.Width), (int)(f.Key.Y * TileManager.TileSize % t.Height), TileManager.TileSize, TileManager.TileSize);
-                    spriteBatch.Draw(t, position: converted_coords * TileManager.TileSize, sourceRectangle: sourceRectangle, Color.White);
-                }
-
-                spriteBatch.End();
-
-                graphicsDevice.SetRenderTarget(FloorBuffer);
-
-                spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-                spriteBatch.Draw(RenderBuffer, Vector2.Zero, Color.White);
-                spriteBatch.End();
-            }
-
-            for (float x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
-            {
-                for (float y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
-                {
-                    var tile = GetFloor(new Vector2(x, y));
-                    if (tile == null)
-                        continue;
-                    tile.NeedsRender = false;
-                }
-            }
-        }
-
 
         public void Render(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
@@ -323,16 +125,18 @@ namespace Hivemind.World
             if (RenderBuffer == null)
                 RenderBuffer = new RenderTarget2D(graphicsDevice, width, height);
             
-            RenderFloor(spriteBatch, graphicsDevice, gameTime);
-
             graphicsDevice.SetRenderTarget(RenderTarget);
             graphicsDevice.Clear(Color.TransparentBlack);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            spriteBatch.Draw(FloorBuffer, BufferPosition * TileManager.TileSize, Color.White);
-            spriteBatch.Draw(FloorBuffer, (BufferPosition + new Vector2(BufferSize.X, 0)) * TileManager.TileSize, Color.White);
-            spriteBatch.Draw(FloorBuffer, (BufferPosition + new Vector2(0, BufferSize.Y)) * TileManager.TileSize, Color.White);
-            spriteBatch.Draw(FloorBuffer, (BufferPosition + BufferSize) * TileManager.TileSize, Color.White);
+            foreach (KeyValuePair<Vector2, BaseTile> pair in Tiles[(int)Layer.FLOOR])
+            {
+                var f = (BaseFloor) pair.Value;
+                Texture2D t = FloorMask.Textures[f.FloorLayer];
+
+                Rectangle sourceRectangle = new Rectangle((int)(f.Pos.X * TileManager.TileSize % t.Width), (int)(f.Pos.Y * TileManager.TileSize % t.Height), TileManager.TileSize, TileManager.TileSize);
+                spriteBatch.Draw(t, position: f.Pos * TileManager.TileSize, sourceRectangle: sourceRectangle, Color.White);
+            }
             spriteBatch.End();
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);

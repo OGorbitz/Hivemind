@@ -19,7 +19,7 @@ namespace Hivemind.World.Entity
 
         public static Texture2D UIcon;
 
-        public Rock1(Vector2 p) : base(p)
+        public Rock1(Point p) : base(p)
         {
             Controller.AddAnimation("IDLE", new[] { 0 }, 1, true);
             Controller.SetAnimation("IDLE");

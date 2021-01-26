@@ -16,9 +16,9 @@ namespace Hivemind.World
 {
     public interface ITileMap
     {
-        public BaseTile GetTile(Vector2 position, Layer layer);
-        public BaseFloor GetFloor(Vector2 position);
-        public void RemoveTile(Vector2 position, Layer layer);
+        public BaseTile GetTile(Point position, Layer layer);
+        public BaseFloor GetFloor(Point position);
+        public void RemoveTile(Point position, Layer layer);
         public float GetLayerDepth(int y);
     }
 
@@ -54,7 +54,7 @@ namespace Hivemind.World
         private Dictionary<int, MovingEntity> Entities;
         private SpacialHash<MovingEntity> EntityHash;
 
-        public Vector2 BufferPosition = Vector2.Zero, BufferOffset = Vector2.Zero, BufferSize = Vector2.Zero;
+        public Point BufferPosition = Point.Zero, BufferOffset = Point.Zero, BufferSize = Point.Zero;
         public bool Updated, Rendered;
 
 
@@ -80,12 +80,12 @@ namespace Hivemind.World
             {
                 for (var y = 0; y < Size; y++)
                 {
-                    var pos = new Vector2(x, y);
+                    var pos = new Point(x, y);
                     SetTile(new Floor_Concrete(pos));
                     var r = new Rectangle(4, 4, 7, 5);
                     var rr = new Rectangle(5, 5, 5, 3);
 
-                    var t = Generator.GetTemperature(pos);
+                    var t = Generator.GetTemperature(pos.ToVector2());
 
                     if (t > 0.35)
                         SetTile(new Wall_Cinderblock(pos));
@@ -99,7 +99,7 @@ namespace Hivemind.World
                     else
                     {
                         SetTile(new Floor_Grass(pos));
-                        var d = Generator.GetNoise1(pos);
+                        var d = Generator.GetNoise1(pos.ToVector2());
                         if (d > Generator.BushOffset && d < Generator.BushOffset + Generator.BushChance)
                         {
                             SetTileEntity(pos, new Bush1(pos));
@@ -107,7 +107,7 @@ namespace Hivemind.World
                     }
                     if(t < 0.25)
                     {
-                        var d = Generator.GetNoise2(pos);
+                        var d = Generator.GetNoise2(pos.ToVector2());
                         if (d > Generator.RockOffset && d < Generator.RockOffset + Generator.RockChance)
                         {
                             if (GetTileEntity(pos) == null)
@@ -118,7 +118,7 @@ namespace Hivemind.World
                 }
             }
             AddEntity(new SmallDrone(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
-            SetTile(new Wall_Cinderblock(new Vector2(10, 10)));
+            SetTile(new Wall_Cinderblock(new Point(10, 10)));
             
             
             AddEntity(new Nommer(new Vector2(30 * TileManager.TileSize, 25 * TileManager.TileSize)));
@@ -159,9 +159,9 @@ namespace Hivemind.World
         /// <summary>
         /// Converts world position to tile coordinates
         /// </summary>
-        /// <param name="coords">World position <see cref="Vector2"/></param>
-        /// <returns>A <see cref="Vector2"/> containing tile coordinates</returns>
-        public static Vector2 GetTileCoords(Vector2 coords)
+        /// <param name="coords">World position <see cref="Point"/></param>
+        /// <returns>A <see cref="Point"/> containing tile coordinates</returns>
+        public static Point GetTileCoords(Vector2 coords)
         {
             var wx = coords.X / TileManager.TileSize;
             var wy = coords.Y / TileManager.TileSize;
@@ -170,7 +170,12 @@ namespace Hivemind.World
                 wx = (float)Math.Floor(wx);
             if (wy < 0)
                 wy = (float)Math.Floor(wy);
-            return new Vector2((int)wx, (int)wy);
+            return new Point((int)wx, (int)wy);
+        }
+
+        public static Point GetTileCoords(Point coords)
+        {
+            return new Point(coords.X / TileManager.TileSize, coords.Y / TileManager.TileSize);
         }
 
         /// <summary>
@@ -178,7 +183,7 @@ namespace Hivemind.World
         /// </summary>
         /// <param name="position">A position vector</param>
         /// <returns>True if within bounds</returns>
-        public bool InBounds(Vector2 position)
+        public bool InBounds(Point position)
         {
             if (position.X < 0 || position.X >= Size)
                 return false;
@@ -192,7 +197,7 @@ namespace Hivemind.World
         /// </summary>
         /// <returns><see cref="BaseTile"/> if position is within bounds and tile is not null <br/>
         /// Returns null otherwise</returns>
-        public BaseTile GetTile(Vector2 position, Layer layer)
+        public BaseTile GetTile(Point position, Layer layer)
         {
             if (InBounds(position))
             {
@@ -201,7 +206,7 @@ namespace Hivemind.World
             return null;
         }
 
-        public BaseFloor GetFloor(Vector2 position)
+        public BaseFloor GetFloor(Point position)
         {
             return (BaseFloor) GetTile(position, Layer.FLOOR);
         }
@@ -224,7 +229,7 @@ namespace Hivemind.World
         /// CALLED BY <see cref="BaseTile.Destroy()"/>! <br/>
         /// Removes the tile at a given position from the array.
         /// </summary>
-        public void RemoveTile(Vector2 position, Layer layer)
+        public void RemoveTile(Point position, Layer layer)
         {
             if (InBounds(position))
             {
@@ -260,7 +265,7 @@ namespace Hivemind.World
                 Entities.Remove(entity.ID);
         }
 
-        public TileEntity GetTileEntity(Vector2 pos)
+        public TileEntity GetTileEntity(Point pos)
         {
             if (InBounds(pos))
                 return TileEntities[(int)pos.X, (int)pos.Y];
@@ -269,8 +274,8 @@ namespace Hivemind.World
 
         public List<TileEntity> GetTileEntities(Rectangle region)
         {
-            Vector2 start = new Vector2(region.Left, region.Top);
-            Vector2 end = new Vector2(region.Right, region.Bottom);
+            Point start = new Point(region.Left, region.Top);
+            Point end = new Point(region.Right, region.Bottom);
 
             if (start.X < 0)
                 start.X = 0;
@@ -295,7 +300,7 @@ namespace Hivemind.World
             {
                 for (int y = (int)start.Y; y < end.Y; y++)
                 {
-                    TileEntity te = GetTileEntity(new Vector2(x, y));
+                    TileEntity te = GetTileEntity(new Point(x, y));
                     if (te != null)
                         Fetched.Add(te);
                 }
@@ -304,7 +309,7 @@ namespace Hivemind.World
             return Fetched;
         }
 
-        public void SetTileEntity(Vector2 pos, TileEntity entity)
+        public void SetTileEntity(Point pos, TileEntity entity)
         {
             if (InBounds(pos))
             {
@@ -313,7 +318,7 @@ namespace Hivemind.World
             }
         }
 
-        public void RemoveTileEntity(Vector2 pos)
+        public void RemoveTileEntity(Point pos)
         {
             if (InBounds(pos))
                 TileEntities[(int)pos.X, (int)pos.Y] = null;
@@ -323,7 +328,7 @@ namespace Hivemind.World
         /// Sets surrounding tiles as dirty, to have their render indices updated
         /// </summary>
         /// <param name="position">The position to set adjacent tiles to dirty</param>
-        public void DirtySurroundingTiles(Vector2 position, Layer layer)
+        public void DirtySurroundingTiles(Point position, Layer layer)
         {
             int[,] surroundingtiles =
             {
@@ -339,7 +344,7 @@ namespace Hivemind.World
             };
             for (var i = 0; i < surroundingtiles.GetLength(0); i++)
             {
-                Vector2 v = new Vector2(position.X + surroundingtiles[i, 0], position.Y + surroundingtiles[i, 1]);
+                Point v = new Point(position.X + surroundingtiles[i, 0], position.Y + surroundingtiles[i, 1]);
                 BaseTile t = GetTile(v, layer);
                 if (t != null)
                     t.Dirty = true;
@@ -350,7 +355,7 @@ namespace Hivemind.World
         /// Requests the floor at the given position to be rerendered
         /// </summary>
         /// <param name="position"></param>
-        public void RenderFloor(Vector2 position)
+        public void RenderFloor(Point position)
         {
             BaseFloor f = GetFloor(position);
             if (f != null)
@@ -360,7 +365,7 @@ namespace Hivemind.World
         /// <summary>
         /// Updates the render index of the tile at the given position
         /// </summary>
-        public void UpdateRenderIndex(Vector2 position, Layer layer)
+        public void UpdateRenderIndex(Point position, Layer layer)
         {
             BaseTile t = GetTile(position, layer);
             if(t != null)
@@ -401,8 +406,7 @@ namespace Hivemind.World
             {
                 run = false;
 
-                Vector2 diff = new Vector2(cam.Left, cam.Top) - (BufferPosition * TileManager.TileSize);
-                Vector2 bdiff = GetTileCoords(diff);
+                Point bdiff = GetTileCoords(new Vector2(cam.Left, cam.Top) - (BufferPosition.ToVector2() * TileManager.TileSize));
 
                 if(Math.Abs(bdiff.X - BufferOffset.X) > BufferSize.X || Math.Abs(bdiff.Y - BufferOffset.Y) > BufferSize.Y)
                 {
@@ -411,11 +415,11 @@ namespace Hivemind.World
                     BufferPosition.Y += bdiff.Y - (bdiff.Y % BufferSize.Y);
                     BufferOffset.Y = bdiff.Y % BufferSize.Y;
 
-                    for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x ++)
+                    for (int x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x ++)
                     {
-                        for(float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y ++)
+                        for(int y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y ++)
                         {
-                            RenderFloor(new Vector2(x, y));
+                            RenderFloor(new Point(x, y));
                         }
                     }
                 }
@@ -425,40 +429,40 @@ namespace Hivemind.World
                     {
                         run = true;
                         BufferOffset.X += 1;
-                        float x = BufferPosition.X + BufferOffset.X + BufferSize.X - 1;
-                        for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
+                        int x = BufferPosition.X + BufferOffset.X + BufferSize.X - 1;
+                        for (int y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
                         {
-                            RenderFloor(new Vector2(x, y));
+                            RenderFloor(new Point(x, y));
                         }
                     }
                     if (bdiff.X < BufferOffset.X)
                     {
                         run = true;
                         BufferOffset.X -= 1;
-                        float x = BufferPosition.X + BufferOffset.X;
-                        for (float y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
+                        int x = BufferPosition.X + BufferOffset.X;
+                        for (int y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
                         {
-                            RenderFloor(new Vector2(x, y));
+                            RenderFloor(new Point(x, y));
                         }
                     }
                     if (bdiff.Y > BufferOffset.Y)
                     {
                         run = true;
                         BufferOffset.Y += 1;
-                        float y = BufferPosition.Y + BufferOffset.Y + BufferSize.Y - 1;
-                        for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
+                        int y = BufferPosition.Y + BufferOffset.Y + BufferSize.Y - 1;
+                        for (int x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
                         {
-                            RenderFloor(new Vector2(x, y));
+                            RenderFloor(new Point(x, y));
                         }
                     }
                     if (bdiff.Y < BufferOffset.Y)
                     {
                         run = true;
                         BufferOffset.Y -= 1;
-                        float y = BufferPosition.Y + BufferOffset.Y;
-                        for (float x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
+                        int y = BufferPosition.Y + BufferOffset.Y;
+                        for (int x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
                         {
-                            RenderFloor(new Vector2(x, y));
+                            RenderFloor(new Point(x, y));
                         }
                     }
                 }
@@ -491,17 +495,17 @@ namespace Hivemind.World
                 graphicsDevice.Clear(Color.Transparent);
 
                 spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-                for (float x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
+                for (int x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
                 {
-                    for (float y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
+                    for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                     {
-                        var tile = GetFloor(new Vector2(x, y));
+                        var tile = GetFloor(new Point(x, y));
                         if (tile == null)
                             continue;
                         if (!tile.Dirty)
                             continue;
 
-                        Vector2 converted_coords = new Vector2(x - BufferPosition.X, y - BufferPosition.Y);
+                        Point converted_coords = new Point(x - BufferPosition.X, y - BufferPosition.Y);
                         if (converted_coords.X >= BufferSize.X)
                             converted_coords.X -= BufferSize.X;
                         if (converted_coords.Y >= BufferSize.Y)
@@ -516,7 +520,7 @@ namespace Hivemind.World
                             int index = 0;
                             for (int n = 0; n < 8; n++)
                             {
-                                var ctile = GetFloor(new Vector2(x + FloorMask.indices[n, 0], y + FloorMask.indices[n, 1]));
+                                var ctile = GetFloor(new Point(x + FloorMask.indices[n, 0], y + FloorMask.indices[n, 1]));
                                 if (ctile == null)
                                     continue;
                                 if (ctile.FloorLayer >= l) //Tile is "solid" for layer
@@ -527,7 +531,7 @@ namespace Hivemind.World
                             if (index == 0)
                                 continue;
 
-                            spriteBatch.Draw(FloorMask.MaskAtlas, converted_coords * TileManager.TileSize,
+                            spriteBatch.Draw(FloorMask.MaskAtlas, converted_coords.ToVector2() * TileManager.TileSize,
                                 sourceRectangle: new Rectangle(index * 64, 0, 64, 64), Color.White);
                         }
                     }
@@ -539,18 +543,18 @@ namespace Hivemind.World
 
                 Texture2D t = FloorMask.Textures[l];
 
-                for (float x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
+                for (int x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
                 {
-                    for (float y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
+                    for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                     {
-                        Vector2 converted_coords = new Vector2(x - BufferPosition.X, y - BufferPosition.Y);
+                        Point converted_coords = new Point(x - BufferPosition.X, y - BufferPosition.Y);
                         if (converted_coords.X >= BufferSize.X)
                             converted_coords.X -= BufferSize.X;
                         if (converted_coords.Y >= BufferSize.Y)
                             converted_coords.Y -= BufferSize.Y;
 
                         Rectangle sourceRectangle = new Rectangle((int)(x * TileManager.TileSize % t.Width), (int)(y * TileManager.TileSize % t.Height), TileManager.TileSize, TileManager.TileSize);
-                        spriteBatch.Draw(t, position: converted_coords * TileManager.TileSize, sourceRectangle: sourceRectangle, Color.White);
+                        spriteBatch.Draw(t, position: converted_coords.ToVector2() * TileManager.TileSize, sourceRectangle: sourceRectangle, Color.White);
                     }
                 }
 
@@ -563,11 +567,11 @@ namespace Hivemind.World
                 spriteBatch.End();
             }
 
-            for (float x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
+            for (int x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
             {
-                for (float y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
+                for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                 {
-                    var tile = GetFloor(new Vector2(x, y));
+                    var tile = GetFloor(new Point(x, y));
                     if (tile == null)
                         continue;
                     tile.Dirty = false;
@@ -592,7 +596,7 @@ namespace Hivemind.World
             int width = 1 + (int) Math.Ceiling((float)RenderTarget.Width / (float)TileManager.TileSize);
             int height = 1 + (int)Math.Ceiling((float)RenderTarget.Height / (float)TileManager.TileSize);
 
-            BufferSize = new Vector2(width, height);
+            BufferSize = new Point(width, height);
 
             width *= TileManager.TileSize;
             height *= TileManager.TileSize;
@@ -607,18 +611,18 @@ namespace Hivemind.World
             graphicsDevice.SetRenderTarget(RenderTarget);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            spriteBatch.Draw(FloorBuffer, BufferPosition * TileManager.TileSize, Color.White);
-            spriteBatch.Draw(FloorBuffer, (BufferPosition + new Vector2(BufferSize.X, 0)) * TileManager.TileSize, Color.White);
-            spriteBatch.Draw(FloorBuffer, (BufferPosition + new Vector2(0, BufferSize.Y)) * TileManager.TileSize, Color.White);
-            spriteBatch.Draw(FloorBuffer, (BufferPosition + BufferSize) * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FloorBuffer, BufferPosition.ToVector2() * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FloorBuffer, (BufferPosition.ToVector2() + new Vector2(BufferSize.X, 0)) * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FloorBuffer, (BufferPosition.ToVector2() + new Vector2(0, BufferSize.Y)) * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FloorBuffer, (BufferPosition + BufferSize).ToVector2() * TileManager.TileSize, Color.White);
             spriteBatch.End();
 
             //TODO: Render entities
             Rendered = !Rendered;
 
             var b = Cam.GetScaledBounds();
-            Vector2 p1 = GetTileCoords(new Vector2(b.Left, b.Top));
-            Vector2 p2 = GetTileCoords(new Vector2(b.Right, b.Bottom)) + new Vector2(2);
+            Point p1 = GetTileCoords(new Point(b.Left, b.Top));
+            Point p2 = GetTileCoords(new Point(b.Right, b.Bottom)) + new Point(2);
 
             if (p1.X < 0)
                 p1.X = 0;
@@ -665,7 +669,7 @@ namespace Hivemind.World
             {
                 for (int y = (int)p1.Y; y < p2.Y; y++)
                 {
-                    BaseTile t = GetTile(new Vector2(x, y), Layer.WALL);
+                    BaseTile t = GetTile(new Point(x, y), Layer.WALL);
                     if(t != null)
                     {
                         t.Draw(spriteBatch);

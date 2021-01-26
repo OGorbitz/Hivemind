@@ -28,16 +28,6 @@ namespace Hivemind.World
             return EditorTileMap;
         }
 
-        internal static void RenderEditor(object spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static void DrawEditor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
-        {
-            throw new NotImplementedException();
-        }
-
         internal static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
             EditorTileMap.Render(spriteBatch, graphicsDevice, gameTime);

@@ -15,8 +15,11 @@ namespace Hivemind.World.Entity
 
         public bool Updated = false, Rendered = false;
 
-        public TileEntity(Vector2 p) : base(p)
+        public Point Pos;
+
+        public TileEntity(Point p)
         {
+            Pos = p;
         }
 
         public TileEntity(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -27,7 +30,7 @@ namespace Hivemind.World.Entity
         {
             if (Focused)
             {
-                Vector2 FPos = (Pos + new Vector2(0.5f)) * TileManager.TileSize;
+                Vector2 FPos = (Pos.ToVector2() + new Vector2(0.5f)) * TileManager.TileSize;
                 FPos.Floor();
                 Parent.Cam.MoveTo(FPos);
                 Focused = false;
@@ -49,9 +52,9 @@ namespace Hivemind.World.Entity
         public override void Destroy()
         {
             Rectangle r = GetBounds();
-            for (var x = r.X; x < r.Right; x++)
-                for (var y = r.Y; y < r.Bottom; y++)
-                    Parent.RemoveTileEntity(new Vector2(x, y));
+            for (int x = r.X; x < r.Right; x++)
+                for (int y = r.Y; y < r.Bottom; y++)
+                    Parent.RemoveTileEntity(new Point(x, y));
 
             base.Destroy();
         }

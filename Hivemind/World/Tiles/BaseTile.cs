@@ -20,8 +20,8 @@ namespace Hivemind.World.Tile
         public virtual float Resistance => UResistance;
 
         //Instance variables
-        private Vector2 Position;
-        public Vector2 Pos => Position;
+        private Point Position;
+        public Point Pos => Position;
 
         /// <summary>
         /// True if tile render index needs to be updated
@@ -31,18 +31,18 @@ namespace Hivemind.World.Tile
         public ITileMap Parent;
 
         //Constructors and serializers
-        public BaseTile(Vector2 p)
+        public BaseTile(Point p)
         {
             Position = p;
         }
 
         public BaseTile(SerializationInfo info, StreamingContext context)
         {
-            Position = ((V2S)info.GetValue("Pos", typeof(V2S))).ToVector2();
+            //Position = ((V2S)info.GetValue("Pos", typeof(V2S))).ToVector2();
         }
         public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue("Pos", new V2S(Position));
+            //info.AddValue("Pos", new V2S(Position));
         }
 
         public abstract void Draw(SpriteBatch spriteBatch);

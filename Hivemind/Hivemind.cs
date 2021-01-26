@@ -101,39 +101,22 @@ namespace Hivemind
 
         protected override void Draw(GameTime gameTime)
         {
-            GuiController.Render(GraphicsDevice);
+            CurrentGameTime = gameTime;
 
             switch (GameStateManager.State())
             {
                 case GameState.TILEMAP:
-                    if (GameInput.Editing) WorldManager.RenderEditor(_spriteBatch, GraphicsDevice, gameTime);
                     WorldManager.Draw(_spriteBatch, GraphicsDevice, gameTime);
-                    if (GameInput.Editing) WorldManager.DrawEditor(_spriteBatch, GraphicsDevice, gameTime);
                     break;
                 case GameState.RESEARCH:
                     //ResearchManager.Draw(spriteBatch, GraphicsDevice, gameTime);
                     break;
                 case GameState.MAIN_MENU:
-                    GraphicsDevice.Clear(new Color(0f, 0.05f, 0f));
-                    var ms = gameTime.TotalGameTime.Seconds * 1000 + gameTime.TotalGameTime.Milliseconds;
-                    var n = (int)(ms % 3000 / 3000f * 96f);
-                    _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-                    for (var x = -n; x <= GraphicsDevice.Viewport.Height; x += ComputerLines.Height * 3)
-                        _spriteBatch.Draw(ComputerLines,
-                            new Rectangle(new Point(0, x),
-                                new Point(GraphicsDevice.Viewport.Width, ComputerLines.Height * 3)),
-                            new Color(1f, 1f, 1f, 0.3f));
-                    n = (int)(ms % 2000 / 2000f * 64f);
-                    for (var x = n - 64; x <= GraphicsDevice.Viewport.Height; x += ComputerLines.Height * 2)
-                        _spriteBatch.Draw(ComputerLines,
-                            new Rectangle(new Point(0, x),
-                                new Point(GraphicsDevice.Viewport.Width, ComputerLines.Height * 2)),
-                            new Color(1f, 1f, 1f, 0.25f));
-                    _spriteBatch.End();
+
                     break;
             }
 
-            GuiController.Draw(GraphicsDevice);
+            GuiController.Draw(_spriteBatch, GraphicsDevice);
 
             base.Draw(gameTime);
         }

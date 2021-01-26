@@ -1,36 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using Hivemind.GUI;
+﻿using Hivemind.GUI;
 using Hivemind.World;
 using Hivemind.World.Entity;
 using Hivemind.World.Tile;
 using Hivemind.World.Tile.Floor;
-using Hivemind.World.Tile.Wall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
 
 namespace Hivemind.Input
 {
-    internal enum Action
-    {
-        BUILD,
-        DESTROY,
-        SELECT
-    }
 
-    internal enum PlacingType
-    {
-        TILE,
-        ENTITY,
-        TILE_ENTITY
-    }
+
+
 
     internal class GameInput
     {
         public static Vector2 MousePos => mousepos;
         public static Vector2 WorldPos => worldpos;
 
-        public static bool ctrl, Editing;
+        public static bool ctrl;
         private static Vector2 mousepos, worldpos;
         private static bool wireview = false;
         private static int scrollWheelValue, scrollWheelChange;
@@ -182,7 +171,7 @@ namespace Hivemind.Input
                                 if (Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
                                 {
                                     CurrentAction = Action.BUILD;
-                                    StartBuild = tilepos;
+                                    Editing.StartEditing(tilepos);
                                     ctrl = false;
                                     if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
                                     {
@@ -244,98 +233,8 @@ namespace Hivemind.Input
 
                             if(CurrentAction == Action.BUILD)
                             {
-                                if (Math.Abs(tilepos.X - StartBuild.X) > Math.Abs(tilepos.Y - StartBuild.Y))
-                                {
-                                    var y = (int)StartBuild.Y;
-                                    if (tilepos.X > StartBuild.X)
-                                    {
-                                        for (var x = (int)StartBuild.X; x <= tilepos.X; x++)
-                                        {
-                                            if (ctrl)
-                                            {
-                                                var t = WorldManager.GetActiveTileMap().GetTile(new Vector2(x, y), SelectedLayer);
-                                                if (t != null)
-                                                    WorldManager.GetEditorTileMap().SetTile(
-                                                        (BaseTile)Activator.CreateInstance(WorldManager
-                                                            .GetActiveTileMap()
-                                                            .GetTile(new Vector2(x, y), SelectedLayer)
-                                                            .GetType(), new Vector2(x, y)));
-                                            }
-                                            else
-                                            {
-                                                WorldManager.GetEditorTileMap().SetTile(
-                                                    (BaseTile)Activator.CreateInstance(Selected, new Vector2(x, y)));
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        for (var x = (int)tilepos.X; x <= StartBuild.X; x++)
-                                        {
-                                            if (ctrl)
-                                            {
-                                                var t = WorldManager.GetActiveTileMap().GetTile(new Vector2(x, y), SelectedLayer);
-                                                if (t != null)
-                                                    WorldManager.GetEditorTileMap().SetTile(
-                                                        (BaseTile)Activator.CreateInstance(WorldManager
-                                                            .GetActiveTileMap()
-                                                            .GetTile(new Vector2(x, y), SelectedLayer)
-                                                            .GetType(), new Vector2(x, y)));
-                                            }
-                                            else
-                                            {
-                                                WorldManager.GetEditorTileMap().SetTile(
-                                                    (BaseTile)Activator.CreateInstance(Selected, new Vector2(x, y)));
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    var x = (int)StartBuild.X;
-                                    if (tilepos.Y > StartBuild.Y)
-                                    {
-                                        for (var y = (int)StartBuild.Y; y <= tilepos.Y; y++)
-                                        {
-                                            if (ctrl)
-                                            {
-                                                var t = WorldManager.GetActiveTileMap().GetTile(new Vector2(x, y), SelectedLayer);
-                                                if (t != null)
-                                                    WorldManager.GetEditorTileMap().SetTile(
-                                                        (BaseTile)Activator.CreateInstance(WorldManager
-                                                            .GetActiveTileMap()
-                                                            .GetTile(new Vector2(x, y), SelectedLayer)
-                                                            .GetType(), new Vector2(x, y)));
-                                            }
-                                            else
-                                            {
-                                                WorldManager.GetEditorTileMap().SetTile(
-                                                    (BaseTile)Activator.CreateInstance(Selected, new Vector2(x, y)));
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        for (var y = (int)tilepos.Y; y <= StartBuild.Y; y++)
-                                        {
-                                            if (ctrl)
-                                            {
-                                                var t = WorldManager.GetActiveTileMap().GetTile(new Vector2(x, y), SelectedLayer);
-                                                if (t != null)
-                                                    WorldManager.GetEditorTileMap().SetTile(
-                                                        (BaseTile)Activator.CreateInstance(WorldManager
-                                                            .GetActiveTileMap()
-                                                            .GetTile(new Vector2(x, y), SelectedLayer)
-                                                            .GetType(), new Vector2(x, y)));
-                                            }
-                                            else
-                                            {
-                                                WorldManager.GetEditorTileMap().SetTile(
-                                                    (BaseTile)Activator.CreateInstance(Selected, new Vector2(x, y)));
-                                            }
-                                        }
-                                    }
-                                }
+
+                                //Add reference here
                             }
                         }
                         else
@@ -346,58 +245,7 @@ namespace Hivemind.Input
                                 switch (CurrentAction)
                                 {
                                     case Action.BUILD:
-                                        if (Math.Abs(tilepos.X - StartBuild.X) > Math.Abs(tilepos.Y - StartBuild.Y))
-                                        {
-                                            var y = (int)StartBuild.Y;
-                                            if (tilepos.X > StartBuild.X)
-                                                for (var x = (int)StartBuild.X; x <= tilepos.X; x++)
-                                                    if (ctrl)
-                                                    {
-                                                        WorldManager.GetActiveTileMap().RemoveTile(new Vector2(x, y), SelectedLayer);
-                                                    }
-                                                    else
-                                                    {
-                                                        WorldManager.GetActiveTileMap().SetTile(
-                                                            (BaseTile)Activator.CreateInstance(Selected, new Vector2(x, y)));
-                                                    }
-                                            else
-                                                for (var x = (int)tilepos.X; x <= StartBuild.X; x++)
-                                                    if (ctrl)
-                                                    {
-                                                        WorldManager.GetActiveTileMap().RemoveTile(new Vector2(x, y), SelectedLayer);
-                                                    }
-                                                    else
-                                                    {
-                                                        WorldManager.GetActiveTileMap().SetTile(
-                                                            (BaseTile)Activator.CreateInstance(Selected, new Vector2(x, y)));
-                                                    }
-                                        }
-                                        else
-                                        {
-                                            var x = (int)StartBuild.X;
-                                            if (tilepos.Y > StartBuild.Y)
-                                                for (var y = (int)StartBuild.Y; y <= tilepos.Y; y++)
-                                                    if (ctrl)
-                                                    {
-                                                        WorldManager.GetActiveTileMap().RemoveTile(new Vector2(x, y), SelectedLayer);
-                                                    }
-                                                    else
-                                                    {
-                                                        WorldManager.GetActiveTileMap().SetTile(
-                                                            (BaseTile)Activator.CreateInstance(Selected, new Vector2(x, y)));
-                                                    }
-                                            else
-                                                for (var y = (int)tilepos.Y; y <= StartBuild.Y; y++)
-                                                    if (ctrl)
-                                                    {
-                                                        WorldManager.GetActiveTileMap().RemoveTile(new Vector2(x, y), SelectedLayer);
-                                                    }
-                                                    else
-                                                    {
-                                                        WorldManager.GetActiveTileMap().SetTile(
-                                                            (BaseTile)Activator.CreateInstance(Selected, new Vector2(x, y)));
-                                                    }
-                                        }
+                                        //Add reference here
                                         break;
                                     default:
                                         break;

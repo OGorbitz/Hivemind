@@ -10,43 +10,43 @@ namespace Hivemind.Utility
 {
     public enum NodeState { OPEN, CLOSED, PATH, BLOCKED}
 
-    public delegate PathNode Calc(Vector2 position, Vector2 start, float startDistance);
+    public delegate PathNode Calc(Point position, Point start, float startDistance);
 
     public class Pathfinder
     {
-        public static readonly Vector2 UP = new Vector2(0, -1);
-        public static readonly Vector2 DOWN = new Vector2(0, 1);
-        public static readonly Vector2 LEFT = new Vector2(-1, 0);
-        public static readonly Vector2 RIGHT = new Vector2(1, 0);
-        public static readonly Vector2 UPLEFT = new Vector2(-1, -1);
-        public static readonly Vector2 UPRIGHT = new Vector2(1, -1);
-        public static readonly Vector2 DOWNRIGHT = new Vector2(1, 1);
-        public static readonly Vector2 DOWNLEFT = new Vector2(-1, 1);
-        public static readonly Vector2[] Neighbor = { UP, DOWN, LEFT, RIGHT , UPLEFT, UPRIGHT, DOWNRIGHT, DOWNLEFT };
+        public static readonly Point UP = new Point(0, -1);
+        public static readonly Point DOWN = new Point(0, 1);
+        public static readonly Point LEFT = new Point(-1, 0);
+        public static readonly Point RIGHT = new Point(1, 0);
+        public static readonly Point UPLEFT = new Point(-1, -1);
+        public static readonly Point UPRIGHT = new Point(1, -1);
+        public static readonly Point DOWNRIGHT = new Point(1, 1);
+        public static readonly Point DOWNLEFT = new Point(-1, 1);
+        public static readonly Point[] Neighbor = { UP, DOWN, LEFT, RIGHT , UPLEFT, UPRIGHT, DOWNRIGHT, DOWNLEFT };
 
-        Vector2 Start, End;
-        public Dictionary<Vector2, PathNode> Nodes;
+        Point Start, End;
+        public Dictionary<Point, PathNode> Nodes;
         public List<PathNode> Path;
         public bool Finished = false;
         public bool Solution = false;
         public int MaxCycles = 0, CurrentCycle = 0;
 
-        public Pathfinder(Vector2 start, Vector2 end, int maxCycles)
+        public Pathfinder(Point start, Point end, int maxCycles)
         {
             Start = start;
             End = end;
             MaxCycles = maxCycles;
 
-            Nodes = new Dictionary<Vector2, PathNode>();
+            Nodes = new Dictionary<Point, PathNode>();
             Nodes.Add(Start, CalcNode(Start, Start, 0));
         }
 
-        public Pathfinder(Vector2 start, Vector2 end, int maxCycles, Calc calcNode) : this(start, end, maxCycles)
+        public Pathfinder(Point start, Point end, int maxCycles, Calc calcNode) : this(start, end, maxCycles)
         {
             CalcNode = calcNode;
         }
 
-        public Calc CalcNode = (Vector2 position, Vector2 start, float startDistance) =>
+        public Calc CalcNode = (Point position, Point start, float startDistance) =>
         {
             PathNode node = new PathNode(position, start, startDistance);
             if(position.X >= 0 && position.X < WorldManager.GetActiveTileMap().Size && position.Y >= 0 && position.Y < WorldManager.GetActiveTileMap().Size)
@@ -94,7 +94,7 @@ namespace Hivemind.Utility
                 float bestheuristic = 0.0f;
 
                 //Check for best open node in list
-                foreach (KeyValuePair<Vector2, PathNode> p in Nodes)
+                foreach (KeyValuePair<Point, PathNode> p in Nodes)
                 {
                     PathNode n = p.Value;
                     if(n.State == NodeState.OPEN)
@@ -123,7 +123,7 @@ namespace Hivemind.Utility
                     
                     for(int i = 0; i < Neighbor.Length; i++)
                     {
-                        Vector2 p = best.Pos + Neighbor[i];
+                        Point p = best.Pos + Neighbor[i];
                         Nodes.TryAdd(p, CalcNode(p, Start, best.StartDistance + best.Distance(p)));
 
                         //node is end node. Solve.
@@ -141,7 +141,7 @@ namespace Hivemind.Utility
                                 //Find smallest node next to current node
                                 for (int j = 0; j < Neighbor.Length; j++)
                                 {
-                                    Vector2 testnode = currentNode.Pos + Neighbor[j];
+                                    Point testnode = currentNode.Pos + Neighbor[j];
                                     if (Nodes.ContainsKey(testnode))
                                     {
                                         PathNode n = Nodes[testnode];
@@ -198,29 +198,29 @@ namespace Hivemind.Utility
 
     public class PathNode
     {
-        public Vector2 Pos;
+        public Point Pos;
         public float Resistance = 0, StartDistance = 0, IdealStartDistance;
         public bool Blocked;
         public NodeState State;
 
-        public PathNode(Vector2 pos, Vector2 start, float startDistance)
+        public PathNode(Point pos, Point start, float startDistance)
         {
             Pos = pos;
             StartDistance = startDistance;
             IdealStartDistance = Distance(start);
         }
 
-        public float Manhattan(Vector2 v)
+        public float Manhattan(Point v)
         {
             return Math.Abs(v.X - Pos.X) + Math.Abs(v.Y - Pos.Y);
         }
 
-        public float Distance(Vector2 v)
+        public float Distance(Point v)
         {
-            return Math.Abs((v - Pos).Length());
+            return Math.Abs((v - Pos).ToVector2().Length());
         }
 
-        public float Heuristic(Vector2 start, Vector2 end)
+        public float Heuristic(Point start, Point end)
         {
             return 1.5f * (StartDistance - Distance(start)) + Distance(end);
         }

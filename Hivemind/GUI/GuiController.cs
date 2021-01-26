@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using FontStashSharp;
 using Hivemind.Input;
 using Hivemind.World;
 using Microsoft.Xna.Framework;
@@ -8,7 +9,6 @@ using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
-using SpriteFontPlus;
 
 namespace Hivemind.GUI
 {
@@ -35,15 +35,24 @@ namespace Hivemind.GUI
         private static RenderTarget2D _renderTarget2D;
 
         public static Texture2D[] Symbols;
-        public static SpriteFont KarnivorSmall, KarnivorMedium, KarnivorLarge;
+
+        public static FontSystem Karnivor;
+        public static SpriteFontBase KarnivorSmaller => Karnivor.GetFont(20);
+        public static SpriteFontBase KarnivorSmall => Karnivor.GetFont(36);
+        public static SpriteFontBase KarnivorMedium => Karnivor.GetFont(48);
+        public static SpriteFontBase KarnivorLarge => Karnivor.GetFont(128);
+
+
         public static int TooltipTime = 1000;
 
         private static Desktop _desktop;
 
-        private static Grid _mainMenu, _mainMenuCredits, _tilemapHud;
+        private static Grid _mainMenu, _mainMenuCredits;
+        private static Panel _tilemapHud;
 
         private static ConsoleText _creditText;
-        public static Label Credits, HUDText;
+        public static Label Credits;
+        public static string DebugText;
 
 
         private static GUIState CurrentState;
@@ -52,30 +61,8 @@ namespace Hivemind.GUI
         {
             _desktop = new Desktop();
 
-            KarnivorSmall = TtfFontBaker.Bake(File.ReadAllBytes(@"Content\Fonts\KARNIVOR.ttf"), 32, 1024, 1024,
-                new[]
-                {
-                    CharacterRange.BasicLatin,
-                    CharacterRange.Latin1Supplement,
-                    CharacterRange.LatinExtendedA,
-                    CharacterRange.Cyrillic
-                }).CreateSpriteFont(graphicsDevice); 
-            KarnivorMedium = TtfFontBaker.Bake(File.ReadAllBytes(@"Content\Fonts\KARNIVOR.ttf"), 64, 1024, 1024,
-                new[]
-                {
-                    CharacterRange.BasicLatin,
-                    CharacterRange.Latin1Supplement,
-                    CharacterRange.LatinExtendedA,
-                    CharacterRange.Cyrillic
-                }).CreateSpriteFont(graphicsDevice);
-            KarnivorLarge = TtfFontBaker.Bake(File.ReadAllBytes(@"Content\Fonts\KARNIVOR.ttf"), 128, 1024, 1024,
-                new[]
-                {
-                                CharacterRange.BasicLatin,
-                                CharacterRange.Latin1Supplement,
-                                CharacterRange.LatinExtendedA,
-                                CharacterRange.Cyrillic
-                }).CreateSpriteFont(graphicsDevice);
+            Karnivor = new FontSystem(StbTrueTypeSharpFontLoader.Instance, graphicsDevice, strokeAmount: 1);
+            Karnivor.AddFont(File.ReadAllBytes(@"Content\Fonts\KARNIVOR.ttf"));
 
             InitMainMenu();
             InitHUD_Tilemap();
@@ -152,7 +139,7 @@ namespace Hivemind.GUI
                         name = "Null";
                     else
                         name = tile.Name + " " + tile.Pos.ToString();
-                    HUDText.Text = "Camera position: (" + WorldManager.GetActiveTileMap().Cam.Pos.X + ", " + WorldManager.GetActiveTileMap().Cam.Pos.Y + ")\n" +
+                    DebugText = "Camera position: (" + WorldManager.GetActiveTileMap().Cam.Pos.X + ", " + WorldManager.GetActiveTileMap().Cam.Pos.Y + ")\n" +
                         "Camera scale: " + WorldManager.GetActiveTileMap().Cam.Scale + "\n" +
                         "Pointed Block: " + name + "\n" +
                         "BufferPos: " + WorldManager.GetActiveTileMap().BufferPosition.ToString() + " BufferOffset: " + WorldManager.GetActiveTileMap().BufferOffset.ToString();
@@ -162,14 +149,36 @@ namespace Hivemind.GUI
             }
         }
 
-        public static void Render(GraphicsDevice graphicsDevice)
+        public static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
         {
-            //UserInterface.Active.Draw(spriteBatch);
-        }
+            if(CurrentState == GUIState.MAIN_MENU || CurrentState == GUIState.MAIN_MENU_CREDITS)
+            {
+                graphicsDevice.Clear(new Color(0f, 0.09f, 0f));
+                var ms = Hivemind.CurrentGameTime.TotalGameTime.Seconds * 1000 + Hivemind.CurrentGameTime.TotalGameTime.Milliseconds;
+                var n = (int)(ms % 3000 / 3000f * 96f);
+                spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+                for (var x = -n; x <= graphicsDevice.Viewport.Height; x += Hivemind.ComputerLines.Height * 5)
+                    spriteBatch.Draw(Hivemind.ComputerLines,
+                        new Rectangle(new Point(0, x),
+                            new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 5)),
+                        new Color(1f, 1f, 1f, 0.3f));
+                n = (int)(ms % 2000 / 2000f * 64f);
+                for (var x = n - 64; x <= graphicsDevice.Viewport.Height; x += Hivemind.ComputerLines.Height * 2)
+                    spriteBatch.Draw(Hivemind.ComputerLines,
+                        new Rectangle(new Point(0, x),
+                            new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 3)),
+                        new Color(1f, 1f, 1f, 0.25f));
+                spriteBatch.End();
+            }
 
-        public static void Draw(GraphicsDevice graphicsDevice)
-        {
             _desktop.Render();
+
+            if(CurrentState == GUIState.HUD_TILEMAP)
+            {
+                spriteBatch.Begin();
+                KarnivorSmaller.DrawText(spriteBatch, DebugText, new Vector2(25), Color.White);
+                spriteBatch.End();
+            }
         }
 
         //Different GUI inits
@@ -296,7 +305,7 @@ namespace Hivemind.GUI
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Bottom,
-                Font = KarnivorSmall,
+                Font = KarnivorSmaller,
                 Padding = new Thickness(50)
             };
             _mainMenuCredits.Widgets.Add(Credits);
@@ -304,22 +313,86 @@ namespace Hivemind.GUI
 
         private static void InitHUD_Tilemap()
         {
-            _tilemapHud = new Grid()
+            _tilemapHud = new Panel();
+
+
+            var buttonPanel = new Panel()
             {
-                ShowGridLines = true,
-                RowSpacing = 8,
-                ColumnSpacing = 8
+                Width = Hivemind.ScreenWidth,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Background = new SolidBrush(new Color(0.2f, 0.2f, 0.2f))
             };
 
-            HUDText = new Label()
+            _tilemapHud.AddChild<Panel>(buttonPanel);
+
+            var buttonGrid = new Grid();
+            buttonGrid.ColumnsProportions.Add(new Proportion());
+            buttonGrid.ColumnsProportions.Add(new Proportion());
+            buttonGrid.ColumnsProportions.Add(new Proportion());
+
+
+            buttonPanel.AddChild<Grid>(buttonGrid);
+
+            Color buttonBorderColor = Color.Green;
+
+            var Structural = new TextButton()
             {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top,
+                Text = "Structural",
                 Font = KarnivorSmall,
-                Padding = new Thickness(25)
+                Padding = new Thickness(10),
+                PaddingTop = 2,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Border = new SolidBrush(buttonBorderColor),
+                BorderThickness = new Thickness(2),
+                GridColumn = 0
             };
 
-            _tilemapHud.Widgets.Add(HUDText);
+            Structural.Click += (s, a) =>
+            {
+
+            };
+
+            buttonGrid.AddChild<TextButton>(Structural);
+
+
+            var Power = new TextButton()
+            {
+                Text = "Power",
+                Font = KarnivorSmall,
+                Padding = new Thickness(10),
+                PaddingTop = 2,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Border = new SolidBrush(buttonBorderColor),
+                BorderThickness = new Thickness(2),
+                GridColumn = 1
+            };
+
+            Structural.Click += (s, a) =>
+            {
+
+            };
+
+            buttonGrid.AddChild<TextButton>(Power);
+
+            Panel picker = new Panel()
+            {
+                Width = 300,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                MinHeight = 200,
+                
+                Background = new SolidBrush(Color.White)
+            };
+
+            picker.BeforeRender += (s) =>
+            {
+                if(buttonPanel.Height.HasValue)
+                    picker.PaddingBottom = buttonPanel.Height.Value;
+            };
+
+            _tilemapHud.AddChild<Panel>(picker);
+            buttonPanel.BringToFront();
 
             /*var DebugPanel = new Panel(new Vector2(300, 100), PanelSkin.None, Anchor.TopLeft);
             var MouseCoords = new Paragraph("Pos:", Anchor.TopLeft);

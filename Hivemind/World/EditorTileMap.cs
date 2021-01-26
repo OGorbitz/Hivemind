@@ -16,35 +16,36 @@ namespace Hivemind.World
 
         public TileEntity TEntity;
         public MovingEntity MEntity;
-        public Dictionary<Vector2, BaseTile>[] Tiles;
-        public Dictionary<Vector2, BaseTile> Floors => Tiles[(int)Layer.FLOOR];
-        public Dictionary<Vector2, bool> DirtyFloor;
+        public Dictionary<Point, BaseTile>[] Tiles;
+        public Dictionary<Point, BaseTile> Floors => Tiles[(int)Layer.FLOOR];
+        public Dictionary<Point, bool> DirtyFloor;
 
         public bool Rendered = false;
 
         public RenderTarget2D FloorBuffer, RenderBuffer, RenderTarget;
-        public Vector2 BufferPosition = Vector2.Zero, BufferOffset = Vector2.Zero, BufferSize = Vector2.Zero;
+        public Point BufferPosition = Point.Zero, BufferOffset = Point.Zero, BufferSize = Point.Zero;
 
         public static readonly Color RColorRed = new Color(1f, 0f, 0f, 0.75f);
         public static readonly Color RColorGreen = new Color(0.25f, 0.5f, 0.125f, 0.75f);
         public Color RenderColor = RColorGreen;
 
-        public Vector2 GetTileCoords(Vector2 input) => TileMap.GetTileCoords(input);
+        public Point GetTileCoords(Point input) => TileMap.GetTileCoords(input);
+        public Point GetTileCoords(Vector2 input) => TileMap.GetTileCoords(input);
 
         public EditorTileMap()
         {
-            Tiles = new Dictionary<Vector2, BaseTile>[(int)Layer.LENGTH];
+            Tiles = new Dictionary<Point, BaseTile>[(int)Layer.LENGTH];
             for (int i = 0; i < (int)Layer.LENGTH; i++)
             {
-                Tiles[i] = new Dictionary<Vector2, BaseTile>();
+                Tiles[i] = new Dictionary<Point, BaseTile>();
             }
-            DirtyFloor = new Dictionary<Vector2, bool>();
+            DirtyFloor = new Dictionary<Point, bool>();
         }
 
         public float GetLayerDepth(int y) => Owner.GetLayerDepth(y);
 
-        public bool InBounds(Vector2 position) => Owner.InBounds(position);
-        public BaseTile GetTile(Vector2 position, Layer layer)
+        public bool InBounds(Point position) => Owner.InBounds(position);
+        public BaseTile GetTile(Point position, Layer layer)
         {
             if (InBounds(position))
             {
@@ -56,7 +57,7 @@ namespace Hivemind.World
             return null;
         }
 
-        public BaseFloor GetFloor(Vector2 position)
+        public BaseFloor GetFloor(Point position)
         {
             if (InBounds(position))
             {
@@ -68,7 +69,7 @@ namespace Hivemind.World
             return null;
         }
 
-        public void RenderFloor(Vector2 position)
+        public void RenderFloor(Point position)
         {
             if (!DirtyFloor.ContainsKey(position))
             {
@@ -93,7 +94,7 @@ namespace Hivemind.World
             }
         }
 
-        public void RemoveTile(Vector2 position, Layer layer)
+        public void RemoveTile(Point position, Layer layer)
         {
             if (Tiles[(int)layer].ContainsKey(position))
                 Tiles[(int)layer].Remove(position);
@@ -115,7 +116,7 @@ namespace Hivemind.World
             int width = 1 + (int)Math.Ceiling((float)RenderTarget.Width / (float)TileManager.TileSize);
             int height = 1 + (int)Math.Ceiling((float)RenderTarget.Height / (float)TileManager.TileSize);
 
-            BufferSize = new Vector2(width, height);
+            BufferSize = new Point(width, height);
 
             width *= TileManager.TileSize;
             height *= TileManager.TileSize;
@@ -129,18 +130,18 @@ namespace Hivemind.World
             graphicsDevice.Clear(Color.TransparentBlack);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            foreach (KeyValuePair<Vector2, BaseTile> pair in Tiles[(int)Layer.FLOOR])
+            foreach (KeyValuePair<Point, BaseTile> pair in Tiles[(int)Layer.FLOOR])
             {
                 var f = (BaseFloor) pair.Value;
                 Texture2D t = FloorMask.Textures[f.FloorLayer];
 
                 Rectangle sourceRectangle = new Rectangle((int)(f.Pos.X * TileManager.TileSize % t.Width), (int)(f.Pos.Y * TileManager.TileSize % t.Height), TileManager.TileSize, TileManager.TileSize);
-                spriteBatch.Draw(t, position: f.Pos * TileManager.TileSize, sourceRectangle: sourceRectangle, Color.White);
+                spriteBatch.Draw(t, position: f.Pos.ToVector2() * TileManager.TileSize, sourceRectangle: sourceRectangle, Color.White);
             }
             spriteBatch.End();
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            foreach (KeyValuePair<Vector2, BaseTile> t in Tiles[(int)Layer.WALL])
+            foreach (KeyValuePair<Point, BaseTile> t in Tiles[(int)Layer.WALL])
             {
                 t.Value.Draw(spriteBatch);
             }

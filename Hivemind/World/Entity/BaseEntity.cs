@@ -20,24 +20,22 @@ namespace Hivemind.World.Entity
         public TileMap Parent;
         public SpriteController Controller;
 
-        public Vector2 Pos;
         public bool Focused = false;
 
 
-        public BaseEntity(Vector2 pos)
+        public BaseEntity()
         {
-            Pos = pos;
             Controller = new SpriteController();
         }
 
         public BaseEntity(SerializationInfo info, StreamingContext context)
         {
-            Pos = ((V2S)info.GetValue("Pos", typeof(V2S))).ToVector2();
+            //Pos = ((V2S)info.GetValue("Pos", typeof(V2S))).ToVector2();
         }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue("Pos", new V2S(Pos));
+            //info.AddValue("Pos", new V2S(Pos));
         }
 
         public virtual void Update(GameTime gameTime)
@@ -51,15 +49,7 @@ namespace Hivemind.World.Entity
             GC.SuppressFinalize(this);
         }
 
-        public virtual void Draw(SpriteBatch spriteBatch, GameTime gameTime)
-        {
-            var frame = Controller.GetFrame(gameTime);
-            var sprite = EntityManager.GetSprite(Type, frame);
-            spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X - sprite.Width / 2), (int)(Pos.Y - sprite.Height / 2), sprite.Width, sprite.Height),
-                new Rectangle(0, 0, sprite.Width, sprite.Height),
-                Color.White, 0f, Vector2.Zero, SpriteEffects.None,
-                layerDepth: Parent.GetLayerDepth((int) Pos.Y / TileManager.TileSize) + 0.0005f);
-        }
+        public abstract void Draw(SpriteBatch spriteBatch, GameTime gameTime);
 
         /// <summary>
         /// Draws the rectangle around this object if it is selected

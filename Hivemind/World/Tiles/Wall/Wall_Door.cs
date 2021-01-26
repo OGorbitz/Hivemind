@@ -32,12 +32,12 @@ namespace Hivemind.World.Tile.Wall
         
 
 
-        public Wall_Door(Vector2 p) : base(p)
+        public Wall_Door(Point p) : base(p)
         {
             Rotation = false;
         }
 
-        public Wall_Door(bool r, Vector2 p) : base(p)
+        public Wall_Door(bool r, Point p) : base(p)
         {
             Rotation = r;
         }

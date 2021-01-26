@@ -12,11 +12,11 @@ namespace Hivemind.Utility
 
         public static Vector2 CheckWorld(Vector2 move, Rectangle moving)
         {
-            Vector2 WorldPos = TileMap.GetTileCoords(new Vector2(moving.X, moving.Y));
-            Vector2 TileSize = TileMap.GetTileCoords(new Vector2(moving.Width, moving.Height));
+            Point WorldPos = TileMap.GetTileCoords(new Vector2(moving.X, moving.Y));
+            Point TileSize = TileMap.GetTileCoords(new Vector2(moving.Width, moving.Height));
 
-            Point Start = (WorldPos - TileSize - new Vector2(1)).ToPoint();
-            Point End = (WorldPos + TileSize + new Vector2(1)).ToPoint();
+            Point Start = (WorldPos - TileSize - new Point(1));
+            Point End = (WorldPos + TileSize + new Point(1));
 
             Vector2 calculated_move = move;
 
@@ -24,7 +24,7 @@ namespace Hivemind.Utility
             {
                 for (int y = (int)Start.Y; y <= End.Y; y++)
                 {
-                    BaseTile tile = WorldManager.GetActiveTileMap().GetTile(new Vector2(x, y), Layer.WALL);
+                    BaseTile tile = WorldManager.GetActiveTileMap().GetTile(new Point(x, y), Layer.WALL);
                     if(tile != null)
                         calculated_move = Check(calculated_move, moving, tile.Collider());
                 }

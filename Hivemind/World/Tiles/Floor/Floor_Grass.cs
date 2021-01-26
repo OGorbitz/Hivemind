@@ -30,7 +30,7 @@ namespace Hivemind.World.Tile.Floor
 
 
         //Constructors and serializers
-        public Floor_Grass(Vector2 p) : base(p)
+        public Floor_Grass(Point p) : base(p)
         {
         }
         public Floor_Grass(SerializationInfo info, StreamingContext context) : base(info, context)

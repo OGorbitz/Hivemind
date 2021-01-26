@@ -18,9 +18,11 @@ namespace Hivemind.World.Entity
 
         public HashCell<MovingEntity> Cell;
         public int ID;
+        public Vector2 Pos;
 
-        public MovingEntity(Vector2 pos) : base(pos)
+        public MovingEntity(Vector2 pos)
         {
+            Pos = pos;
             ID = EntityManager.GetID();
         }
 
@@ -63,6 +65,16 @@ namespace Hivemind.World.Entity
             Parent.RemoveEntity(this);
 
             base.Destroy();
+        }
+
+        public override void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+        {
+            var frame = Controller.GetFrame(gameTime);
+            var sprite = EntityManager.GetSprite(Type, frame);
+            spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X - sprite.Width / 2), (int)(Pos.Y - sprite.Height / 2), sprite.Width, sprite.Height),
+                new Rectangle(0, 0, sprite.Width, sprite.Height),
+                Color.White, 0f, Vector2.Zero, SpriteEffects.None,
+                layerDepth: Parent.GetLayerDepth((int)Pos.Y / TileManager.TileSize) + 0.0005f);
         }
 
         public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)

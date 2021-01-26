@@ -27,7 +27,7 @@ namespace Hivemind.World.Tile.Wall
         private static int[,] tilecheck;
         private int renderindex;
 
-        public Wall_Dirt(Vector2 p) : base(p)
+        public Wall_Dirt(Point p) : base(p)
         {
         }
 
@@ -68,7 +68,7 @@ namespace Hivemind.World.Tile.Wall
             for (var i = 0; i < 4; i++)
                 try
                 {
-                    var t = Parent.GetTile(new Vector2((int)Pos.X + tilecheck[i, 1], (int)Pos.Y + tilecheck[i, 2]), Layer.WALL);
+                    var t = Parent.GetTile(new Point((int)Pos.X + tilecheck[i, 1], (int)Pos.Y + tilecheck[i, 2]), Layer.WALL);
                     if (t.Name == Name) ri += tilecheck[i, 0];
                 }
                 catch

@@ -26,7 +26,7 @@ namespace Hivemind.World.Tile.Floor
 
 
         //Constructors and serializers
-        public BaseFloor(Vector2 p) : base(p)
+        public BaseFloor(Point p) : base(p)
         {
         }
         public BaseFloor(SerializationInfo info, StreamingContext context) : base(info, context)

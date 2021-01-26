@@ -26,7 +26,7 @@ namespace Hivemind.World.Entity
         public Vector2 Vel = Vector2.Zero, DesiredVel = Vector2.Zero;
         public NommerState State = NommerState.IDLE, NextState = NommerState.IDLE;
         public int CurrentPathNode;
-        public Vector2 Target;
+        public Point Target;
 
         public TimeSpan NextAction;
 
@@ -73,9 +73,9 @@ namespace Hivemind.World.Entity
                         NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 2000 + 1000));
                     if (gameTime.TotalGameTime > NextAction)
                     {
-                        Vector2 tpos = TileMap.GetTileCoords(Pos);
+                        Point tpos = TileMap.GetTileCoords(Pos);
 
-                        Vector2 goal = tpos + new Vector2((int)(Helper.Random() * 10 - 5), (int)(Helper.Random() * 10 - 5));
+                        Point goal = tpos + new Point((int)(Helper.Random() * 10 - 5), (int)(Helper.Random() * 10 - 5));
 
                         List<TileEntity> returned = Parent.GetTileEntities(new Rectangle((int)tpos.X - 4, (int)tpos.Y - 4, 8, 8));
 
@@ -91,12 +91,12 @@ namespace Hivemind.World.Entity
                             if (returned.Count > 0)
                             {
                                 int smallestindex = returned.Count - 1;
-                                float smallestdistance = Math.Abs((returned[smallestindex].Pos - tpos).Length());
+                                float smallestdistance = Math.Abs((returned[smallestindex].Pos - tpos).ToVector2().Length());
 
                                 for (int x = returned.Count - 1; x >= 0; x--)
                                 {
-                                    Vector2 v = returned[x].Pos;
-                                    float dist = Math.Abs((v - tpos).Length());
+                                    Point v = returned[x].Pos;
+                                    float dist = Math.Abs((v - tpos).ToVector2().Length());
                                     if (dist < smallestdistance)
                                     {
                                         smallestdistance = dist;
@@ -128,7 +128,7 @@ namespace Hivemind.World.Entity
                     if (Pathfind.Finished)
                     {
                         //Check distance to target node
-                        Vector2 dist = ((Pathfind.Path[CurrentPathNode].Pos + new Vector2(0.5f)) * TileManager.TileSize) - Pos;
+                        Vector2 dist = ((Pathfind.Path[CurrentPathNode].Pos.ToVector2() + new Vector2(0.5f)) * TileManager.TileSize) - Pos;
 
                         //Calculate desired velocity
                         DesiredVel = dist;
@@ -146,7 +146,7 @@ namespace Hivemind.World.Entity
                             if (CurrentPathNode > 0)
                             {
                                 CurrentPathNode--;
-                                dist = (Pathfind.Path[CurrentPathNode].Pos * TileManager.TileSize) - Pos;
+                                dist = (Pathfind.Path[CurrentPathNode].Pos.ToVector2() * TileManager.TileSize) - Pos;
                             }
                         }
 
@@ -201,9 +201,9 @@ namespace Hivemind.World.Entity
             {
                 for (int i = CurrentPathNode - 1; i >= 0; i--)
                 {
-                    Helper.DrawLine(spriteBatch, pixel, Pathfind.Path[i].Pos * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pathfind.Path[i + 1].Pos * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Color.White);
+                    Helper.DrawLine(spriteBatch, pixel, Pathfind.Path[i].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pathfind.Path[i + 1].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Color.White);
                 }
-                Helper.DrawLine(spriteBatch, pixel, Pathfind.Path[CurrentPathNode].Pos * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pos, Color.White);
+                Helper.DrawLine(spriteBatch, pixel, Pathfind.Path[CurrentPathNode].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pos, Color.White);
             }
 
             base.DrawSelected(spriteBatch, graphicsDevice, gameTime);

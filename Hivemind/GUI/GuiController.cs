@@ -4,10 +4,12 @@ using FontStashSharp;
 using Hivemind.Input;
 using Hivemind.World;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
+using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 
 namespace Hivemind.GUI
@@ -27,7 +29,6 @@ namespace Hivemind.GUI
         POWER_LOW,
         PROCESSING_POWER,
         X_ICON,
-        LENGTH
     }
 
     internal class GuiController
@@ -42,6 +43,7 @@ namespace Hivemind.GUI
         public static SpriteFontBase KarnivorMedium => Karnivor.GetFont(48);
         public static SpriteFontBase KarnivorLarge => Karnivor.GetFont(128);
 
+        public static Texture2D ShapeSingle, ShapeLine, ShapeRectangle;
 
         public static int TooltipTime = 1000;
 
@@ -57,12 +59,16 @@ namespace Hivemind.GUI
 
         private static GUIState CurrentState;
 
-        public static void Init(GraphicsDevice graphicsDevice)
+        public static void Init(GraphicsDevice graphicsDevice, ContentManager content)
         {
             _desktop = new Desktop();
 
             Karnivor = new FontSystem(StbTrueTypeSharpFontLoader.Instance, graphicsDevice, strokeAmount: 1);
             Karnivor.AddFont(File.ReadAllBytes(@"Content\Fonts\KARNIVOR.ttf"));
+
+            ShapeSingle = content.Load<Texture2D>("GUI/ShapeSingle");
+            ShapeLine = content.Load<Texture2D>("GUI/ShapeLine");
+            ShapeRectangle = content.Load<Texture2D>("GUI/ShapeRectangle");
 
             InitMainMenu();
             InitHUD_Tilemap();
@@ -318,7 +324,6 @@ namespace Hivemind.GUI
 
             var buttonPanel = new Panel()
             {
-                Width = Hivemind.ScreenWidth,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 Background = new SolidBrush(new Color(0.2f, 0.2f, 0.2f))
             };
@@ -369,30 +374,129 @@ namespace Hivemind.GUI
                 GridColumn = 1
             };
 
-            Structural.Click += (s, a) =>
+            Power.Click += (s, a) =>
             {
 
             };
 
             buttonGrid.AddChild<TextButton>(Power);
 
+
             Panel picker = new Panel()
             {
                 Width = 300,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 MinHeight = 200,
-                
+
                 Background = new SolidBrush(Color.White)
             };
 
             picker.BeforeRender += (s) =>
             {
-                if(buttonPanel.Height.HasValue)
+                if (buttonPanel.Height.HasValue)
                     picker.PaddingBottom = buttonPanel.Height.Value;
             };
 
             _tilemapHud.AddChild<Panel>(picker);
             buttonPanel.BringToFront();
+
+
+            var selectedShape = new ImageButton()
+            {
+                Image = new TextureRegion(ShapeLine, new Rectangle(0, 0, ShapeLine.Width, ShapeLine.Height)),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Background = new SolidBrush(Color.Transparent),
+                FocusedBackground = new SolidBrush(Color.Transparent),
+                DisabledBackground = new SolidBrush(Color.Transparent),
+                PressedBackground = new SolidBrush(Color.Transparent),
+                OverBackground = new SolidBrush(Color.Transparent),
+                Top = -55
+            };
+
+            _tilemapHud.AddChild<ImageButton>(selectedShape);
+
+            var shapeGrid = new Grid()
+            {
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Height = ShapeLine.Height * 3,
+                Visible = false
+            };
+            shapeGrid.RowsProportions.Add(new Proportion());
+            shapeGrid.RowsProportions.Add(new Proportion());
+            shapeGrid.RowsProportions.Add(new Proportion());
+            _tilemapHud.AddChild<Grid>(shapeGrid);
+
+            shapeGrid.BeforeRender += (s) =>
+            {
+                Rectangle r = new Rectangle(shapeGrid.Bounds.Left - 50, shapeGrid.Bounds.Top - 50, shapeGrid.Bounds.Width + 50, shapeGrid.Bounds.Height + 200);
+                shapeGrid.Top = selectedShape.Bounds.Top - shapeGrid.Height.Value;
+                if (!r.Contains(_desktop.MousePosition))
+                    shapeGrid.Visible = false;
+            };
+
+            var shape = new ImageButton()
+            {
+                Image = new TextureRegion(ShapeSingle, new Rectangle(0, 0, ShapeLine.Width, ShapeLine.Height)),
+                Background = new SolidBrush(Color.Transparent),
+                FocusedBackground = new SolidBrush(Color.Transparent),
+                DisabledBackground = new SolidBrush(Color.Transparent),
+                PressedBackground = new SolidBrush(Color.Transparent),
+                OverBackground = new SolidBrush(Color.Transparent),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                GridRow = 0
+            };
+            shape.Click += (s, a) =>
+            {
+                selectedShape.Image = ((ImageButton)s).Image;
+                Editing.Shape = EditShape.SINGLE;
+            };
+            shapeGrid.AddChild<ImageButton>(shape);
+
+            shape = new ImageButton()
+            {
+                Image = new TextureRegion(ShapeLine, new Rectangle(0, 0, ShapeLine.Width, ShapeLine.Height)),
+                Background = new SolidBrush(Color.Transparent),
+                FocusedBackground = new SolidBrush(Color.Transparent),
+                DisabledBackground = new SolidBrush(Color.Transparent),
+                PressedBackground = new SolidBrush(Color.Transparent),
+                OverBackground = new SolidBrush(Color.Transparent),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                GridRow = 1
+            };
+            shape.Click += (s, a) =>
+            {
+                selectedShape.Image = ((ImageButton)s).Image;
+                Editing.Shape = EditShape.LINE;
+            };
+            shapeGrid.AddChild<ImageButton>(shape);
+
+            shape = new ImageButton()
+            {
+                Image = new TextureRegion(ShapeRectangle, new Rectangle(0, 0, ShapeLine.Width, ShapeLine.Height)),
+                Background = new SolidBrush(Color.Transparent),
+                FocusedBackground = new SolidBrush(Color.Transparent),
+                DisabledBackground = new SolidBrush(Color.Transparent),
+                PressedBackground = new SolidBrush(Color.Transparent),
+                OverBackground = new SolidBrush(Color.Transparent),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                GridRow = 2
+            };
+            shape.Click += (s, a) =>
+            {
+                selectedShape.Image = ((ImageButton)s).Image;
+                Editing.Shape = EditShape.RECTANGLE;
+            };
+            shapeGrid.AddChild<ImageButton>(shape);
+
+
+
+
+            selectedShape.Click += (s, a) =>
+            {
+                shapeGrid.Visible = !shapeGrid.Visible;
+            };
+
 
             /*var DebugPanel = new Panel(new Vector2(300, 100), PanelSkin.None, Anchor.TopLeft);
             var MouseCoords = new Paragraph("Pos:", Anchor.TopLeft);

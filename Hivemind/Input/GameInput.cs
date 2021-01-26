@@ -168,7 +168,7 @@ namespace Hivemind.Input
                                 //New mouse click
                                 DMOUSE_LEFT = true;
 
-                                if (Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
+                                if (!Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
                                 {
                                     CurrentAction = Action.BUILD;
                                     Editing.StartEditing(tilepos);
@@ -233,8 +233,7 @@ namespace Hivemind.Input
 
                             if(CurrentAction == Action.BUILD)
                             {
-
-                                //Add reference here
+                                Editing.UpdateEditing(tilepos);
                             }
                         }
                         else
@@ -245,16 +244,15 @@ namespace Hivemind.Input
                                 switch (CurrentAction)
                                 {
                                     case Action.BUILD:
-                                        //Add reference here
+                                        Editing.EndEditing(tilepos);
                                         break;
                                     default:
                                         break;
                                 }
                             }
-                            else if(Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
+                            else if(!Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
                             {
-                                WorldManager.GetEditorTileMap().RenderColor = EditorTileMap.RColorGreen;
-                                WorldManager.GetEditorTileMap().SetTile((BaseTile)Activator.CreateInstance(Selected, tilepos));
+                                Editing.Hover(tilepos);
                             }
                         }
                     }

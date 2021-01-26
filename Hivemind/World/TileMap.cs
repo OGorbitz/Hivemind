@@ -1,4 +1,5 @@
 ﻿using Hivemind.Input;
+using Hivemind.World.Colony;
 using Hivemind.World.Entity;
 using Hivemind.World.Generator;
 using Hivemind.World.Tile;
@@ -54,6 +55,8 @@ namespace Hivemind.World
         private Dictionary<int, MovingEntity> Entities;
         private SpacialHash<MovingEntity> EntityHash;
 
+        public TaskManager Tasks;
+
         public Point BufferPosition = Point.Zero, BufferOffset = Point.Zero, BufferSize = Point.Zero;
         public bool Updated, Rendered;
 
@@ -68,6 +71,8 @@ namespace Hivemind.World
             Entities = new Dictionary<int, MovingEntity>();
             EntityHash = new SpacialHash<MovingEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
             TileEntities = new TileEntity[s, s];
+
+            Tasks = new TaskManager(this);
 
             FloorBuffer = null;
 

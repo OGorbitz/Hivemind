@@ -67,7 +67,7 @@ namespace Hivemind
         {
             base.Initialize();
 
-            GuiController.Init(GraphicsDevice);
+            GuiController.Init(GraphicsDevice, Content);
 
             GameStateManager.SetState(GameState.MAIN_MENU);
         }

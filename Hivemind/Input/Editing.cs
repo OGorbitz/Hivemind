@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Hivemind.World;
+using Hivemind.World.Tile;
+using Hivemind.World.Tile.Wall;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,18 +14,79 @@ namespace Hivemind.Input
 
     public class Editing
     {
-        public static EditShape Shape = EditShape.SINGLE;
+        public static EditShape Shape = EditShape.LINE;
         public static PlacingType Type = PlacingType.TILE;
-        public static Vector2 Start;
 
-        public static void StartEditing(Point start)
+        public static Type SelectedType = typeof(Wall_Cinderblock);
+
+        public static Point Start;
+
+        /// <summary>
+        /// Shows holographic placement on editor tilemap
+        /// </summary>
+        /// <param name="location"></param>
+        public static void Hover(Point location)
         {
-
+            WorldManager.GetEditorTileMap().SetTile((BaseTile)Activator.CreateInstance(SelectedType, location));
         }
 
+        /// <summary>
+        /// Set start point
+        /// </summary>
+        /// <param name="start"></param>
+        public static void StartEditing(Point start)
+        {
+            Start = start;
 
+            if(Shape == EditShape.SINGLE)
+            {
+                BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, start);
+                WorldManager.GetActiveTileMap().SetTile(t);
+            }
+        }
 
-        public static List<Point> GetCurrentTiles(Point current)
+        /// <summary>
+        /// Update editor tilemap
+        /// </summary>
+        /// <param name="current"></param>
+        public static void UpdateEditing(Point current)
+        {
+            if(Shape == EditShape.SINGLE)
+            {
+                if(Start != current)
+                {
+                    BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, current);
+                    WorldManager.GetActiveTileMap().SetTile(t);
+                    Start = current;
+                }
+            }
+            else
+            {
+                foreach(Point p in GetAffectedTiles(current))
+                {
+                    BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, p);
+                    WorldManager.GetEditorTileMap().SetTile(t);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Apply all changes
+        /// </summary>
+        /// <param name="end"></param>
+        public static void EndEditing(Point end)
+        {
+            if (Shape != EditShape.SINGLE)
+            {
+                foreach (Point p in GetAffectedTiles(end))
+                {
+                    BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, p);
+                    WorldManager.GetActiveTileMap().SetTile(t);
+                }
+            }
+        }
+
+        public static List<Point> GetAffectedTiles(Point end)
         {
             
 
@@ -30,38 +94,39 @@ namespace Hivemind.Input
             {
                 case EditShape.SINGLE:
                     List<Point> tiles = new List<Point>();
-                    tiles.Add(current);
+                    tiles.Add(end);
                     return tiles;
                 case EditShape.LINE:
-                    return GetLine(current);
+                    return GetLine(end);
                 case EditShape.RECTANGLE:
-                    return GetRect(current);
+                    return GetRect(end);
                 default: 
                     return null;
             }
         }
 
-        public static List<Point> GetLine(Point current)
+        public static List<Point> GetLine(Point end)
         {
-            Point p1 = new Point((int)Math.Min(Start.X, current.X), (int)Math.Min(Start.Y, current.Y));
-            Point p2 = new Point((int)Math.Max(Start.X, current.X), (int)Math.Max(Start.Y, current.Y));
-
-            Point diff = p2 - p1;
+            Point diff = end - Start;
 
             List<Point> list = new List<Point>();
 
-            if(diff.Y > diff.X)
+            if(Math.Abs(diff.Y) > Math.Abs(diff.X))
             {
-                for(int i = p1.Y; i <= p2.Y; i++)
+                int s = Math.Min(Start.Y, end.Y);
+                int e = Math.Max(Start.Y, end.Y);
+                for(int i = s; i <= e; i++)
                 {
-                    list.Add(new Point(p1.X, i));
+                    list.Add(new Point(Start.X, i));
                 }
             }
             else
             {
-                for(int i = p1.X; i <= p2.X; i++)
+                int s = Math.Min(Start.X, end.X);
+                int e = Math.Max(Start.X, end.X);
+                for (int i = s; i <= e; i++)
                 {
-                    list.Add(new Point(i, p1.Y));
+                    list.Add(new Point(i, Start.Y));
                 }
             }
 

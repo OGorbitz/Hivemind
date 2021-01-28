@@ -66,15 +66,10 @@ namespace Hivemind.World.Tile.Wall
             var ri = 0;
 
             for (var i = 0; i < 4; i++)
-                try
-                {
-                    var t = Parent.GetTile(new Point((int)Pos.X + tilecheck[i, 1], (int)Pos.Y + tilecheck[i, 2]), Layer.WALL);
-                    if (t.Name == Name) ri += tilecheck[i, 0];
-                }
-                catch
-                {
-                    ri += tilecheck[i, 0];
-                }
+            {
+                var t = Parent.GetTile(new Point((int)Pos.X + tilecheck[i, 1], (int)Pos.Y + tilecheck[i, 2]), Layer.WALL);
+                if (t != null && t.Name == Name) ri += tilecheck[i, 0];
+            }
 
             if (ri >= 16) ri = 0;
             renderindex = ri;

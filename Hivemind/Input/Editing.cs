@@ -15,11 +15,16 @@ namespace Hivemind.Input
     public class Editing
     {
         public static EditShape Shape = EditShape.LINE;
-        public static PlacingType Type = PlacingType.TILE;
-
-        public static Type SelectedType = typeof(Wall_Cinderblock);
+        public static PlacingType PlacingType { get; private set; } = PlacingType.TILE;
+        public static Type SelectedType { get; private set; } = typeof(Wall_Cinderblock);
 
         public static Point Start;
+
+        public static void SetType(Type selectedType, PlacingType placetype)
+        {
+            SelectedType = selectedType; 
+            PlacingType = placetype;
+        }
 
         /// <summary>
         /// Shows holographic placement on editor tilemap

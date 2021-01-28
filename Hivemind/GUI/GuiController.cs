@@ -3,6 +3,8 @@ using System.IO;
 using FontStashSharp;
 using Hivemind.Input;
 using Hivemind.World;
+using Hivemind.World.Tile.Floor;
+using Hivemind.World.Tile.Wall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -56,6 +58,7 @@ namespace Hivemind.GUI
         public static Label Credits;
         public static string DebugText;
 
+        public static GUITab Buildables;
 
         private static GUIState CurrentState;
 
@@ -340,9 +343,9 @@ namespace Hivemind.GUI
 
             Color buttonBorderColor = Color.Green;
 
-            var Structural = new TextButton()
+            var Hardware = new TextButton()
             {
-                Text = "Structural",
+                Text = "Hardware",
                 Font = KarnivorSmall,
                 Padding = new Thickness(10),
                 PaddingTop = 2,
@@ -353,17 +356,10 @@ namespace Hivemind.GUI
                 GridColumn = 0
             };
 
-            Structural.Click += (s, a) =>
+
+            var Tasks = new TextButton()
             {
-
-            };
-
-            buttonGrid.AddChild<TextButton>(Structural);
-
-
-            var Power = new TextButton()
-            {
-                Text = "Power",
+                Text = "Tasks",
                 Font = KarnivorSmall,
                 Padding = new Thickness(10),
                 PaddingTop = 2,
@@ -374,31 +370,45 @@ namespace Hivemind.GUI
                 GridColumn = 1
             };
 
-            Power.Click += (s, a) =>
+            Tasks.Click += (s, a) =>
             {
 
             };
 
-            buttonGrid.AddChild<TextButton>(Power);
+            buttonGrid.AddChild<TextButton>(Tasks);
 
-
-            Panel picker = new Panel()
-            {
-                Width = 300,
-                VerticalAlignment = VerticalAlignment.Bottom,
-                MinHeight = 200,
-
-                Background = new SolidBrush(Color.White)
-            };
-
-            picker.BeforeRender += (s) =>
-            {
-                if (buttonPanel.Height.HasValue)
-                    picker.PaddingBottom = buttonPanel.Height.Value;
-            };
-
-            _tilemapHud.AddChild<Panel>(picker);
             buttonPanel.BringToFront();
+
+            var stack = new VerticalStackPanel
+            {
+                Padding = new Thickness(10),
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Background = new SolidBrush(Color.Gray),
+                Visible = false
+            };
+            stack.BeforeRender += (s) =>
+            {
+                stack.Top = -buttonPanel.Bounds.Height;
+            };
+            _tilemapHud.AddChild<VerticalStackPanel>(stack);
+            Buildables = new GUITab(3, stack, new Rectangle(0, 0, Wall_Cinderblock.UIcon.Height + 8, Wall_Cinderblock.UIcon.Height + 8), 10);
+
+            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Dirt), PlacingType.TILE, Wall_Dirt.UIcon);
+            Buildables.AddButton(typeof(Floor_Concrete), PlacingType.TILE, Floor_Concrete.UIcon);
+            Buildables.AddButton(typeof(Floor_Dirt), PlacingType.TILE, Floor_Dirt.UIcon);
+            Buildables.AddButton(typeof(Floor_Grass), PlacingType.TILE, Floor_Grass.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
+
+            Hardware.Click += (s, a) =>
+            {
+                stack.Visible = !stack.Visible;
+                if (stack.Visible)
+                    GameInput.CurrentAction = Input.Action.BUILD;
+                else
+                    GameInput.CurrentAction = Input.Action.SELECT;
+            };
+            buttonGrid.AddChild<TextButton>(Hardware);
 
 
             var selectedShape = new ImageButton()
@@ -419,8 +429,7 @@ namespace Hivemind.GUI
             var shapeGrid = new Grid()
             {
                 HorizontalAlignment = HorizontalAlignment.Right,
-                Height = ShapeLine.Height * 3,
-                Visible = false
+                Height = ShapeLine.Height * 3
             };
             shapeGrid.RowsProportions.Add(new Proportion());
             shapeGrid.RowsProportions.Add(new Proportion());

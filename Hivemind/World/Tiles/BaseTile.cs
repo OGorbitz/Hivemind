@@ -165,7 +165,7 @@ namespace Hivemind.World.Tile
 
         public override void Draw(SpriteBatch spriteBatch, Color color)
         {
-            Child.Draw(spriteBatch, new Color(1f, 0, 0, 0.5f));
+            Child.Draw(spriteBatch, new Color(0.3f, 0.3f, 0.3f, 0.5f));
         }
     }
 }

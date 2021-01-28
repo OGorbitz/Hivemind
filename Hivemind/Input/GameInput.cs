@@ -24,13 +24,8 @@ namespace Hivemind.Input
         private static bool wireview = false;
         private static int scrollWheelValue, scrollWheelChange;
 
-        private static Action CurrentAction = Action.SELECT;
-        //public static string SelectedTile = Wall_Cinderblock.UName;
-        public static PlacingType SelectedType = PlacingType.TILE;
-        public static Layer SelectedLayer = Layer.FLOOR;
-        public static Type Selected = typeof(Floor_Concrete);
+        public static Action CurrentAction = Action.SELECT;
         public static int Rotation;
-        public static Vector2 StartBuild;
 
         private static bool FSCREEN = false;
 
@@ -168,9 +163,8 @@ namespace Hivemind.Input
                                 //New mouse click
                                 DMOUSE_LEFT = true;
 
-                                if (!Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
+                                if (CurrentAction == Action.BUILD)
                                 {
-                                    CurrentAction = Action.BUILD;
                                     Editing.StartEditing(tilepos);
                                     ctrl = false;
                                     if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
@@ -183,9 +177,8 @@ namespace Hivemind.Input
                                         WorldManager.GetEditorTileMap().RenderColor = EditorTileMap.RColorGreen;
                                     }
                                 }
-                                else
+                                else if(CurrentAction == Action.SELECT)
                                 {
-                                    CurrentAction = Action.SELECT;
                                     var pointed = WorldManager.GetActiveTileMap().GetEntities(new Rectangle(worldpos.ToPoint(), new Point(1, 1)));
 
                                     List<ISelectable> selected = new List<ISelectable>();
@@ -250,7 +243,7 @@ namespace Hivemind.Input
                                         break;
                                 }
                             }
-                            else if(!Keyboard.GetState().IsKeyDown(Keys.LeftAlt))
+                            else if(CurrentAction == Action.BUILD)
                             {
                                 Editing.Hover(tilepos);
                             }

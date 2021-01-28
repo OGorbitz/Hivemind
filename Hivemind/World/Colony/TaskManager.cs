@@ -51,17 +51,17 @@ namespace Hivemind.World.Colony
 
     public class BuildTask : BaseTask
     {
-        HoloTile tile;
+        HoloTile Tile;
 
-        public BuildTask(int workRequired, TaskManager parent, BaseTile tile) : base(workRequired, parent)
+        public BuildTask(int workRequired, HoloTile tile, TileMap tileMap) : base(workRequired, tileMap.Tasks)
         {
-
+            Tile = tile;
         }
 
         public override void TaskFinished()
         {
             base.TaskFinished();
-            Parent.Parent.SetTile(tile.Child);
+            Parent.Parent.SetTile(Tile.Child);
         }
     }
 }

@@ -23,20 +23,29 @@ namespace Hivemind.World.Tile
         public virtual int BuildWork => UBuildWork;
 
         //Instance variables
-        private Point Position;
-        public Point Pos => Position;
+        public Point Pos { get; private set; }
 
         /// <summary>
         /// True if tile render index needs to be updated
         /// </summary>
         public bool Dirty = true;
 
-        public ITileMap Parent;
+        protected ITileMap _parent;
+        public virtual ITileMap Parent { 
+            get
+            {
+                return _parent;
+            }
+            set
+            {
+                _parent = value;
+            }
+        }
 
         //Constructors and serializers
         public BaseTile(Point p)
         {
-            Position = p;
+            Pos = p;
         }
 
         public BaseTile(SerializationInfo info, StreamingContext context)
@@ -48,7 +57,11 @@ namespace Hivemind.World.Tile
             //info.AddValue("Pos", new V2S(Position));
         }
 
-        public abstract void Draw(SpriteBatch spriteBatch);
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            Draw(spriteBatch, Color.White);
+        }
+        public abstract void Draw(SpriteBatch spriteBatch, Color color);
         
         /// <summary>
         /// Actions to be performed if tile is destroyed
@@ -105,19 +118,38 @@ namespace Hivemind.World.Tile
         public BaseTile Child;
         public BaseTask Task;
 
+
         public static RenderTarget2D RenderTarget;
 
-        public const int UResistance = 0;
-        public const string UName = "HOLOTILE-";
-        public virtual int Resistance => UResistance;
-        public virtual string Name => UName + Child.Name;
+        public const float UResistance = 0;
+        public const string UName = "HOLO-";
+        public override float Resistance => UResistance;
+        public override string Name => UName + Child.Name;
+        public override Layer Layer => Child.Layer;
+        public override int BuildWork => Child.BuildWork;
 
-        public HoloTile(Point p, BaseTile tile, TileMap tileMap) : base(p)
+
+        public override ITileMap Parent
         {
-            Parent = tileMap;
+            get
+            {
+                return _parent;
+            }
+            set
+            {
+                _parent = value;
+                Child.Parent = value;
+
+                if (_parent.GetType() == typeof(TileMap))
+                    Task = new BuildTask(Child.BuildWork, this, (TileMap)Parent);
+                else
+                    throw new Exception("Trying to set holotile in an editor tilemap... THIS SHOULD NOT HAPPEN!");
+            }
+        }
+
+        public HoloTile(BaseTile tile) : base(tile.Pos)
+        {
             Child = tile;
-            Child.Parent = tileMap;
-            Task = new BuildTask(Child.BuildWork, tileMap.Tasks, Child);
         }
 
         public static void LoadAssets(GraphicsDevice graphicsDevice)
@@ -131,9 +163,9 @@ namespace Hivemind.World.Tile
                 DepthFormat.Depth24);
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, Color color)
         {
-
+            Child.Draw(spriteBatch, new Color(1f, 0, 0, 0.5f));
         }
     }
 }

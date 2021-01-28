@@ -45,7 +45,7 @@ namespace Hivemind.World.Tile.Floor
             UIcon = content.Load<Texture2D>("Tiles/Floor/Floor_Concrete_Icon");
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, Color color)
         {
             var sourcepos = new Rectangle((int)Pos.X % 8 * TileManager.TileSize,
                 (int)Pos.Y % 8 * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);

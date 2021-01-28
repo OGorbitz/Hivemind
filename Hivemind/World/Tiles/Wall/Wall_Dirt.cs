@@ -80,7 +80,7 @@ namespace Hivemind.World.Tile.Wall
             renderindex = ri;
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, Color color)
         {
             if (Dirty)
                 UpdateRenderIndex();
@@ -97,7 +97,7 @@ namespace Hivemind.World.Tile.Wall
                 rotation: 0f,
                 origin: Vector2.Zero,
                 effects: SpriteEffects.None,
-                color: Color.White,
+                color: color,
                 layerDepth: Parent.GetLayerDepth((int)Pos.Y));
         }
     }

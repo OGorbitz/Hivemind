@@ -25,7 +25,7 @@ namespace Hivemind.Utility
                 for (int y = (int)Start.Y; y <= End.Y; y++)
                 {
                     BaseTile tile = WorldManager.GetActiveTileMap().GetTile(new Point(x, y), Layer.WALL);
-                    if(tile != null)
+                    if(tile != null && tile.Resistance < 0)
                         calculated_move = Check(calculated_move, moving, tile.Collider());
                 }
             }

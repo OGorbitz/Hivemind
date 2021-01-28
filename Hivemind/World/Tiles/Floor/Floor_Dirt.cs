@@ -45,7 +45,7 @@ namespace Hivemind.World.Tile.Floor
             UIcon = content.Load<Texture2D>("Tiles/Floor/Floor_Dirt_Icon");
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, Color color)
         {
             var sourcepos = new Rectangle((int)Pos.X % 4 * TileManager.TileSize,
                 (int)Pos.Y % 4 * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);

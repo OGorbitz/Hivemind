@@ -123,7 +123,7 @@ namespace Hivemind.World
                 }
             }
             AddEntity(new SmallDrone(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
-            SetTile(new Wall_Cinderblock(new Point(10, 10)));
+            SetTile(new HoloTile(new Wall_Cinderblock(new Point(10, 10))));
             
             
             AddEntity(new Nommer(new Vector2(30 * TileManager.TileSize, 25 * TileManager.TileSize)));

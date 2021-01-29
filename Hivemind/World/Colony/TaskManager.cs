@@ -29,6 +29,7 @@ namespace Hivemind.World.Colony
         public TaskManager Parent;
         public TaskType Type;
         public int WorkRequired, WorkDone;
+        public int Priority;
 
         public BaseTask(int workRequired, TaskManager parent)
         {

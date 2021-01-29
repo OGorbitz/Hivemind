@@ -45,7 +45,7 @@ namespace Hivemind.Input
 
             if(Shape == EditShape.SINGLE)
             {
-                BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, start);
+                HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType, start));
                 WorldManager.GetActiveTileMap().SetTile(t);
             }
         }
@@ -62,7 +62,7 @@ namespace Hivemind.Input
                 {
                     if(action == Action.BUILD)
                     {
-                        BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, current);
+                        HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType, current));
                         WorldManager.GetActiveTileMap().SetTile(t);
                         Start = current;
                     }

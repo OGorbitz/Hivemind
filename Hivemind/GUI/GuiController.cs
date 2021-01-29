@@ -205,7 +205,7 @@ namespace Hivemind.GUI
                     var tile = WorldManager.GetActiveTileMap().GetTile(tpos, Layer.WALL);
                     string name;
                     if (tile == null)
-                        tile = WorldManager.GetActiveTileMap().GetFloor(tpos);
+                        tile = WorldManager.GetActiveTileMap().GetTile(tpos, Layer.FLOOR);
                     if (tile == null)
                         name = "Null";
                     else

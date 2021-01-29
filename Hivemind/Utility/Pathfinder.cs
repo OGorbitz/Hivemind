@@ -54,7 +54,7 @@ namespace Hivemind.Utility
                 node.Blocked = false;
 
                 BaseTile wall = WorldManager.GetActiveTileMap().GetTile(position, Layer.WALL);
-                BaseFloor floor = WorldManager.GetActiveTileMap().GetFloor(position);
+                BaseTile floor = WorldManager.GetActiveTileMap().GetTile(position, Layer.FLOOR);
 
                 if (wall == null)
                 {

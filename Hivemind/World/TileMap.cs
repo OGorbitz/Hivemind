@@ -19,7 +19,6 @@ namespace Hivemind.World
     public interface ITileMap
     {
         public BaseTile GetTile(Point position, Layer layer);
-        public BaseFloor GetFloor(Point position);
         public void RemoveTile(Point position, Layer layer);
         public float GetLayerDepth(int y);
     }
@@ -59,6 +58,7 @@ namespace Hivemind.World
             }
         }
         private BaseTile[,,] Tiles;
+        private HoloTile[,,] HoloTiles;
         private TileEntity[,] TileEntities;
         private Dictionary<int, MovingEntity> Entities;
         private SpacialHash<MovingEntity> EntityHash;
@@ -74,6 +74,7 @@ namespace Hivemind.World
         {
             Size = s;
             Tiles = new BaseTile[s, s, (int) Layer.LENGTH];
+            HoloTiles = new HoloTile[s, s, (int)Layer.LENGTH];
             Cam = new Camera(this);
             Generator = new WorldGenerator(69l, this);
             Entities = new Dictionary<int, MovingEntity>();
@@ -229,14 +230,18 @@ namespace Hivemind.World
         {
             if (InBounds(position))
             {
-                return Tiles[(int) position.X, (int) position.Y, (int) layer];
+                return Tiles[position.X, position.Y, (int)layer];
             }
             return null;
         }
 
-        public BaseFloor GetFloor(Point position)
+        public HoloTile GetHoloTile(Point position, Layer layer)
         {
-            return (BaseFloor) GetTile(position, Layer.FLOOR);
+            if (InBounds(position))
+            {
+                return HoloTiles[position.X, position.Y, (int)layer];
+            }
+            return null;
         }
 
         /// <summary>
@@ -247,9 +252,22 @@ namespace Hivemind.World
         {
             if (InBounds(tile.Pos))
             {
-                Tiles[(int)tile.Pos.X, (int)tile.Pos.Y, (int)tile.Layer] = tile;
+                Tiles[tile.Pos.X, tile.Pos.Y, (int)tile.Layer] = tile;
                 tile.Parent = this;
                 DirtySurroundingTiles(tile.Pos, tile.Layer);
+            }
+        }
+
+        public void SetTile(HoloTile tile)
+        {
+            if (InBounds(tile.Pos))
+            {
+                BaseTile t = GetTile(tile.Pos, tile.Layer);
+                if (t != null && tile.Child.Name == t.Name)
+                    return;
+
+                HoloTiles[tile.Pos.X, tile.Pos.Y, (int)tile.Layer] = tile;
+                tile.SetParent(this);
             }
         }
 
@@ -261,7 +279,14 @@ namespace Hivemind.World
         {
             if (InBounds(position))
             {
-                Tiles[(int)position.X, (int)position.Y, (int) layer] = null;
+                Tiles[position.X, position.Y, (int)layer] = null;
+            }
+        }
+        public void RemoveHoloTile(Point position, Layer layer)
+        {
+            if (InBounds(position))
+            {
+                HoloTiles[position.X, position.Y, (int)layer] = null;
             }
         }
 
@@ -394,9 +419,16 @@ namespace Hivemind.World
         /// <param name="position"></param>
         public void RenderFloor(Point position)
         {
-            BaseFloor f = GetFloor(position);
+            BaseTile f = GetTile(position, Layer.FLOOR);
             if (f != null)
-                f.Dirty = true;
+            {
+                if (f.GetType() == typeof(HoloTile))
+                    ((HoloTile)f).Child.Dirty = true;
+                if (f.GetType().IsSubclassOf(typeof(BaseFloor)))
+                {
+                    ((BaseFloor)f).Dirty = true;
+                }
+            }
         }
 
         /// <summary>
@@ -536,31 +568,56 @@ namespace Hivemind.World
                 {
                     for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                     {
-                        var tile = GetFloor(new Point(x, y));
+                        var tile = GetTile(new Point(x, y), Layer.FLOOR);
                         if (tile == null)
                             continue;
                         if (!tile.Dirty)
                             continue;
+
+                        BaseFloor floor;
+
+                        bool holographic = false;
+                        if(tile.GetType() == typeof(HoloTile))
+                        {
+                            holographic = true;
+                            floor = (BaseFloor)((HoloTile)tile).Child;
+                        }
+                        else
+                        {
+                            floor = (BaseFloor)tile;
+                        }
 
                         Point converted_coords = new Point(x - BufferPosition.X, y - BufferPosition.Y);
                         if (converted_coords.X >= BufferSize.X)
                             converted_coords.X -= BufferSize.X;
                         if (converted_coords.Y >= BufferSize.Y)
                             converted_coords.Y -= BufferSize.Y;
-                        
-                        if (tile.FloorLayer == l)
+
+                        if (holographic && floor.FloorLayer == l + 1)
                         {
-                            spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), Color.White);
+                            spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), Color.Black);
                         }
-                        else if (tile.FloorLayer < l)
+
+                        if (floor.FloorLayer == l)
+                        {
+                            var color = Color.White;
+                            if (holographic)
+                                color = new Color(1, 1, 1, 0.5f);
+                            spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), color);
+                        }
+                        else if (floor.FloorLayer < l)
                         {
                             int index = 0;
                             for (int n = 0; n < 8; n++)
                             {
-                                var ctile = GetFloor(new Point(x + FloorMask.indices[n, 0], y + FloorMask.indices[n, 1]));
+                                var ctile = GetTile(new Point(x + FloorMask.indices[n, 0], y + FloorMask.indices[n, 1]), Layer.FLOOR);
                                 if (ctile == null)
                                     continue;
-                                if (ctile.FloorLayer >= l) //Tile is "solid" for layer
+                                if(ctile.GetType() == typeof(HoloTile) && ((BaseFloor)((HoloTile)ctile).Child).FloorLayer >= l)
+                                {
+                                    index += 1 << n;
+                                }
+                                else if (ctile.GetType().IsSubclassOf(typeof(BaseFloor)) && ((BaseFloor)ctile).FloorLayer >= l) //Tile is "solid" for layer
                                 {
                                     index += 1 << n;
                                 }
@@ -608,7 +665,7 @@ namespace Hivemind.World
             {
                 for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                 {
-                    var tile = GetFloor(new Point(x, y));
+                    var tile = GetTile(new Point(x, y), Layer.FLOOR);
                     if (tile == null)
                         continue;
                     tile.Dirty = false;
@@ -654,6 +711,7 @@ namespace Hivemind.World
             spriteBatch.Draw(FloorBuffer, (BufferPosition + BufferSize).ToVector2() * TileManager.TileSize, Color.White);
             spriteBatch.End();
 
+
             //TODO: Render entities
             Rendered = !Rendered;
 
@@ -677,6 +735,21 @@ namespace Hivemind.World
                 p2.Y = 0;
             if (p2.Y >= Size)
                 p2.Y = Size;
+
+            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            for (int x = (int)p1.X; x < p2.X; x++)
+            {
+                for (int y = (int)p1.Y; y < p2.Y; y++)
+                {
+                    HoloTile t = GetHoloTile(new Point(x, y), Layer.FLOOR);
+                    if (t != null)
+                    {
+                        t.Draw(spriteBatch);
+                    }
+                }
+            }
+            spriteBatch.End();
+
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
 
@@ -710,6 +783,12 @@ namespace Hivemind.World
                     if(t != null)
                     {
                         t.Draw(spriteBatch);
+                    }
+
+                    HoloTile ht = GetHoloTile(new Point(x, y), Layer.WALL);
+                    if (ht != null)
+                    {
+                        ht.Draw(spriteBatch);
                     }
                 }
             }

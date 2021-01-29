@@ -30,17 +30,7 @@ namespace Hivemind.World.Tile
         /// </summary>
         public bool Dirty = true;
 
-        protected ITileMap _parent;
-        public virtual ITileMap Parent { 
-            get
-            {
-                return _parent;
-            }
-            set
-            {
-                _parent = value;
-            }
-        }
+        public ITileMap Parent;
 
         //Constructors and serializers
         public BaseTile(Point p)
@@ -120,35 +110,31 @@ namespace Hivemind.World.Tile
 
         public static RenderTarget2D RenderTarget;
 
-        public const float UResistance = 0;
         public const string UName = "HOLO-";
-        public override float Resistance => UResistance;
+        public override float Resistance
+        {
+            get
+            {
+                if (Layer == Layer.FLOOR)
+                    return 1f;
+                else
+                    return 0;
+            }
+        }
+
         public override string Name => UName + Child.Name;
         public override Layer Layer => Child.Layer;
         public override int BuildWork => Child.BuildWork;
 
-
-        public override ITileMap Parent
-        {
-            get
-            {
-                return _parent;
-            }
-            set
-            {
-                _parent = value;
-                Child.Parent = value;
-
-                if (_parent.GetType() == typeof(TileMap))
-                    Task = new BuildTask(Child.BuildWork, this, (TileMap)Parent);
-                else
-                    throw new Exception("Trying to set holotile in an editor tilemap... THIS SHOULD NOT HAPPEN!");
-            }
-        }
-
         public HoloTile(BaseTile tile) : base(tile.Pos)
         {
             Child = tile;
+        }
+
+        public void SetParent(TileMap parent)
+        {
+            Parent = parent;
+            Child.Parent = parent;
         }
 
         public static void LoadAssets(GraphicsDevice graphicsDevice)
@@ -164,7 +150,7 @@ namespace Hivemind.World.Tile
 
         public override void Draw(SpriteBatch spriteBatch, Color color)
         {
-            Child.Draw(spriteBatch, new Color(0.3f, 0.3f, 0.3f, 0.5f));
+            Child.Draw(spriteBatch, new Color(0.4f, 0.6f, 0, 0.7f));
         }
     }
 }

@@ -50,7 +50,7 @@ namespace Hivemind.World.Tile.Floor
             var sourcepos = new Rectangle((int)Pos.X % 8 * TileManager.TileSize,
                 (int)Pos.Y % 8 * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);
             spriteBatch.Draw(texture, new Vector2(Pos.X * TileManager.TileSize, Pos.Y * TileManager.TileSize),
-                sourceRectangle: sourcepos, color: Color.White);
+                sourceRectangle: sourcepos, color: color);
         }
     }
 }

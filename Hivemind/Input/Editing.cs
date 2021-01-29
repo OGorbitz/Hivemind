@@ -10,7 +10,7 @@ namespace Hivemind.Input
 {
     public enum EditShape { SINGLE, LINE, RECTANGLE }
     public enum PlacingType { TILE, ENTITY, TILE_ENTITY }
-    public enum Action { BUILD, DESTROY, SELECT }
+    public enum Action { BUILD, DESTROY, SELECT, DEBUG_BUILD }
 
     public class Editing
     {
@@ -54,24 +54,50 @@ namespace Hivemind.Input
         /// Update editor tilemap
         /// </summary>
         /// <param name="current"></param>
-        public static void UpdateEditing(Point current)
+        public static void UpdateEditing(Point current, Action action)
         {
             if(Shape == EditShape.SINGLE)
             {
                 if(Start != current)
                 {
-                    BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, current);
-                    WorldManager.GetActiveTileMap().SetTile(t);
-                    Start = current;
+                    if(action == Action.BUILD)
+                    {
+                        BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, current);
+                        WorldManager.GetActiveTileMap().SetTile(t);
+                        Start = current;
+                    }
+                    else if (action == Action.DESTROY)
+                    {
+                        BaseTile t = WorldManager.GetActiveTileMap().GetTile(current, Layer.WALL);
+                        if (t != null)
+                            t.Destroy();
+                        Start = current;
+                    }
+                    
                 }
             }
             else
             {
-                foreach(Point p in GetAffectedTiles(current))
+                if (action == Action.BUILD)
                 {
-                    BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, p);
-                    WorldManager.GetEditorTileMap().SetTile(t);
+                    foreach (Point p in GetAffectedTiles(current))
+                    {
+                        BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, p);
+                        WorldManager.GetEditorTileMap().SetTile(t);
+                    }
+
                 }
+                else if (action == Action.DESTROY)
+                {
+                    foreach (Point p in GetAffectedTiles(current))
+                    {
+
+                        BaseTile t = WorldManager.GetActiveTileMap().GetTile(p, Layer.WALL);
+                        if (t != null)
+                            WorldManager.GetEditorTileMap().SetTile((BaseTile)Activator.CreateInstance(t.GetType(), p));
+                    }
+                }
+
             }
         }
 
@@ -79,14 +105,23 @@ namespace Hivemind.Input
         /// Apply all changes
         /// </summary>
         /// <param name="end"></param>
-        public static void EndEditing(Point end)
+        public static void EndEditing(Point end, Action action)
         {
             if (Shape != EditShape.SINGLE)
             {
                 foreach (Point p in GetAffectedTiles(end))
                 {
-                    BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType, p);
-                    WorldManager.GetActiveTileMap().SetTile(t);
+                    if (action == Action.DESTROY)
+                    {
+                        BaseTile t = WorldManager.GetActiveTileMap().GetTile(p, Layer.WALL);
+                        if (t != null)
+                            t.Destroy();
+                    }
+                    else if(action == Action.BUILD)
+                    {
+                        HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType, p));
+                        WorldManager.GetActiveTileMap().SetTile(t);
+                    }
                 }
             }
         }

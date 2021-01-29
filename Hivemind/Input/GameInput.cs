@@ -163,18 +163,20 @@ namespace Hivemind.Input
                                 //New mouse click
                                 DMOUSE_LEFT = true;
 
-                                if (CurrentAction == Action.BUILD)
+                                if (CurrentAction == Action.BUILD || CurrentAction == Action.DESTROY)
                                 {
                                     Editing.StartEditing(tilepos);
                                     ctrl = false;
                                     if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
                                     {
                                         WorldManager.GetEditorTileMap().RenderColor = EditorTileMap.RColorRed;
+                                        CurrentAction = Action.DESTROY;
                                         ctrl = true;
                                     }
                                     else
                                     {
                                         WorldManager.GetEditorTileMap().RenderColor = EditorTileMap.RColorGreen;
+                                        CurrentAction = Action.BUILD;
                                     }
                                 }
                                 else if(CurrentAction == Action.SELECT)
@@ -223,11 +225,7 @@ namespace Hivemind.Input
                                     }
                                 }
                             }
-
-                            if(CurrentAction == Action.BUILD)
-                            {
-                                Editing.UpdateEditing(tilepos);
-                            }
+                            Editing.UpdateEditing(tilepos, CurrentAction);
                         }
                         else
                         {
@@ -237,7 +235,10 @@ namespace Hivemind.Input
                                 switch (CurrentAction)
                                 {
                                     case Action.BUILD:
-                                        Editing.EndEditing(tilepos);
+                                        Editing.EndEditing(tilepos, CurrentAction);
+                                        break;
+                                    case Action.DESTROY:
+                                        Editing.EndEditing(tilepos, CurrentAction);
                                         break;
                                     default:
                                         break;

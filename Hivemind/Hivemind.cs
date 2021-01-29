@@ -48,7 +48,7 @@ namespace Hivemind
             _graphics.PreferredBackBufferHeight = r.Height;
             _graphics.ApplyChanges();
 
-
+            CManager = Content;
 
             Content.RootDirectory = "Content";
         }

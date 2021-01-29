@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using Hivemind.World.Entity.Moving;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -59,6 +60,15 @@ namespace Hivemind.World.Tile.Wall
 
         public static void Unlock()
         {
+        }
+
+        public override void Destroy()
+        {
+            base.Destroy();
+            if(Parent.GetType() == typeof(TileMap))
+            {
+                ((TileMap)Parent).AddEntity(new DroppedMaterial(Pos, Material.CrushedRock));
+            }
         }
 
         public void UpdateRenderIndex()

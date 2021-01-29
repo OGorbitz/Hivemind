@@ -68,7 +68,6 @@ namespace Hivemind.World.Tile
         /// </summary>
         public virtual void Destroy()
         {
-            Console.WriteLine(Name + " tile broken");
             Parent.RemoveTile(Pos, Layer);
         }
 

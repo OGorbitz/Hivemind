@@ -15,11 +15,10 @@ namespace Hivemind.GUI
         private TimeSpan LastMark;
 
 
-        public ConsoleText(int c, bool l, GameTime gt)
+        public ConsoleText(int c, bool l)
         {
             CursorDuration = c;
             Loops = l;
-            LastMark = gt.TotalGameTime;
         }
 
         public void AddLine(ConsoleLine l)
@@ -36,6 +35,9 @@ namespace Hivemind.GUI
         public string GetLines(int num)
         {
             var gameTime = Hivemind.CurrentGameTime;
+            if (LastMark == null)
+                LastMark = gameTime.TotalGameTime;
+
             var result = "";
 
             var elapsed = (gameTime.TotalGameTime - LastMark).Milliseconds +
@@ -45,12 +47,12 @@ namespace Hivemind.GUI
                 if (CurrentLine + 1 < Lines.Count)
                 {
                     CurrentLine++;
-                    LastMark = gameTime.TotalGameTime;
                 }
                 else if (Loops)
                 {
                     CurrentLine = 0;
                 }
+                LastMark = gameTime.TotalGameTime;
             }
 
             if (Lines.Count == 0)
@@ -78,6 +80,20 @@ namespace Hivemind.GUI
                 result += Lines[CurrentLine].Text;
 
             return result;
+        }
+    }
+
+    internal class ConsoleLine
+    {
+        public bool Cursor;
+        public int Duration;
+        public string Text;
+
+        public ConsoleLine(string t, int d, bool c)
+        {
+            Text = t;
+            Duration = d;
+            Cursor = c;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.IO;
 using FontStashSharp;
 using Hivemind.Input;
+using Hivemind.Utility;
 using Hivemind.World;
 using Hivemind.World.Tile.Floor;
 using Hivemind.World.Tile.Wall;
@@ -40,6 +41,7 @@ namespace Hivemind.GUI
         public static Texture2D[] Symbols;
 
         public static FontSystem Autobus;
+        public static SpriteFontBase AutobusSmallest => Autobus.GetFont(12);
         public static SpriteFontBase AutobusSmaller => Autobus.GetFont(20);
         public static SpriteFontBase AutobusSmall => Autobus.GetFont(36);
         public static SpriteFontBase AutobusMedium => Autobus.GetFont(48);
@@ -51,15 +53,15 @@ namespace Hivemind.GUI
 
         private static Desktop _desktop;
 
-        private static Grid _mainMenu, _mainMenuCredits;
+        private static Panel _mainMenu, _mainMenuCredits;
         private static Panel _tilemapHud;
 
         public static Panel infoPanel;
         public static VerticalStackPanel HardwareSelectionPanel;
         public static ImageButton SelectedShape;
 
-        private static ConsoleText _creditText;
-        public static Label Credits;
+        private static ConsoleText _creditText, _menuBackground;
+        public static Label Credits, MenuBackground;
         public static string DebugText;
 
         public static GUITab Buildables;
@@ -89,10 +91,66 @@ namespace Hivemind.GUI
             {
                 case GUIState.MAIN_MENU:
                     _desktop.Root = _mainMenu;
+                    _menuBackground = new ConsoleText(1000, true);
+                    int row = 0;
+                    int[] nlines = new int[4];
+                    for(int i = 0; i < 100; i++)
+                    {
+                        string line;
+                        switch (row)
+                        {
+                            case 0:
+                                line = String.Format(@"\c[#555555]Checking sector {0:X} RNN modules for corruption:", (int)(Helper.Random() * int.MaxValue));
+                                break;
+                            case 1:
+                                line = String.Format(@"\c[#555555]    Repairing block {0}:", (int)(Helper.Random() * 4096));
+                                break;
+                            case 2:
+                                line = String.Format(@"\c[#555555]        Refactoring RNN node {0:X} weight and bias values:", (int)(Helper.Random() * 4096));
+                                break;
+                            case 3:
+                                string working = @"\c[#225500]Nominal";
+                                float r = Helper.Random();
+                                if (r > 0.9f)
+                                    working = @"\c[#3A0000]Fault Detected - Weight value higher than expected";
+                                if (r > 0.95f)
+                                    working = @"\c[#3A0000]Fault Detected - Invalid bias value";
+                                line = String.Format(@"\c[#555555]            {0:X}: " + working, (int)(Helper.Random() * 4096));
+                                break;
+                            default:
+                                line = "\n";
+                                break;
+                        }
+                        _menuBackground.AddLine(line + "\n", 50, false);
+
+                        nlines[row]--;
+                        if (nlines[row] > 0) 
+                        { 
+                            if(row < 3)
+                            {
+                                row++;
+                                nlines[row] = (int)(Helper.Random() * 2 * row + 2);
+                            }
+                        }
+                        else
+                        {
+                            if (row > 0)
+                            {
+                                row--;
+                            }
+                            else
+                            {
+                                row++;
+                                nlines[row] = (int)(Helper.Random() * 2 * row + 2);
+                            }
+                        }
+                    }
+
+
                     //MusicController.PlayMusic(Music.AWAKENING);
                     break;
                 case GUIState.MAIN_MENU_CREDITS:
-                    _creditText = new ConsoleText(1000, false, Hivemind.CurrentGameTime);
+                    _creditText = new ConsoleText(1000, false);
                     _creditText.AddLine("~$ cd /home", 350, false);
                     _creditText.AddLine("/home$ cd admin", 250, false);
                     _creditText.AddLine("/home/admin$ cd hivemind", 350, false);
@@ -135,6 +193,7 @@ namespace Hivemind.GUI
             switch (CurrentState)
             {
                 case GUIState.MAIN_MENU:
+                    MenuBackground.Text = _menuBackground.GetLines((int)(_mainMenu.ContainerBounds.Height / AutobusSmaller.FontSize));
                     break;
                 case GUIState.MAIN_MENU_CREDITS:
                     Credits.Text = _creditText.GetLines(50);
@@ -197,23 +256,27 @@ namespace Hivemind.GUI
 
         public static void InitMainMenu()
         {
-            _mainMenu = new Grid
+            _mainMenu = new Panel();
+
+            MenuBackground = new Label()
             {
-                ShowGridLines = true,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                Font = AutobusSmaller,
+                Padding = new Thickness(25, 0)
+            };;
+            _mainMenu.AddChild<Label>(MenuBackground);
+
+            var menuGrid = new Grid
+            {
                 RowSpacing = 8,
                 ColumnSpacing = 8
             };
+            _mainMenu.AddChild<Grid>(menuGrid);
 
-            _mainMenu.RowsProportions.Add(new Proportion(ProportionType.Part));
-            _mainMenu.RowsProportions.Add(new Proportion(ProportionType.Pixels) { Value = 500 });
-            _mainMenu.RowsProportions.Add(new Proportion(ProportionType.Part));
-
-
-            var panel = new Panel
-            {
-                Id = "panel",
-                Padding = new Thickness(10)
-            };
+            menuGrid.RowsProportions.Add(new Proportion(ProportionType.Part));
+            menuGrid.RowsProportions.Add(new Proportion(ProportionType.Pixels) { Value = 500 });
+            menuGrid.RowsProportions.Add(new Proportion(ProportionType.Part));
 
             var title = new Label
             {
@@ -225,7 +288,7 @@ namespace Hivemind.GUI
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center
             };
-            _mainMenu.Widgets.Add(title);
+            menuGrid.Widgets.Add(title);
 
 
             var verticalMenu = new VerticalMenu()
@@ -238,13 +301,13 @@ namespace Hivemind.GUI
                 Border = new SolidBrush(Color.Transparent),
                 Background = new SolidBrush(Color.Transparent),
                 LabelHorizontalAlignment = HorizontalAlignment.Center,
-                SelectionHoverBackground = new SolidBrush(Color.ForestGreen),
-                SelectionBackground = new SolidBrush(Color.DarkGreen)
+                SelectionHoverBackground = new SolidBrush(new Color(0.2f, 0.2f, 0.2f, 0.15f)),
+                SelectionBackground = new SolidBrush(new Color(0.1f, 0.1f, 0.1f, 0.15f)),
             };
             var menuItem = new MenuItem()
             {
                 Id = "playGame",
-                Text = "Play Game"
+                Text = "Play Game",
             };
             menuItem.Selected += (s, a) =>
             {
@@ -269,50 +332,10 @@ namespace Hivemind.GUI
             };
             verticalMenu.Items.Add(menuItem);
 
-            _mainMenu.Widgets.Add(verticalMenu);
-
-            // ComboBox
-            var combo = new ComboBox
-            {
-                GridColumn = 0,
-                GridRow = 1
-            };
-
-            combo.Items.Add(new ListItem("Red", Color.Red));
-            combo.Items.Add(new ListItem("Green", Color.Green));
-            combo.Items.Add(new ListItem("Blue", Color.Blue));
-            combo.HorizontalAlignment = HorizontalAlignment.Center;
-            _mainMenu.Widgets.Add(combo);
-
-            // Button
-            var button = new TextButton
-            {
-                GridColumn = 0,
-                GridRow = 1,
-                Text = "Show"
-            };
-
-            button.Click += (s, a) =>
-            {
-                var messageBox = Dialog.CreateMessageBox("Message", "Some message!");
-                messageBox.ShowModal(_desktop);
-            };
-
-            _mainMenu.Widgets.Add(button);
-
-            // Spin button
-            var spinButton = new SpinButton
-            {
-                GridColumn = 0,
-                GridRow = 2,
-                Width = 100,
-                Nullable = true
-            };
-            _mainMenu.Widgets.Add(spinButton);
+            menuGrid.Widgets.Add(verticalMenu);
 
 
-            _mainMenuCredits = new Grid();
-
+            _mainMenuCredits = new Panel();
             Credits = new Label()
             {
                 HorizontalAlignment = HorizontalAlignment.Left,

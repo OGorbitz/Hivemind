@@ -36,7 +36,7 @@ namespace Hivemind.Utility
         public static float Random()
         {
             if (Rand == null)
-                Rand = new Random((int)Hivemind.CurrentGameTime.TotalGameTime.TotalMilliseconds);
+                Rand = new Random();
             return (float)Rand.NextDouble();
         }
     }

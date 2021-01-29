@@ -3,6 +3,7 @@ using Hivemind.Input;
 using Hivemind.World;
 using Hivemind.World.Entity;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Windows.Forms;
@@ -21,34 +22,35 @@ namespace Hivemind
         public static int ScreenWidth, ScreenHeight;
 
         public static GameTime CurrentGameTime;
+        public static ContentManager CManager;
 
         public Hivemind()
         {
             _instance = this;
 
+            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
+            ScreenWidth = r.Width;
+            ScreenHeight = r.Height;
+
             _graphics = new GraphicsDeviceManager(this);
+            Window.AllowAltF4 = true;
+            Window.IsBorderless = true;
+            Window.Position = new Point(r.Location.X, r.Location.Y);
+            Window.Title = "Hivemind";
+            
+            IsMouseVisible = true;
+
+
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
             _graphics.ApplyChanges();
 
-            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
-
-            _graphics.IsFullScreen = false;
             _graphics.PreferredBackBufferWidth = r.Width;
             _graphics.PreferredBackBufferHeight = r.Height;
             _graphics.ApplyChanges();
 
-            ScreenWidth = r.Width;
-            ScreenHeight = r.Height;
 
-            Window.AllowAltF4 = true;
-            Window.IsBorderless = true;
-            Window.Position = new Point(r.Location.X, r.Location.Y);
-
-            IsMouseVisible = true;
 
             Content.RootDirectory = "Content";
-
-            Window.Title = "Hivemind";
         }
 
         public static void ToggleFullscreen()

@@ -184,7 +184,7 @@ namespace Hivemind.Input
                                     List<ISelectable> selected = new List<ISelectable>();
                                     foreach (MovingEntity e in pointed)
                                     {
-                                        if (e.GetBounds().Contains(worldpos))
+                                        if (e.Bounds.Contains(worldpos))
                                             selected.Add(e);
                                     }
                                     if (selected.Count == 1 && selected[0].GetType() == typeof(SmallDrone))
@@ -218,7 +218,7 @@ namespace Hivemind.Input
                                         }
                                         else
                                         {
-                                            Selection.Selected.Clear();
+                                            Selection.ClearSelection();
                                         }
                                     }
                                 }
@@ -248,9 +248,18 @@ namespace Hivemind.Input
                                 Editing.Hover(tilepos);
                             }
                         }
+                        if (Mouse.GetState().RightButton == ButtonState.Pressed)
+                        {
+                            if(CurrentAction == Action.BUILD)
+                            {
+                                CurrentAction = Action.SELECT;
+                                GuiController.HardwareSelectionPanel.Visible = false;
+                                GuiController.SelectedShape.Visible = false;
+                            }
+                        }
                     }
 
-                    if(Selection.Selected.Count == 1)
+                    if(Selection.NumSelected == 1)
                     {
                         Type[] interfaces = Selection.Selected[0].GetType().GetInterfaces();
                         bool Controllable = false;

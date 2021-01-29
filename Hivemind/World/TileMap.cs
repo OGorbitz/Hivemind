@@ -1,6 +1,7 @@
 ﻿using Hivemind.Input;
 using Hivemind.World.Colony;
 using Hivemind.World.Entity;
+using Hivemind.World.Entity.Tile;
 using Hivemind.World.Generator;
 using Hivemind.World.Tile;
 using Hivemind.World.Tile.Floor;
@@ -50,6 +51,13 @@ namespace Hivemind.World
 
         //Specific data
         public int Size;
+        public Rectangle Bounds
+        {
+            get
+            {
+                return new Rectangle(0, 0, Size, Size);
+            }
+        }
         private BaseTile[,,] Tiles;
         private TileEntity[,] TileEntities;
         private Dictionary<int, MovingEntity> Entities;
@@ -87,7 +95,6 @@ namespace Hivemind.World
                 {
                     var pos = new Point(x, y);
                     SetTile(new Floor_Concrete(pos));
-                    var r = new Rectangle(4, 4, 7, 5);
                     var rr = new Rectangle(5, 5, 5, 3);
 
                     var t = Generator.GetTemperature(pos.ToVector2());
@@ -107,7 +114,7 @@ namespace Hivemind.World
                         var d = Generator.GetNoise1(pos.ToVector2());
                         if (d > Generator.BushOffset && d < Generator.BushOffset + Generator.BushChance)
                         {
-                            SetTileEntity(pos, new Bush1(pos));
+                            SetTileEntity(new Bush1(pos));
                         }
                     }
                     if(t < 0.25)
@@ -116,7 +123,7 @@ namespace Hivemind.World
                         if (d > Generator.RockOffset && d < Generator.RockOffset + Generator.RockChance)
                         {
                             if (GetTileEntity(pos) == null)
-                                SetTileEntity(pos, new Rock1(pos));
+                                SetTileEntity(new Rock1(pos));
                         }
                     }
 
@@ -127,6 +134,22 @@ namespace Hivemind.World
             
             
             AddEntity(new Nommer(new Vector2(30 * TileManager.TileSize, 25 * TileManager.TileSize)));
+
+            Rectangle r = new Rectangle(30, 21, 7, 7);
+            Vector2 v = new Vector2(33, 24);
+            for(int x = r.Left; x < r.Right; x++)
+            {
+                for(int y = r.Top; y < r.Bottom; y++)
+                {
+                    Vector2 t = new Vector2(x, y);
+                    if((v - t).Length() < 3.5)
+                    {
+                        SetTile(new Floor_Dirt(t.ToPoint()));
+                        RemoveTile(t.ToPoint(), Layer.WALL);
+                    }
+                }
+            }
+            SetTileEntity(new SpaseShip(new Point(32, 23)));
         }
 
         public TileMap(SerializationInfo info, StreamingContext context)
@@ -314,11 +337,20 @@ namespace Hivemind.World
             return Fetched;
         }
 
-        public void SetTileEntity(Point pos, TileEntity entity)
+        public void SetTileEntity(TileEntity entity)
         {
-            if (InBounds(pos))
+            if (Bounds.Contains(entity.Bounds))
             {
-                TileEntities[(int)pos.X, (int)pos.Y] = entity;
+                for(int x = entity.Bounds.Left; x < entity.Bounds.Right; x++)
+                {
+                    for(int y = entity.Bounds.Top; y < entity.Bounds.Bottom; y++)
+                    {
+                        var d = GetTileEntity(new Point(x, y));
+                        if(d != null)
+                            d.Destroy();
+                        TileEntities[x, y] = entity;
+                    }
+                }
                 entity.Parent = this;
             }
         }

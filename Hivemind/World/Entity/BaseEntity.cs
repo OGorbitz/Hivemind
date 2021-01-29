@@ -79,6 +79,13 @@ namespace Hivemind.World.Entity
 
         public readonly Point USize = new Point(TileManager.TileSize, TileManager.TileSize);
         public virtual Point Size => USize;
+        public virtual Rectangle Bounds
+        {
+            get
+            {
+                return new Rectangle((int)(Pos.X - Size.X / 2), (int)(Pos.Y - Size.Y / 2), Size.X, Size.Y);
+            }
+        }
 
         public HashCell<MovingEntity> Cell;
         public int ID;
@@ -143,13 +150,9 @@ namespace Hivemind.World.Entity
 
         public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
-            spriteBatch.Draw(EntityManager.Selected, GetBounds(), Color.White);
+            spriteBatch.Draw(EntityManager.Selected, Bounds, Color.White);
         }
 
-        public virtual Rectangle GetBounds()
-        {
-            return new Rectangle((int)(Pos.X - Size.X / 2), (int)(Pos.Y - Size.Y / 2), Size.X, Size.Y);
-        }
     }
 
     [Serializable]
@@ -161,6 +164,13 @@ namespace Hivemind.World.Entity
         public bool Updated = false, Rendered = false;
 
         public Point Pos;
+        public virtual Rectangle Bounds
+        {
+            get
+            {
+                return new Rectangle((int)Pos.X, (int)Pos.Y, Size.X, Size.Y);
+            }
+        }
 
         public TileEntity(Point p)
         {
@@ -188,25 +198,20 @@ namespace Hivemind.World.Entity
         {
             var frame = Controller.GetFrame(gameTime);
             var sprite = EntityManager.GetSprite(Type, frame);
-            spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X * TileManager.TileSize), (int)(Pos.Y * TileManager.TileSize), TileManager.TileSize, TileManager.TileSize),
-                new Rectangle(0, 0, TileManager.TileSize, TileManager.TileSize),
+            spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X * TileManager.TileSize), (int)(Pos.Y * TileManager.TileSize), TileManager.TileSize * Size.X, TileManager.TileSize * Size.Y),
+                new Rectangle(0, 0, TileManager.TileSize * Size.Y, TileManager.TileSize * Size.Y),
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None,
                 layerDepth: Parent.GetLayerDepth((int)Pos.Y) + 0.0005f);
         }
 
         public override void Destroy()
         {
-            Rectangle r = GetBounds();
+            Rectangle r = Bounds;
             for (int x = r.X; x < r.Right; x++)
                 for (int y = r.Y; y < r.Bottom; y++)
                     Parent.RemoveTileEntity(new Point(x, y));
 
             base.Destroy();
-        }
-
-        public virtual Rectangle GetBounds()
-        {
-            return new Rectangle((int)Pos.X, (int)Pos.Y, Size.X, Size.Y);
         }
 
         public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)

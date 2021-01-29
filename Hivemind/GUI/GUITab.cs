@@ -98,7 +98,7 @@ namespace Hivemind.GUI
             {
                 _panel.Widgets[0].BeforeRender += (s) =>
                 {
-                    _panel.Width = _panel.Widgets[0].Bounds.Width + _panel.Padding.Width;
+                    _panel.Width = _panel.Widgets[0].Bounds.Width + _panel.Padding.Width + _panel.BorderThickness.Width;
                 };
             }
         }

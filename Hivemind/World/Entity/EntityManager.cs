@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Hivemind.World.Entity.Tile;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -20,6 +21,8 @@ namespace Hivemind.World.Entity
 
             Bush1.LoadAssets(content);
             Rock1.LoadAssets(content);
+
+            SpaseShip.LoadAssets(content);
 
             SmallDrone.LoadAssets(content);
             Nommer.LoadAssets(content);

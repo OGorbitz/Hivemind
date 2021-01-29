@@ -409,6 +409,18 @@
 /processorParam:TextureFormat=Color
 /build:Entity/TileEntity/Flora/Bush1.png
 
+#begin Entity/TileEntity/Mechanical/SpaseShip1.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Entity/TileEntity/Mechanical/SpaseShip1.png
+
 #begin Entity/TileEntity/Natural/Rock1.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -420,6 +432,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Entity/TileEntity/Natural/Rock1.png
+
+#begin Fonts/Autobus.ttf
+/copy:Fonts/Autobus.ttf
+
+#begin Fonts/KARNIVOR.ttf
+/copy:Fonts/KARNIVOR.ttf
 
 #begin GUI/ShapeLine.png
 /importer:TextureImporter

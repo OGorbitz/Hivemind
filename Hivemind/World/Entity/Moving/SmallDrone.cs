@@ -57,7 +57,7 @@ namespace Hivemind.World.Entity
         public override void Update(GameTime gameTime)
         {
             Vector2 CheckedVel = Vel * (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
-            CheckedVel = Collision.CheckWorld(CheckedVel, GetBounds());
+            CheckedVel = Collision.CheckWorld(CheckedVel, Bounds);
             Pos += CheckedVel;
 
             Vel = Vector2.Zero;

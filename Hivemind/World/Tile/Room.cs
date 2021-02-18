@@ -1,6 +1,6 @@
 ﻿using Hivemind.World.Entity;
 using Hivemind.World.Entity.Moving;
-using Hivemind.World.Tile;
+using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -31,12 +31,9 @@ namespace Hivemind.World.Tiles
         public Room(Point position, TileMap tileMap)
         {
             TileMap = tileMap;
-            Tiles.TryAdd(position, new RoomTile(position, tileMap));
-            
-            for(int i = 0; i < Neighbors.GetLength(0); i++)
-            {
-                OpenTiles.Add(position + new Point(Neighbors[i, 0], Neighbors[i, 1]));
-            }
+            OpenTiles.Add(position);
+
+            CheckRoom();
         }
 
         public void CheckRoom()
@@ -50,11 +47,11 @@ namespace Hivemind.World.Tiles
                 OpenTiles.RemoveAt(0);
 
                 RoomTile tile = new RoomTile(add, TileMap);
-                Tiles.TryAdd(add, tile);
 
                 if (tile.Usable)
                 {
-                    tile.Floor.Room = this;
+                    Tiles.TryAdd(add, tile);
+                    tile.Tile.Room = this;
 
                     for (int i = 0; i < Neighbors.GetLength(0); i++)
                     {
@@ -67,6 +64,15 @@ namespace Hivemind.World.Tiles
                 }
             }
         }
+
+        public void Destroy()
+        {
+            foreach(KeyValuePair<Point, RoomTile> k in Tiles)
+            {
+                k.Value.Tile.Room = null;
+            }
+            TileMap.RemoveRoom(this);
+        }
     }
 
     public class RoomTile
@@ -74,8 +80,9 @@ namespace Hivemind.World.Tiles
         public bool Usable;
 
         public Point Pos;
-        public BaseFloor Floor;
-        public BaseWall Wall;
+        public Tile Tile;
+        public BaseFloor Floor => Tile.Floor;
+        public BaseWall Wall => Tile.Wall;
 
         public List<BaseEntity> Entities;
         public TileEntity TileEntity;
@@ -83,10 +90,12 @@ namespace Hivemind.World.Tiles
         public RoomTile(Point position, TileMap tileMap)
         {
             Pos = position;
-            Floor = (BaseFloor)tileMap.GetTile(Pos, Layer.FLOOR);
-            Wall = (BaseWall)tileMap.GetTile(Pos, Layer.WALL);
 
-            if (Wall != null)
+            Tile = tileMap.GetTile(position);
+
+            if (!Tile.Real)
+                Usable = false;
+            else if (Wall != null)
                 Usable = false;
             else
                 Usable = true;

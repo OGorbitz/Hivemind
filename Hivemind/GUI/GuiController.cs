@@ -4,8 +4,9 @@ using FontStashSharp;
 using Hivemind.Input;
 using Hivemind.Utility;
 using Hivemind.World;
-using Hivemind.World.Tile.Floor;
-using Hivemind.World.Tile.Wall;
+using Hivemind.World.Tiles;
+using Hivemind.World.Tiles.Floor;
+using Hivemind.World.Tiles.Wall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -202,17 +203,23 @@ namespace Hivemind.GUI
                     var mouse = Mouse.GetState();
                     var wpos = WorldManager.GetActiveTileMap().Cam.Unproject(mouse.Position.ToVector2());
                     var tpos = TileMap.GetTileCoords(wpos);
-                    var tile = WorldManager.GetActiveTileMap().GetTile(tpos, Layer.WALL);
+                    var t = WorldManager.GetActiveTileMap().GetTile(tpos);
+                    BaseTile tile = t.Wall;
                     string name;
                     if (tile == null)
-                        tile = WorldManager.GetActiveTileMap().GetTile(tpos, Layer.FLOOR);
+                        tile = t.Floor;
                     if (tile == null)
                         name = "Null";
                     else
                         name = tile.Name + " " + tile.Pos.ToString();
+
+                    string Room = "";
+                    if (t.Room != null)
+                        Room = " Room Size: " + t.Room.Size;
+
                     DebugText = "Camera position: (" + WorldManager.GetActiveTileMap().Cam.Pos.X + ", " + WorldManager.GetActiveTileMap().Cam.Pos.Y + ")\n" +
                         "Camera scale: " + WorldManager.GetActiveTileMap().Cam.Scale + "\n" +
-                        "Pointed Block: " + name + "\n" +
+                        "Pointed Block: " + name + Room + "\n" +
                         "BufferPos: " + WorldManager.GetActiveTileMap().BufferPosition.ToString() + " BufferOffset: " + WorldManager.GetActiveTileMap().BufferOffset.ToString();
                     break;
                 case GUIState.HUD_RESEARCH:
@@ -311,7 +318,7 @@ namespace Hivemind.GUI
             };
             menuItem.Selected += (s, a) =>
             {
-                WorldManager.SetActiveTileMap(new TileMap(400));
+                WorldManager.SetActiveTileMap(new TileMap(40));
                 GameStateManager.SetState(GameState.TILEMAP);
             };
             verticalMenu.Items.Add(menuItem);

@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using Hivemind.World.Entity.Moving;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Hivemind.World.Tile.Wall
+namespace Hivemind.World.Tiles.Wall
 {
     [Serializable]
-    internal class Wall_Cinderblock : BaseTile
+    internal class Wall_Dirt : BaseWall
     {
         //Static variables
-        public const string UName = "WALL_CINDERBLOCK";
+        public const string UName = "Wall_Dirt";
         public const Layer ULayer = Layer.WALL;
         public const float UResistance = -1;
 
@@ -28,11 +27,11 @@ namespace Hivemind.World.Tile.Wall
         private static int[,] tilecheck;
         private int renderindex;
 
-        public Wall_Cinderblock(Point p) : base(p)
+        public Wall_Dirt()
         {
         }
 
-        public Wall_Cinderblock(SerializationInfo info, StreamingContext context) : base(info, context)
+        public Wall_Dirt(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 
@@ -40,7 +39,7 @@ namespace Hivemind.World.Tile.Wall
         {
             var textures = new Texture2D[16];
             Tex = new int[textures.Length];
-            for (var i = 0; i < 16; i++) textures[i] = content.Load<Texture2D>("Tiles/Wall/Cinderblock/" + (i + 1));
+            for (var i = 0; i < 16; i++) textures[i] = content.Load<Texture2D>("Tiles/Wall/Dirt/" + (i + 1));
 
             tilecheck = new int[4, 3]
             {
@@ -62,27 +61,15 @@ namespace Hivemind.World.Tile.Wall
         {
         }
 
-        public override void Destroy()
-        {
-            base.Destroy();
-            if(Parent.GetType() == typeof(TileMap))
-            {
-                ((TileMap)Parent).AddEntity(new DroppedMaterial(Pos, Material.CrushedRock, 1000));
-            }
-        }
-
         public void UpdateRenderIndex()
         {
             var ri = 0;
 
             for (var i = 0; i < 4; i++)
             {
-                var t = Parent.GetTile(new Point((int)Pos.X + tilecheck[i, 1], (int)Pos.Y + tilecheck[i, 2]), Layer.WALL);
-                if (t == null)
-                    continue;
-                if (t.Name == Name) ri += tilecheck[i, 0];
+                var t = Parent.GetTile(new Point((int)Pos.X + tilecheck[i, 1], (int)Pos.Y + tilecheck[i, 2])).Wall;
+                if (t != null && t.Name == Name) ri += tilecheck[i, 0];
             }
-
 
             if (ri >= 16) ri = 0;
             renderindex = ri;
@@ -96,7 +83,7 @@ namespace Hivemind.World.Tile.Wall
             Rectangle dest;
             Rectangle source = TextureAtlas.GetSourceRect(Tex[renderindex]);
 
-            if (!IsHolo || (Parent.GetType() == typeof(TileMap) && ((TileMap)Parent).GetHoloTile(Pos + new Point(0, 1), Layer) == null))
+            if (!IsHolo || (Parent.GetType() == typeof(TileMap) && ((TileMap)Parent).GetTile(Pos + new Point(0, 1)).Wall == null))
             {
                 dest = new Rectangle(
                     new Point((int)Pos.X * TileManager.TileSize,
@@ -105,13 +92,13 @@ namespace Hivemind.World.Tile.Wall
             }
             else
             {
-                source.Height = TileManager.TileSize;
+                source.Height = TileManager.WallHeight;
                 dest = new Rectangle(
                     new Point((int)Pos.X * TileManager.TileSize,
                         (int)Pos.Y * TileManager.TileSize - TileManager.WallHeight),
                     new Point(TileManager.TileSize, TileManager.TileSize));
             }
-            
+
             spriteBatch.Draw(
                 TextureAtlas.Atlas,
                 destinationRectangle: dest,

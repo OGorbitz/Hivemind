@@ -1,8 +1,8 @@
 ﻿using Hivemind.GUI;
 using Hivemind.World;
 using Hivemind.World.Entity;
-using Hivemind.World.Tile;
-using Hivemind.World.Tile.Floor;
+using Hivemind.World.Tiles;
+using Hivemind.World.Tiles.Floor;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;

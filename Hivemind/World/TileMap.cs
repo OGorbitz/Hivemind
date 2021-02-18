@@ -3,9 +3,9 @@ using Hivemind.World.Colony;
 using Hivemind.World.Entity;
 using Hivemind.World.Entity.Tile;
 using Hivemind.World.Generator;
-using Hivemind.World.Tile;
-using Hivemind.World.Tile.Floor;
-using Hivemind.World.Tile.Wall;
+using Hivemind.World.Tiles;
+using Hivemind.World.Tiles.Floor;
+using Hivemind.World.Tiles.Wall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -18,8 +18,7 @@ namespace Hivemind.World
 {
     public interface ITileMap
     {
-        public BaseTile GetTile(Point position, Layer layer);
-        public void RemoveTile(Point position, Layer layer);
+        public Tile GetTile(Point position);
         public float GetLayerDepth(int y);
     }
 
@@ -58,12 +57,10 @@ namespace Hivemind.World
             }
         }
 
-        private Visibility[,] Visible;
-        private BaseTile[,,] Tiles;
-        private HoloTile[,,] HoloTiles;
-        private TileEntity[,] TileEntities;
+        private Tile[,] Tiles;
         private Dictionary<int, MovingEntity> Entities;
         private SpacialHash<MovingEntity> EntityHash;
+        private List<Room> Rooms = new List<Room>();
 
         public TaskManager Tasks;
 
@@ -75,20 +72,29 @@ namespace Hivemind.World
         public TileMap(int s)
         {
             Size = s;
-            Visible = new Visibility[Size, Size];
-            Tiles = new BaseTile[s, s, (int) Layer.LENGTH];
-            HoloTiles = new HoloTile[s, s, (int)Layer.LENGTH];
+            
+            Tiles = new Tile[s, s];
+            for(int i = 0; i < Tiles.GetLength(0); i++)
+            {
+                for(int j = 0; j < Tiles.GetLength(1); j++)
+                {
+                    Tiles[i, j] = new Tile(new Point(i, j), this);
+                }
+            }
+
+
             Cam = new Camera(this);
             Generator = new WorldGenerator(69l, this);
             Entities = new Dictionary<int, MovingEntity>();
             EntityHash = new SpacialHash<MovingEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
-            TileEntities = new TileEntity[s, s];
 
             Tasks = new TaskManager(this);
 
             FloorBuffer = null;
 
             Generate();
+
+            RecalcRooms();
         }
 
         public void Generate()
@@ -97,33 +103,32 @@ namespace Hivemind.World
             {
                 for (var y = 0; y < Size; y++)
                 {
-                    Visible[x, y] = Visibility.HIDDEN;
+                    Tile tile = Tiles[x, y];
 
                     var pos = new Point(x, y);
-                    SetTile(new Floor_Concrete(pos));
                     var rr = new Rectangle(5, 5, 5, 3);
 
-                    var t = Generator.GetTemperature(pos.ToVector2());
+                    var temp = Generator.GetTemperature(pos.ToVector2());
 
-                    if (t > 0.35)
-                        SetTile(new Wall_Cinderblock(pos));
+                    if (temp > 0.35)
+                        SetTile(pos, new Wall_Cinderblock());
 
-                    if (t > 0.25)
-                        SetTile(new Floor_Concrete(pos));
-                    else if (t > -0.25)
+                    if (temp > 0.25)
+                        SetTile(pos, new Floor_Concrete());
+                    else if (temp > -0.25)
                     {
-                        SetTile(new Floor_Dirt(pos));
+                        SetTile(pos, new Floor_Dirt());
                     }
                     else
                     {
-                        SetTile(new Floor_Grass(pos));
+                        SetTile(pos, new Floor_Grass());
                         var d = Generator.GetNoise1(pos.ToVector2());
                         if (d > Generator.BushOffset && d < Generator.BushOffset + Generator.BushChance)
                         {
                             SetTileEntity(new Bush1(pos));
                         }
                     }
-                    if(t < 0.25)
+                    if(temp < 0.25)
                     {
                         var d = Generator.GetNoise2(pos.ToVector2());
                         if (d > Generator.RockOffset && d < Generator.RockOffset + Generator.RockChance)
@@ -136,7 +141,7 @@ namespace Hivemind.World
                 }
             }
             AddEntity(new SmallDrone(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
-            SetTile(new HoloTile(new Wall_Cinderblock(new Point(10, 10))));
+            SetTile(new Point(10, 10), new HoloTile(new Wall_Cinderblock()));
             
             
             AddEntity(new Nommer(new Vector2(30 * TileManager.TileSize, 25 * TileManager.TileSize)));
@@ -150,8 +155,10 @@ namespace Hivemind.World
                     Vector2 t = new Vector2(x, y);
                     if((v - t).Length() < 3.5)
                     {
-                        SetTile(new Floor_Dirt(t.ToPoint()));
-                        RemoveTile(t.ToPoint(), Layer.WALL);
+                        SetTile(t.ToPoint(), new Floor_Dirt());
+                        BaseWall w = GetTile(t.ToPoint()).Wall;
+                        if (w != null)
+                            w.Destroy();
                     }
                 }
             }
@@ -160,7 +167,6 @@ namespace Hivemind.World
 
         public TileMap(SerializationInfo info, StreamingContext context)
         {
-            Tiles = (BaseTile[,,])info.GetValue("Tiles", typeof(BaseTile[,,]));
             Size = Tiles.GetLength(0);
             
             FloorBuffer = null;
@@ -231,67 +237,48 @@ namespace Hivemind.World
         /// </summary>
         /// <returns><see cref="BaseTile"/> if position is within bounds and tile is not null <br/>
         /// Returns null otherwise</returns>
-        public BaseTile GetTile(Point position, Layer layer)
+        public Tile GetTile(Point position)
         {
             if (InBounds(position))
             {
-                return Tiles[position.X, position.Y, (int)layer];
+                return Tiles[position.X, position.Y];
             }
-            return null;
-        }
-
-        public HoloTile GetHoloTile(Point position, Layer layer)
-        {
-            if (InBounds(position))
-            {
-                return HoloTiles[position.X, position.Y, (int)layer];
-            }
-            return null;
+            return new Tile(position, this, false);
         }
 
         /// <summary>
         /// Sets array value to the tile, at it's given position. Does nothing if out of bounds.
         /// </summary>
         /// <param name="tile">Tile to be set</param>
-        public void SetTile(BaseTile tile)
+        public void SetTile(Point pos, BaseTile tile)
         {
-            if (InBounds(tile.Pos))
+            if (InBounds(pos))
             {
-                Tiles[tile.Pos.X, tile.Pos.Y, (int)tile.Layer] = tile;
-                tile.Parent = this;
-                DirtySurroundingTiles(tile.Pos, tile.Layer);
+                switch (tile.Layer)
+                {
+                    case Layer.WALL:
+                        GetTile(pos).Wall = (BaseWall)tile;
+                        break;
+                    case Layer.FLOOR:
+                        GetTile(pos).Floor = (BaseFloor)tile;
+                        break;
+                }
             }
         }
 
-        public void SetTile(HoloTile tile)
+        public void SetTile(Point pos, HoloTile tile)
         {
-            if (InBounds(tile.Pos))
+            if (InBounds(pos))
             {
-                BaseTile t = GetTile(tile.Pos, tile.Layer);
-                if (t != null && tile.Child.Name == t.Name)
-                    return;
-
-                HoloTiles[tile.Pos.X, tile.Pos.Y, (int)tile.Layer] = tile;
-                tile.SetParent(this);
-            }
-        }
-
-        /// <summary>
-        /// CALLED BY <see cref="BaseTile.Destroy()"/>! <br/>
-        /// Removes the tile at a given position from the array.
-        /// </summary>
-        public void RemoveTile(Point position, Layer layer)
-        {
-            if (InBounds(position))
-            {
-                Tiles[position.X, position.Y, (int)layer] = null;
-            }
-        }
-        public void RemoveHoloTile(Point position, Layer layer)
-        {
-            if (InBounds(position))
-            {
-                HoloTiles[position.X, position.Y, (int)layer] = null;
+                switch (tile.Layer)
+                {
+                    case Layer.WALL:
+                        GetTile(pos).HoloWall = tile;
+                        break;
+                    case Layer.FLOOR:
+                        GetTile(pos).HoloFloor = tile;
+                        break;
+                }
             }
         }
 
@@ -334,7 +321,7 @@ namespace Hivemind.World
         public TileEntity GetTileEntity(Point pos)
         {
             if (InBounds(pos))
-                return TileEntities[(int)pos.X, (int)pos.Y];
+                return Tiles[(int)pos.X, (int)pos.Y].TileEntity;
             return null;
         }
 
@@ -367,7 +354,7 @@ namespace Hivemind.World
                 for (int y = (int)start.Y; y < end.Y; y++)
                 {
                     TileEntity te = GetTileEntity(new Point(x, y));
-                    if (te != null)
+                    if (te != null && !Fetched.Contains(te))
                         Fetched.Add(te);
                 }
             }
@@ -383,46 +370,53 @@ namespace Hivemind.World
                 {
                     for(int y = entity.Bounds.Top; y < entity.Bounds.Bottom; y++)
                     {
-                        var d = GetTileEntity(new Point(x, y));
-                        if(d != null)
-                            d.Destroy();
-                        TileEntities[x, y] = entity;
+                        var t = GetTile(new Point(x, y));
+                        if(t.TileEntity != null)
+                            t.TileEntity.Destroy();
+                        t.TileEntity = entity;
                     }
                 }
-                entity.Parent = this;
             }
         }
 
         public void RemoveTileEntity(Point pos)
         {
             if (InBounds(pos))
-                TileEntities[(int)pos.X, (int)pos.Y] = null;
+                GetTile(pos).TileEntity = null;
         }
 
-        /// <summary>
-        /// Sets surrounding tiles as dirty, to have their render indices updated
-        /// </summary>
-        /// <param name="position">The position to set adjacent tiles to dirty</param>
-        public void DirtySurroundingTiles(Point position, Layer layer)
+        public void RemoveRoom(Room r)
         {
-            int[,] surroundingtiles =
+            if (Rooms.Contains(r))
+                Rooms.Remove(r);
+        }
+
+        public void CreateRoom(Point p)
+        {
+            Tile t = GetTile(p);
+            if (t != null && t.Room == null)
             {
-                {0, 0},
-                {-1, -1},
-                {-0, -1},
-                {1, -1},
-                {1, 0},
-                {1, 1},
-                {0, 1},
-                {-1, 1},
-                {-1, 0}
-            };
-            for (var i = 0; i < surroundingtiles.GetLength(0); i++)
+                Room r = new Room(p, this);
+                Rooms.Add(r);
+            }
+        }
+
+        public void RecalcRooms()
+        {
+            Rooms.Clear();
+            for (int i = 0; i < Size; i++)
             {
-                Point v = new Point(position.X + surroundingtiles[i, 0], position.Y + surroundingtiles[i, 1]);
-                BaseTile t = GetTile(v, layer);
-                if (t != null)
-                    t.Dirty = true;
+                for (int j = 0; j < Size; j++)
+                {
+                    GetTile(new Point(i, j)).Room = null;
+                }
+            }
+            for (int i = 0; i < Size; i++)
+            {
+                for (int j = 0; j < Size; j++)
+                {
+                    CreateRoom(new Point(i, j));
+                }
             }
         }
 
@@ -432,28 +426,10 @@ namespace Hivemind.World
         /// <param name="position"></param>
         public void RenderFloor(Point position)
         {
-            BaseTile f = GetTile(position, Layer.FLOOR);
-            if (f != null)
-            {
-                if (f.GetType() == typeof(HoloTile))
-                    ((HoloTile)f).Child.Dirty = true;
-                if (f.GetType().IsSubclassOf(typeof(BaseFloor)))
-                {
-                    ((BaseFloor)f).Dirty = true;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates the render index of the tile at the given position
-        /// </summary>
-        public void UpdateRenderIndex(Point position, Layer layer)
-        {
-            BaseTile t = GetTile(position, layer);
-            if(t != null)
-            {
-                // TODO: Update tile render index
-            }
+            Tile t = GetTile(position);
+            if (t == null || t.Floor == null)
+                return;
+            t.Floor.Dirty = true;
         }
 
         public void Update(GameTime gameTime)
@@ -464,18 +440,19 @@ namespace Hivemind.World
                 e.Value.Update(gameTime);
             }
 
-            foreach (var e in TileEntities)
-                if (e != null)
-                    if (e.Updated = Updated)
+            foreach (var e in Tiles)
+            {
+                if (e.TileEntity != null)
+                    if (e.TileEntity.Updated = Updated)
                     {
-                        e.Updated = !e.Updated;
-                        e.Update(gameTime);
+                        e.TileEntity.Updated = !e.TileEntity.Updated;
+                        e.TileEntity.Update(gameTime);
                     }
-
-            foreach (var t in Tiles)
-                if (t != null)
-                    t.Update(gameTime);
-
+                if (e.Floor != null)
+                    e.Floor.Update(gameTime);
+                if (e.Wall != null)
+                    e.Wall.Update(gameTime);
+            }
         }
 
         public void DrawFloor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
@@ -581,24 +558,14 @@ namespace Hivemind.World
                 {
                     for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                     {
-                        var tile = GetTile(new Point(x, y), Layer.FLOOR);
+                        var ti = GetTile(new Point(x, y));
+                        if (ti == null)
+                            continue;
+                        var tile = ti.Floor;
                         if (tile == null)
                             continue;
                         if (!tile.Dirty)
                             continue;
-
-                        BaseFloor floor;
-
-                        bool holographic = false;
-                        if(tile.GetType() == typeof(HoloTile))
-                        {
-                            holographic = true;
-                            floor = (BaseFloor)((HoloTile)tile).Child;
-                        }
-                        else
-                        {
-                            floor = (BaseFloor)tile;
-                        }
 
                         Point converted_coords = new Point(x - BufferPosition.X, y - BufferPosition.Y);
                         if (converted_coords.X >= BufferSize.X)
@@ -606,31 +573,20 @@ namespace Hivemind.World
                         if (converted_coords.Y >= BufferSize.Y)
                             converted_coords.Y -= BufferSize.Y;
 
-                        if (holographic && floor.FloorLayer == l + 1)
-                        {
-                            spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), Color.Black);
-                        }
 
-                        if (floor.FloorLayer == l)
+                        if (tile.FloorLayer == l)
                         {
-                            var color = Color.White;
-                            if (holographic)
-                                color = new Color(1, 1, 1, 0.5f);
-                            spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), color);
+                            spriteBatch.Draw(FloorMask.Solid, new Vector2(converted_coords.X * TileManager.TileSize, converted_coords.Y * TileManager.TileSize), Color.White);
                         }
-                        else if (floor.FloorLayer < l)
+                        else if (tile.FloorLayer < l)
                         {
                             int index = 0;
                             for (int n = 0; n < 8; n++)
                             {
-                                var ctile = GetTile(new Point(x + FloorMask.indices[n, 0], y + FloorMask.indices[n, 1]), Layer.FLOOR);
-                                if (ctile == null)
+                                var ctile = GetTile(new Point(x + FloorMask.indices[n, 0], y + FloorMask.indices[n, 1]));
+                                if (ctile == null || ctile.Floor == null)
                                     continue;
-                                if(ctile.GetType() == typeof(HoloTile) && ((BaseFloor)((HoloTile)ctile).Child).FloorLayer >= l)
-                                {
-                                    index += 1 << n;
-                                }
-                                else if (ctile.GetType().IsSubclassOf(typeof(BaseFloor)) && ((BaseFloor)ctile).FloorLayer >= l) //Tile is "solid" for layer
+                                else if (ctile.Floor.FloorLayer >= l) //Tile is "solid" for layer
                                 {
                                     index += 1 << n;
                                 }
@@ -678,10 +634,10 @@ namespace Hivemind.World
             {
                 for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
                 {
-                    var tile = GetTile(new Point(x, y), Layer.FLOOR);
-                    if (tile == null)
+                    var tile = GetTile(new Point(x, y));
+                    if (tile == null || tile.Floor == null)
                         continue;
-                    tile.Dirty = false;
+                    tile.Floor.Dirty = false;
                 }
             }
         }
@@ -754,7 +710,7 @@ namespace Hivemind.World
             {
                 for (int y = (int)p1.Y; y < p2.Y; y++)
                 {
-                    HoloTile t = GetHoloTile(new Point(x, y), Layer.FLOOR);
+                    HoloTile t = GetTile(new Point(x, y)).HoloFloor;
                     if (t != null)
                     {
                         t.Draw(spriteBatch);
@@ -772,7 +728,7 @@ namespace Hivemind.World
                 {
 
 
-                    TileEntity e = TileEntities[x, y];
+                    TileEntity e = GetTile(new Point(x, y)).TileEntity;
                     if (e != null)
                         if (e.Rendered == null || e.Rendered == Rendered)
                         {
@@ -792,13 +748,13 @@ namespace Hivemind.World
             {
                 for (int y = (int)p1.Y; y < p2.Y; y++)
                 {
-                    BaseTile t = GetTile(new Point(x, y), Layer.WALL);
+                    BaseTile t = GetTile(new Point(x, y)).Wall;
                     if(t != null)
                     {
                         t.Draw(spriteBatch);
                     }
 
-                    HoloTile ht = GetHoloTile(new Point(x, y), Layer.WALL);
+                    HoloTile ht = GetTile(new Point(x, y)).HoloWall;
                     if (ht != null)
                     {
                         ht.Draw(spriteBatch);

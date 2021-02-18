@@ -1,6 +1,6 @@
 ﻿using Hivemind.World.Entity;
-using Hivemind.World.Tile;
-using Hivemind.World.Tile.Floor;
+using Hivemind.World.Tiles;
+using Hivemind.World.Tiles.Floor;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -16,8 +16,7 @@ namespace Hivemind.World
 
         public TileEntity TEntity;
         public MovingEntity MEntity;
-        public Dictionary<Point, BaseTile>[] Tiles;
-        public Dictionary<Point, BaseTile> Floors => Tiles[(int)Layer.FLOOR];
+        public Dictionary<Point, Tile> Tiles;
         public Dictionary<Point, bool> DirtyFloor;
 
         public bool Rendered = false;
@@ -34,36 +33,20 @@ namespace Hivemind.World
 
         public EditorTileMap()
         {
-            Tiles = new Dictionary<Point, BaseTile>[(int)Layer.LENGTH];
-            for (int i = 0; i < (int)Layer.LENGTH; i++)
-            {
-                Tiles[i] = new Dictionary<Point, BaseTile>();
-            }
+            Tiles = new Dictionary<Point, Tile>();
             DirtyFloor = new Dictionary<Point, bool>();
         }
 
         public float GetLayerDepth(int y) => Owner.GetLayerDepth(y);
 
         public bool InBounds(Point position) => Owner.InBounds(position);
-        public BaseTile GetTile(Point position, Layer layer)
+        public Tile GetTile(Point position)
         {
             if (InBounds(position))
             {
-                if (Tiles[(int)layer].ContainsKey(position))
+                if (Tiles.ContainsKey(position))
                 {
-                    return Tiles[(int)layer][position];
-                }
-            }
-            return null;
-        }
-
-        public BaseFloor GetFloor(Point position)
-        {
-            if (InBounds(position))
-            {
-                if (Floors.ContainsKey(position))
-                {
-                    return (BaseFloor)Floors[position];
+                    return Tiles[position];
                 }
             }
             return null;
@@ -77,27 +60,51 @@ namespace Hivemind.World
             }
         }
 
-        public void SetTile(BaseTile tile)
+        public void SetTile(Point pos, BaseTile tile)
         {
-            if (InBounds(tile.Pos))
+            if (InBounds(pos))
             {
-                if (Tiles[(int)tile.Layer].TryAdd(tile.Pos, tile))
-                    tile.Parent = this;
+
+                if (Tiles.ContainsKey(pos))
+                {
+                    switch (tile.Layer)
+                    {
+                        case Layer.WALL:
+                            if (Tiles[pos].Wall == null)
+                                Tiles[pos].Wall = (BaseWall)tile;
+                            break;
+                        case Layer.FLOOR:
+                            if (Tiles[pos].Floor == null)
+                                Tiles[pos].Floor = (BaseFloor)tile;
+                            break;
+                    }
+
+                }
+                else
+                {
+                    Tile t = new Tile(pos, this);
+                    switch (tile.Layer)
+                    {
+                        case Layer.WALL:
+                            t.Wall = (BaseWall)tile;
+                            break;
+                        case Layer.FLOOR:
+                            t.Floor = (BaseFloor)tile;
+                            break;
+                    }
+                }
             }
         }
 
         public void ClearTiles()
         {
-            for (int i = 0; i < Tiles.Length; i++)
-            {
-                Tiles[i].Clear();
-            }
+            Tiles.Clear();
         }
 
         public void RemoveTile(Point position, Layer layer)
         {
-            if (Tiles[(int)layer].ContainsKey(position))
-                Tiles[(int)layer].Remove(position);
+            if (Tiles.ContainsKey(position))
+                Tiles.Remove(position);
         }
 
         public void Render(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
@@ -130,9 +137,9 @@ namespace Hivemind.World
             graphicsDevice.Clear(Color.TransparentBlack);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            foreach (KeyValuePair<Point, BaseTile> pair in Tiles[(int)Layer.FLOOR])
+            foreach (KeyValuePair<Point, Tile> pair in Tiles)
             {
-                var f = (BaseFloor) pair.Value;
+                var f = pair.Value.Floor;
                 Texture2D t = FloorMask.Textures[f.FloorLayer];
 
                 Rectangle sourceRectangle = new Rectangle((int)(f.Pos.X * TileManager.TileSize % t.Width), (int)(f.Pos.Y * TileManager.TileSize % t.Height), TileManager.TileSize, TileManager.TileSize);
@@ -141,9 +148,9 @@ namespace Hivemind.World
             spriteBatch.End();
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            foreach (KeyValuePair<Point, BaseTile> t in Tiles[(int)Layer.WALL])
+            foreach (KeyValuePair<Point, Tile> t in Tiles)
             {
-                t.Value.Draw(spriteBatch);
+                t.Value.Wall.Draw(spriteBatch);
             }
             spriteBatch.End();
 

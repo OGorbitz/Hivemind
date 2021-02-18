@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Hivemind.World.Tile.Floor
+namespace Hivemind.World.Tiles.Floor
 {
     [Serializable]
     class Floor_Grass : BaseFloor
@@ -30,7 +30,7 @@ namespace Hivemind.World.Tile.Floor
 
 
         //Constructors and serializers
-        public Floor_Grass(Point p) : base(p)
+        public Floor_Grass()
         {
         }
         public Floor_Grass(SerializationInfo info, StreamingContext context) : base(info, context)

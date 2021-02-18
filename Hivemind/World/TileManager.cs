@@ -1,5 +1,5 @@
-﻿using Hivemind.World.Tile.Floor;
-using Hivemind.World.Tile.Wall;
+﻿using Hivemind.World.Tiles.Floor;
+using Hivemind.World.Tiles.Wall;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;

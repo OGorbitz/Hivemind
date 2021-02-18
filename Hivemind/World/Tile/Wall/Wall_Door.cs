@@ -4,10 +4,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Hivemind.World.Tile.Wall
+namespace Hivemind.World.Tiles.Wall
 {
     [Serializable]
-    public class Wall_Door : BaseTile
+    public class Wall_Door : BaseWall
     {
         //Static variables
         public const string UName = "Wall_Dirt";
@@ -32,12 +32,12 @@ namespace Hivemind.World.Tile.Wall
         
 
 
-        public Wall_Door(Point p) : base(p)
+        public Wall_Door()
         {
             Rotation = false;
         }
 
-        public Wall_Door(bool r, Point p) : base(p)
+        public Wall_Door(bool r)
         {
             Rotation = r;
         }

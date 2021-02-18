@@ -1,4 +1,4 @@
-﻿using Hivemind.World.Tile;
+﻿using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Hivemind.World.Colony
 
     public abstract class BaseTask
     {
-        public TaskManager Parent;
+        public TaskManager TaskManager;
         public TaskType Type;
         public int WorkRequired, WorkDone;
         public int Priority;
@@ -34,7 +34,7 @@ namespace Hivemind.World.Colony
         public BaseTask(int workRequired, TaskManager parent)
         {
             WorkRequired = workRequired;
-            Parent = parent;
+            TaskManager = parent;
         }
 
         public virtual void DoWork(int work)
@@ -46,7 +46,7 @@ namespace Hivemind.World.Colony
 
         public virtual void TaskFinished()
         {
-            Parent.Tasks.Remove(this);
+            TaskManager.Tasks.Remove(this);
         }
     }
 
@@ -62,8 +62,7 @@ namespace Hivemind.World.Colony
         public override void TaskFinished()
         {
             base.TaskFinished();
-            Tile.Child.IsHolo = false;
-            Parent.Parent.SetTile(Tile.Child);
+            TaskManager.Parent.SetTile(Tile.Pos, Tile.Child);
         }
     }
 }

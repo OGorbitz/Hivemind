@@ -1,6 +1,6 @@
 ﻿using Hivemind.World;
-using Hivemind.World.Tile;
-using Hivemind.World.Tile.Floor;
+using Hivemind.World.Tiles;
+using Hivemind.World.Tiles.Floor;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -53,8 +53,8 @@ namespace Hivemind.Utility
             {
                 node.Blocked = false;
 
-                BaseTile wall = WorldManager.GetActiveTileMap().GetTile(position, Layer.WALL);
-                BaseTile floor = WorldManager.GetActiveTileMap().GetTile(position, Layer.FLOOR);
+                BaseWall wall = WorldManager.GetActiveTileMap().GetTile(position).Wall;
+                BaseFloor floor = WorldManager.GetActiveTileMap().GetTile(position).Floor;
 
                 if (wall == null)
                 {

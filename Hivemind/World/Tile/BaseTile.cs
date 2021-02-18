@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Hivemind.World.Tile
+namespace Hivemind.World.Tiles
 {
     [Serializable]
     public abstract class BaseTile : ISerializable
@@ -24,20 +24,27 @@ namespace Hivemind.World.Tile
         public virtual int BuildWork => UBuildWork;
 
         //Instance variables
-        public Point Pos { get; private set; }
+        public Tile Tile;
+        public Point Pos => Tile.Pos;
+
 
         /// <summary>
         /// True if tile render index needs to be updated
         /// </summary>
         public bool Dirty = true;
-        public bool IsHolo;
+        public bool IsHolo = false;
 
         public ITileMap Parent;
 
         //Constructors and serializers
-        public BaseTile(Point p)
+        public BaseTile()
         {
-            Pos = p;
+        }
+
+        public virtual void SetParent(Tile tile, ITileMap tileMap)
+        {
+            Tile = tile;
+            Parent = tileMap;
         }
 
         public BaseTile(SerializationInfo info, StreamingContext context)
@@ -54,14 +61,11 @@ namespace Hivemind.World.Tile
             Draw(spriteBatch, Color.White);
         }
         public abstract void Draw(SpriteBatch spriteBatch, Color color);
-        
+
         /// <summary>
         /// Actions to be performed if tile is destroyed
         /// </summary>
-        public virtual void Destroy()
-        {
-            Parent.RemoveTile(Pos, Layer);
-        }
+        public abstract void Destroy();
 
         /// <summary>
         /// Actions to be performed on tile update call
@@ -94,14 +98,17 @@ namespace Hivemind.World.Tile
         public override float Resistance => UResistance;
         public override Layer Layer => ULayer;
 
-        public Room Room;
-
         //Constructors and serializers
-        public BaseFloor(Point p) : base(p)
+        public BaseFloor()
         {
         }
         public BaseFloor(SerializationInfo info, StreamingContext context) : base(info, context)
         {
+        }
+
+        public override void Destroy()
+        {
+            Tile.Floor = null;
         }
     }
 
@@ -118,11 +125,16 @@ namespace Hivemind.World.Tile
         public override Layer Layer => ULayer;
 
 
-        public BaseWall(Point p) : base(p)
+        public BaseWall()
         {
         }
         public BaseWall(SerializationInfo info, StreamingContext context) : base(info, context)
         {
+        }
+
+        public override void Destroy()
+        {
+            Tile.Wall = null;
         }
     }
 
@@ -150,14 +162,16 @@ namespace Hivemind.World.Tile
         public override Layer Layer => Child.Layer;
         public override int BuildWork => Child.BuildWork;
 
-        public HoloTile(BaseTile tile) : base(tile.Pos)
+        public HoloTile(BaseTile tile)
         {
             Child = tile;
             Child.IsHolo = true;
         }
 
-        public void SetParent(TileMap parent)
+        public override void SetParent(Tile tile, ITileMap parent)
         {
+            Tile = tile;
+            Child.Tile = tile;
             Parent = parent;
             Child.Parent = parent;
         }
@@ -176,6 +190,19 @@ namespace Hivemind.World.Tile
         public override void Draw(SpriteBatch spriteBatch, Color color)
         {
             Child.Draw(spriteBatch, new Color(0.25f, 0.5f, 0.125f, 0.75f));
+        }
+
+        public override void Destroy()
+        {
+            switch (Layer)
+            {
+                case Layer.WALL:
+                    Tile.HoloWall = null;
+                    break;
+                case Layer.FLOOR:
+                    Tile.HoloFloor = null;
+                    break;
+            }
         }
     }
 }

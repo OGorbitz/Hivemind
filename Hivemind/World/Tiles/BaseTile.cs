@@ -1,4 +1,5 @@
 ﻿using Hivemind.World.Colony;
+using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -29,6 +30,7 @@ namespace Hivemind.World.Tile
         /// True if tile render index needs to be updated
         /// </summary>
         public bool Dirty = true;
+        public bool IsHolo;
 
         public ITileMap Parent;
 
@@ -92,12 +94,34 @@ namespace Hivemind.World.Tile
         public override float Resistance => UResistance;
         public override Layer Layer => ULayer;
 
+        public Room Room;
 
         //Constructors and serializers
         public BaseFloor(Point p) : base(p)
         {
         }
         public BaseFloor(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
+
+    public abstract class BaseWall : BaseTile
+    {
+        //Static variables
+        public const float UResistance = 0;
+        public new const Layer ULayer = Layer.WALL;
+
+        /// <summary>
+        /// A float resistance modifier for pathfinding. 1 is normal movement, lower is easier, higher is more difficult.
+        /// </summary>
+        public override float Resistance => UResistance;
+        public override Layer Layer => ULayer;
+
+
+        public BaseWall(Point p) : base(p)
+        {
+        }
+        public BaseWall(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }
@@ -129,6 +153,7 @@ namespace Hivemind.World.Tile
         public HoloTile(BaseTile tile) : base(tile.Pos)
         {
             Child = tile;
+            Child.IsHolo = true;
         }
 
         public void SetParent(TileMap parent)
@@ -150,7 +175,7 @@ namespace Hivemind.World.Tile
 
         public override void Draw(SpriteBatch spriteBatch, Color color)
         {
-            Child.Draw(spriteBatch, new Color(0.4f, 0.6f, 0, 0.7f));
+            Child.Draw(spriteBatch, new Color(0.25f, 0.5f, 0.125f, 0.75f));
         }
     }
 }

@@ -62,6 +62,7 @@ namespace Hivemind.World.Colony
         public override void TaskFinished()
         {
             base.TaskFinished();
+            Tile.Child.IsHolo = false;
             Parent.Parent.SetTile(Tile.Child);
         }
     }

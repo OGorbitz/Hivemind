@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Hivemind.World.Entity.Moving
 {
-    class Material
+    public class Material
     {
         public Texture2D Texture;
         public string Name { get; private set; }
@@ -23,18 +23,33 @@ namespace Hivemind.World.Entity.Moving
         public static readonly Material IronOre = new Material("Iron Ore", "IronOre");
     }
 
-    class DroppedMaterial : MovingEntity
+    public class DroppedMaterial : MovingEntity
     {
-        public Material Type;
+        public readonly Point USize = new Point(32, 32);
+        public override Point Size => USize;
+        public override string Type => MaterialType.Name;
 
-        public DroppedMaterial(Point pos, Material material) : base((pos.ToVector2() + new Vector2(0.25f + 0.5f * Helper.Random(), 0.25f + 0.5f * Helper.Random())) * TileManager.TileSize)
+
+        public Material MaterialType;
+        public float Amount;
+        
+        public override Rectangle Bounds
         {
-            Type = material;
+            get
+            {
+                return new Rectangle((int)(Pos.X - Size.X / 2), (int)(Pos.Y - Size.Y / 2), Size.X, Size.Y);
+            }
+        }
+
+        public DroppedMaterial(Point pos, Material material, float amount) : base((pos.ToVector2() + new Vector2(0.25f + 0.5f * Helper.Random(), 0.25f + 0.5f * Helper.Random())) * TileManager.TileSize)
+        {
+            MaterialType = material;
+            Amount = amount;
         }
 
         public DroppedMaterial(Vector2 pos, Material material) : base(pos)
         {
-            Type = material;
+            MaterialType = material;
         }
 
         public DroppedMaterial(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -43,8 +58,8 @@ namespace Hivemind.World.Entity.Moving
 
         public override void Draw(SpriteBatch spriteBatch, GameTime gameTime)
         {
-            spriteBatch.Draw(Type.Texture, new Rectangle((int)(Pos.X - Type.Texture.Width / 2), (int)(Pos.Y - Type.Texture.Height / 2), Type.Texture.Width, Type.Texture.Height),
-                new Rectangle(0, 0, Type.Texture.Width, Type.Texture.Height),
+            spriteBatch.Draw(MaterialType.Texture, new Rectangle((int)(Pos.X - MaterialType.Texture.Width / 2), (int)(Pos.Y - MaterialType.Texture.Height / 2), MaterialType.Texture.Width, MaterialType.Texture.Height),
+                new Rectangle(0, 0, MaterialType.Texture.Width, MaterialType.Texture.Height),
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None,
                 layerDepth: Parent.GetLayerDepth((int)Pos.Y / TileManager.TileSize) + 0.0005f);
         }

@@ -23,6 +23,8 @@ namespace Hivemind.World
         public float GetLayerDepth(int y);
     }
 
+    public enum Visibility { HIDDEN, KNOWN, VISIBLE }
+
     [Serializable]
     public class TileMap : ITileMap
     {
@@ -46,8 +48,6 @@ namespace Hivemind.World
             AlphaDestinationBlend = Blend.One
         };
 
-
-
         //Specific data
         public int Size;
         public Rectangle Bounds
@@ -57,6 +57,8 @@ namespace Hivemind.World
                 return new Rectangle(0, 0, Size, Size);
             }
         }
+
+        private Visibility[,] Visible;
         private BaseTile[,,] Tiles;
         private HoloTile[,,] HoloTiles;
         private TileEntity[,] TileEntities;
@@ -73,6 +75,7 @@ namespace Hivemind.World
         public TileMap(int s)
         {
             Size = s;
+            Visible = new Visibility[Size, Size];
             Tiles = new BaseTile[s, s, (int) Layer.LENGTH];
             HoloTiles = new HoloTile[s, s, (int)Layer.LENGTH];
             Cam = new Camera(this);
@@ -94,6 +97,8 @@ namespace Hivemind.World
             {
                 for (var y = 0; y < Size; y++)
                 {
+                    Visible[x, y] = Visibility.HIDDEN;
+
                     var pos = new Point(x, y);
                     SetTile(new Floor_Concrete(pos));
                     var rr = new Rectangle(5, 5, 5, 3);
@@ -299,7 +304,15 @@ namespace Hivemind.World
 
         public List<MovingEntity> GetEntities(Rectangle region)
         {
-            return EntityHash.GetMembers(region);
+            List<MovingEntity> entities = EntityHash.GetMembers(region);
+
+            for(int i = entities.Count - 1; i > 0; i--)
+            {
+                if (!region.Contains(entities[i].Pos))
+                    entities.RemoveAt(i);
+            }
+
+            return entities;
         }
 
         public void AddEntity(MovingEntity entity)

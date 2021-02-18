@@ -67,7 +67,7 @@ namespace Hivemind.World.Tile.Wall
             base.Destroy();
             if(Parent.GetType() == typeof(TileMap))
             {
-                ((TileMap)Parent).AddEntity(new DroppedMaterial(Pos, Material.CrushedRock));
+                ((TileMap)Parent).AddEntity(new DroppedMaterial(Pos, Material.CrushedRock, 1000));
             }
         }
 
@@ -93,15 +93,29 @@ namespace Hivemind.World.Tile.Wall
             if (Dirty)
                 UpdateRenderIndex();
 
-            var dest = new Rectangle(
-                new Point((int) Pos.X * TileManager.TileSize,
-                    (int) Pos.Y * TileManager.TileSize - TileManager.WallHeight),
-                new Point(TileManager.TileSize, TileManager.TileSize + TileManager.WallHeight));
+            Rectangle dest;
+            Rectangle source = TextureAtlas.GetSourceRect(Tex[renderindex]);
 
+            if (!IsHolo || (Parent.GetType() == typeof(TileMap) && ((TileMap)Parent).GetHoloTile(Pos + new Point(0, 1), Layer) == null))
+            {
+                dest = new Rectangle(
+                    new Point((int)Pos.X * TileManager.TileSize,
+                        (int)Pos.Y * TileManager.TileSize - TileManager.WallHeight),
+                    new Point(TileManager.TileSize, TileManager.TileSize + TileManager.WallHeight));
+            }
+            else
+            {
+                source.Height = TileManager.TileSize;
+                dest = new Rectangle(
+                    new Point((int)Pos.X * TileManager.TileSize,
+                        (int)Pos.Y * TileManager.TileSize - TileManager.WallHeight),
+                    new Point(TileManager.TileSize, TileManager.TileSize));
+            }
+            
             spriteBatch.Draw(
                 TextureAtlas.Atlas,
                 destinationRectangle: dest,
-                sourceRectangle: TextureAtlas.GetSourceRect(Tex[renderindex]),
+                sourceRectangle: source,
                 rotation: 0f,
                 origin: Vector2.Zero,
                 effects: SpriteEffects.None,

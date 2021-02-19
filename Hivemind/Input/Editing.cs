@@ -17,6 +17,7 @@ namespace Hivemind.Input
         public static EditShape Shape = EditShape.LINE;
         public static PlacingType PlacingType { get; private set; } = PlacingType.TILE;
         public static Type SelectedType { get; private set; } = typeof(Wall_Cinderblock);
+        public static bool PlaceHolo = false;
 
         public static Point Start;
 
@@ -45,8 +46,16 @@ namespace Hivemind.Input
 
             if(Shape == EditShape.SINGLE)
             {
-                HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType, start));
-                WorldManager.GetActiveTileMap().SetTile(start, t);
+                if (PlaceHolo)
+                {
+                    HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType));
+                    WorldManager.GetActiveTileMap().SetTile(start, t);
+                }
+                else
+                {
+                    BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType);
+                    WorldManager.GetActiveTileMap().SetTile(start, t);
+                }
             }
         }
 
@@ -62,8 +71,16 @@ namespace Hivemind.Input
                 {
                     if(action == Action.BUILD)
                     {
-                        HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType, current));
-                        WorldManager.GetActiveTileMap().SetTile(current, t);
+                        if (PlaceHolo)
+                        {
+                            HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType));
+                            WorldManager.GetActiveTileMap().SetTile(current, t);
+                        }
+                        else
+                        {
+                            BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType);
+                            WorldManager.GetActiveTileMap().SetTile(current, t);
+                        }
                         Start = current;
                     }
                     else if (action == Action.DESTROY)
@@ -119,8 +136,16 @@ namespace Hivemind.Input
                     }
                     else if(action == Action.BUILD)
                     {
-                        HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType));
-                        WorldManager.GetActiveTileMap().SetTile(p, t);
+                        if (PlaceHolo)
+                        {
+                            HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType));
+                            WorldManager.GetActiveTileMap().SetTile(p, t);
+                        }
+                        else
+                        {
+                            BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType);
+                            WorldManager.GetActiveTileMap().SetTile(p, t);
+                        }
                     }
                 }
             }

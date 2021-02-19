@@ -318,7 +318,7 @@ namespace Hivemind.GUI
             };
             menuItem.Selected += (s, a) =>
             {
-                WorldManager.SetActiveTileMap(new TileMap(40));
+                WorldManager.SetActiveTileMap(new TileMap(320));
                 GameStateManager.SetState(GameState.TILEMAP);
             };
             verticalMenu.Items.Add(menuItem);

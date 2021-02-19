@@ -11,14 +11,9 @@ namespace Hivemind.World.Tiles
     {
         int[,] Neighbors =
 {
-                {0, 0},
-                {-1, -1},
-                {-0, -1},
-                {1, -1},
+                {0, -1},
                 {1, 0},
-                {1, 1},
                 {0, 1},
-                {-1, 1},
                 {-1, 0}
             };
 
@@ -83,31 +78,44 @@ namespace Hivemind.World.Tiles
                 {
                     if (value == null)
                     {
+                        List<Room> rooms = new List<Room>();
+                        Room biggest = null;
+
                         for (int i = 0; i < Neighbors.GetLength(0); i++)
                         {
                             Point p = Pos + new Point(Neighbors[i, 0], Neighbors[i, 1]);
                             Tile t = Parent.GetTile(p);
-                            if (t.Room != null)
+                            if (t != null && t.Room != null)
                             {
-                                t.Room.Destroy();
+                                if (biggest == null)
+                                    biggest = t.Room;
+                                else if (biggest.Size < t.Room.Size)
+                                {
+                                    rooms.Add(biggest);
+                                    biggest = t.Room;
+                                }
+                                else if (!rooms.Contains(t.Room))
+                                    rooms.Add(t.Room);
                             }
                         }
-                        ((TileMap)Parent).CreateRoom(Pos);
+
+                        if (biggest != null)
+                        {
+                            biggest.AddTile(Pos);
+                            foreach (Room r in rooms)
+                            {
+                                biggest.MergeRoom(r);
+                            }
+                        }
+                        else
+                        {
+                            ((TileMap)Parent).CreateRoom(Pos);
+                        }
                     }
                     else
                     {
-                        Tile tile = Parent.GetTile(Pos);
-                        if (tile.Room != null)
-                            tile.Room.Destroy();
-                        for (int i = 0; i < Neighbors.GetLength(0); i++)
-                        {
-                            Point p = Pos + new Point(Neighbors[i, 0], Neighbors[i, 1]);
-                            Tile t = Parent.GetTile(p);
-                            if (t == null || t.Room == null)
-                            {
-                                ((TileMap)Parent).CreateRoom(p);
-                            }
-                        }
+                        if(Room != null)
+                            Room.SplitRoom(Pos);
                     }
                 }
             }
@@ -150,6 +158,7 @@ namespace Hivemind.World.Tiles
         public readonly bool Real = true;
 
         public Room Room;
+        public RoomTask RoomUpdate = RoomTask.NONE;
 
         public Tile(Point pos, ITileMap parent, bool real)
         {

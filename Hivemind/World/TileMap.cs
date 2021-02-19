@@ -60,7 +60,7 @@ namespace Hivemind.World
         private Tile[,] Tiles;
         private Dictionary<int, MovingEntity> Entities;
         private SpacialHash<MovingEntity> EntityHash;
-        private List<Room> Rooms = new List<Room>();
+        public List<Room> Rooms = new List<Room>();
 
         public TaskManager Tasks;
 

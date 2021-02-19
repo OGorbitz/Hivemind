@@ -1,13 +1,11 @@
 ﻿using Hivemind.World.Entity;
 using Hivemind.World.Entity.Moving;
-using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Hivemind.World.Tiles
 {
+    public enum RoomTask { NONE, MERGE, SPLIT }
     public class Room
     {
         int[,] Neighbors = new int[,]
@@ -24,44 +22,178 @@ namespace Hivemind.World.Tiles
         }
         
         TileMap TileMap;
-        List<Point> OpenTiles = new List<Point>();
-        Dictionary<Point, RoomTile> Tiles = new Dictionary<Point, RoomTile>();
+        public Dictionary<Point, RoomTile> Tiles;
         Dictionary<Material, float> Materials = new Dictionary<Material, float>();
 
         public Room(Point position, TileMap tileMap)
         {
+            List<Point> OpenTiles = new List<Point>();
+
             TileMap = tileMap;
+            Tiles = new Dictionary<Point, RoomTile>();
             OpenTiles.Add(position);
 
-            CheckRoom();
-        }
-
-        public void CheckRoom()
-        {
             while (true)
             {
                 if (OpenTiles.Count <= 0)
                     break;
 
-                Point add = OpenTiles[0];
+                Point p = OpenTiles[0];
                 OpenTiles.RemoveAt(0);
 
-                RoomTile tile = new RoomTile(add, TileMap);
+                RoomTile tile = new RoomTile(p, TileMap);
 
                 if (tile.Usable)
                 {
-                    Tiles.TryAdd(add, tile);
+                    Tiles.TryAdd(p, tile);
                     tile.Tile.Room = this;
 
                     for (int i = 0; i < Neighbors.GetLength(0); i++)
                     {
-                        Point p = add + new Point(Neighbors[i, 0], Neighbors[i, 1]);
-                        if (!Tiles.ContainsKey(p) && !OpenTiles.Contains(p))
+                        Point pt = p + new Point(Neighbors[i, 0], Neighbors[i, 1]);
+                        if (!Tiles.ContainsKey(pt) && !OpenTiles.Contains(pt))
                         {
-                            OpenTiles.Add(p);
+                            OpenTiles.Add(pt);
                         }
                     }
                 }
+            }
+        }
+
+        public Room(Dictionary<Point, RoomTile> tiles, TileMap tileMap)
+        {
+            TileMap = tileMap;
+            Tiles = tiles;
+
+            foreach(KeyValuePair<Point, RoomTile> t in Tiles)
+            {
+                t.Value.Tile.Room = this;
+            }
+        }
+
+        public void SplitRoom(Point pos)
+        {
+            if (Tiles.ContainsKey(pos))
+            {
+                Tiles[pos].Tile.Room = null;
+                Tiles.Remove(pos);
+            }
+            else
+                return;
+
+            List<ScanRoom> rooms = new List<ScanRoom>();
+            List<ScanRoom> finishedRooms = new List<ScanRoom>();
+
+            for (int i = 0; i < Neighbors.GetLength(0); i++)
+            {
+                Point p = pos + new Point(Neighbors[i, 0], Neighbors[i, 1]);
+                ScanRoom r = new ScanRoom();
+                r.OpenTiles.Add(p);
+                rooms.Add(r);
+            }
+
+            //For each unfinished splitroom
+            while (rooms.Count > 1)
+            {
+                for(int i = rooms.Count - 1; i >= 0; i--)
+                {
+                    ScanRoom r = rooms[i];
+                    if (r.OpenTiles.Count <= 0)
+                    {
+                        rooms.Remove(r);
+                        finishedRooms.Add(r);
+                        continue;
+                    }
+
+                    Point p = r.OpenTiles[0];
+                    r.OpenTiles.RemoveAt(0);
+
+                    RoomTile t = new RoomTile(p, TileMap);
+                    if (t.Usable)
+                    {
+                        r.Tiles.TryAdd(p, t);
+
+                        for (int j = 0; j < Neighbors.GetLength(0); j++)
+                        {
+                            Point pt = p + new Point(Neighbors[j, 0], Neighbors[j, 1]);
+                            if (!r.Tiles.ContainsKey(pt) && !r.ClosedTiles.Contains(pt) && !r.OpenTiles.Contains(pt))
+                            {
+                                r.OpenTiles.Add(pt);
+                            }
+                        }
+
+                        foreach (ScanRoom sr in rooms)
+                        {
+                            if (sr == r)
+                                continue;
+                            if (sr.Tiles.ContainsKey(t.Pos))
+                            {
+                                sr.Merge(r);
+                                rooms.Remove(r);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        r.ClosedTiles.Add(p);
+                        if(r.Tiles.Count == 0)
+                        {
+                            rooms.Remove(r);
+                        }
+                    }
+                }
+            }
+
+            foreach(ScanRoom r in finishedRooms)
+            {
+                RemoveTiles(r.Tiles);
+
+                TileMap.Rooms.Add(new Room(r.Tiles, TileMap));
+            }
+
+        }
+
+        public void MergeRoom(Room r)
+        {
+            foreach(KeyValuePair<Point, RoomTile> t in r.Tiles){
+                if (!Tiles.ContainsKey(t.Key))
+                {
+                    Tiles.Add(t.Key, t.Value);
+                    t.Value.Tile.Room = this;
+                }
+            }
+        }
+
+        public void AddTile(Point p)
+        {
+            if (Tiles.ContainsKey(p))
+                return;
+
+            RoomTile tile = new RoomTile(p, TileMap);
+
+            if (tile.Usable)
+            {
+                Tiles.TryAdd(p, tile);
+                tile.Tile.Room = this;
+            }
+        }
+
+        public void AddTiles(Dictionary<Point, RoomTile> tiles)
+        {
+            foreach(KeyValuePair<Point, RoomTile> t in tiles)
+            {
+                if (!Tiles.ContainsKey(t.Key))
+                    Tiles.Add(t.Key, t.Value);
+            }
+        }
+
+        public void RemoveTiles(Dictionary<Point, RoomTile> tiles)
+        {
+            foreach (KeyValuePair<Point, RoomTile> t in tiles)
+            {
+                if (Tiles.ContainsKey(t.Key))
+                    Tiles.Remove(t.Key);
             }
         }
 
@@ -99,6 +231,27 @@ namespace Hivemind.World.Tiles
                 Usable = false;
             else
                 Usable = true;
+        }
+    }
+
+    public class ScanRoom
+    {
+        public Dictionary<Point, RoomTile> Tiles = new Dictionary<Point, RoomTile>();
+        public List<Point> OpenTiles = new List<Point>();
+        public List<Point> ClosedTiles = new List<Point>();
+
+        public void Merge(ScanRoom r)
+        {
+            foreach(KeyValuePair<Point, RoomTile> t in r.Tiles)
+            {
+                if (!Tiles.ContainsKey(t.Key))
+                    Tiles.Add(t.Key, t.Value);
+            }
+            foreach(Point p in r.OpenTiles)
+            {
+                if (!OpenTiles.Contains(p))
+                    OpenTiles.Add(p);
+            }
         }
     }
 }

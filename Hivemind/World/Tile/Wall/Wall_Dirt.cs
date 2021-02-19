@@ -67,8 +67,10 @@ namespace Hivemind.World.Tiles.Wall
 
             for (var i = 0; i < 4; i++)
             {
-                var t = Parent.GetTile(new Point((int)Pos.X + tilecheck[i, 1], (int)Pos.Y + tilecheck[i, 2])).Wall;
-                if (t != null && t.Name == Name) ri += tilecheck[i, 0];
+                var t = Parent.GetTile(new Point((int)Pos.X + tilecheck[i, 1], (int)Pos.Y + tilecheck[i, 2]));
+                if (t == null || t.Wall == null)
+                    continue;
+                if (t.Wall.Name == Name) ri += tilecheck[i, 0];
             }
 
             if (ri >= 16) ri = 0;

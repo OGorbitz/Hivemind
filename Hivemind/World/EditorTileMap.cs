@@ -70,12 +70,10 @@ namespace Hivemind.World
                     switch (tile.Layer)
                     {
                         case Layer.WALL:
-                            if (Tiles[pos].Wall == null)
-                                Tiles[pos].Wall = (BaseWall)tile;
+                            Tiles[pos].Wall = (BaseWall)tile;
                             break;
                         case Layer.FLOOR:
-                            if (Tiles[pos].Floor == null)
-                                Tiles[pos].Floor = (BaseFloor)tile;
+                            Tiles[pos].Floor = (BaseFloor)tile;
                             break;
                     }
 
@@ -92,6 +90,7 @@ namespace Hivemind.World
                             t.Floor = (BaseFloor)tile;
                             break;
                     }
+                    Tiles.Add(pos, t);
                 }
             }
         }
@@ -140,6 +139,8 @@ namespace Hivemind.World
             foreach (KeyValuePair<Point, Tile> pair in Tiles)
             {
                 var f = pair.Value.Floor;
+                if (f == null)
+                    continue;
                 Texture2D t = FloorMask.Textures[f.FloorLayer];
 
                 Rectangle sourceRectangle = new Rectangle((int)(f.Pos.X * TileManager.TileSize % t.Width), (int)(f.Pos.Y * TileManager.TileSize % t.Height), TileManager.TileSize, TileManager.TileSize);
@@ -150,6 +151,8 @@ namespace Hivemind.World
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             foreach (KeyValuePair<Point, Tile> t in Tiles)
             {
+                if (t.Value.Wall == null)
+                    continue;
                 t.Value.Wall.Draw(spriteBatch);
             }
             spriteBatch.End();

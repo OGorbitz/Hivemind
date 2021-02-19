@@ -9,7 +9,7 @@ namespace Hivemind.World.Tiles
 {
     public class Tile
     {
-        int[,] Neighbors =
+        static readonly int[,] Neighbors =
 {
                 {0, -1},
                 {1, 0},

@@ -39,6 +39,14 @@ namespace Hivemind.Utility
 
             Nodes = new Dictionary<Point, PathNode>();
             Nodes.Add(Start, CalcNode(Start, Start, 0));
+
+            if (start == end)
+            {
+                Path = new List<PathNode>();
+                Path.Add(new PathNode(start, start, 0));
+                Finished = true;
+                Solution = true;
+            }
         }
 
         public Pathfinder(Point start, Point end, int maxCycles, Calc calcNode) : this(start, end, maxCycles)

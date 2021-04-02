@@ -14,7 +14,12 @@ namespace Hivemind.World.Tiles
                 {0, -1},
                 {1, 0},
                 {0, 1},
-                {-1, 0}
+                {-1, 0},
+                {0, 0},
+                {-1, -1},
+                {1, -1},
+                {1, 1},
+                {-1, 1},
             };
 
         private BaseFloor _floor;
@@ -66,7 +71,7 @@ namespace Hivemind.World.Tiles
                 _wall = value;
                 if(_wall != null)
                     _wall.SetParent(this, Parent);
-                for (var i = 0; i < Neighbors.GetLength(0); i++)
+                for (var i = 0; i < 4; i++)
                 {
                     Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
                     Tile t = Parent.GetTile(v);
@@ -81,7 +86,7 @@ namespace Hivemind.World.Tiles
                         List<Room> rooms = new List<Room>();
                         Room biggest = null;
 
-                        for (int i = 0; i < Neighbors.GetLength(0); i++)
+                        for (int i = 0; i < 4; i++)
                         {
                             Point p = Pos + new Point(Neighbors[i, 0], Neighbors[i, 1]);
                             Tile t = Parent.GetTile(p);
@@ -130,7 +135,8 @@ namespace Hivemind.World.Tiles
             set
             {
                 _holoWall = value;
-                _holoWall.SetParent(this, Parent);
+                if(value != null)
+                    _holoWall.SetParent(this, Parent);
             }
         }
 
@@ -147,7 +153,7 @@ namespace Hivemind.World.Tiles
             {
                 _tileEntity = value;
                 if(value != null)
-                    _tileEntity.Parent = (TileMap)Parent;
+                    _tileEntity.TileMap = (TileMap)Parent;
             }
         }
 
@@ -159,6 +165,14 @@ namespace Hivemind.World.Tiles
 
         public Room Room;
         public RoomTask RoomUpdate = RoomTask.NONE;
+
+        public Rectangle WorldBounds
+        {
+            get
+            {
+                return new Rectangle(Pos.X * TileManager.TileSize, Pos.Y * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);
+            }
+        }
 
         public Tile(Point pos, ITileMap parent, bool real)
         {

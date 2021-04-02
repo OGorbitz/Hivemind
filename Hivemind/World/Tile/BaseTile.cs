@@ -1,4 +1,5 @@
 ﻿using Hivemind.World.Colony;
+using Hivemind.World.Entity.Moving;
 using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -142,7 +143,7 @@ namespace Hivemind.World.Tiles
     {
         public BaseTile Child;
         public BaseTask Task;
-
+        public Dictionary<Material, float> Materials = new Dictionary<Material, float>();
 
         public static RenderTarget2D RenderTarget;
 

@@ -1,7 +1,9 @@
-﻿using Hivemind.Input;
+﻿using Hivemind.GUI;
+using Hivemind.Input;
 using Hivemind.Sprite;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Myra.Graphics2D.UI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -14,13 +16,16 @@ namespace Hivemind.World.Entity
     {
         //Entity type specific variables
         public const string UType = "BaseEntity";
-        
+        public const string UDescription = "Lazy Coder";
+     
         public virtual string Type => UType;
+        public virtual string Description => UDescription;
 
-        public TileMap Parent;
+        public TileMap TileMap;
         public SpriteController Controller;
 
         public bool Focused = false;
+
 
 
         public BaseEntity()
@@ -42,6 +47,10 @@ namespace Hivemind.World.Entity
         {
         }
 
+        public virtual void Init()
+        {
+
+        }
         public virtual void Destroy()
         {
             if (Selection.Selected.Contains(this))
@@ -68,6 +77,33 @@ namespace Hivemind.World.Entity
         {
             Focused = focused;
             return true;
+        }
+
+        public virtual void AddInfo(Panel panel)
+        {
+            var stack = new VerticalStackPanel
+            {
+                Spacing = 10
+            };
+            panel.AddChild<VerticalStackPanel>(stack);
+
+            var info = new Label()
+            {
+                Text = Type,
+                Font = GuiController.AutobusMedium,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            stack.AddChild<Label>(info);
+
+            info = new Label()
+            {
+                Text = Description,
+                Font = GuiController.AutobusSmaller,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+            stack.AddChild<Label>(info);
         }
     }
 
@@ -117,14 +153,14 @@ namespace Hivemind.World.Entity
                     Cell = null;
                 }
             if (Cell == null)
-                if (Pos.X >= 0 && Pos.X < Parent.Size * TileManager.TileSize && Pos.Y >= 0 && Pos.Y < Parent.Size * TileManager.TileSize)
-                    Parent.AddEntity(this);
+                if (Pos.X >= 0 && Pos.X < TileMap.Size * TileManager.TileSize && Pos.Y >= 0 && Pos.Y < TileMap.Size * TileManager.TileSize)
+                    TileMap.AddEntity(this);
 
             if (Focused)
             {
                 Vector2 FPos = Pos;
                 FPos.Floor();
-                Parent.Cam.MoveTo(FPos);
+                TileMap.Cam.MoveTo(FPos);
                 Focused = false;
             }
 
@@ -133,7 +169,7 @@ namespace Hivemind.World.Entity
 
         public virtual void Destroy()
         {
-            Parent.RemoveEntity(this);
+            TileMap.RemoveEntity(this);
 
             base.Destroy();
         }
@@ -145,7 +181,7 @@ namespace Hivemind.World.Entity
             spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X - sprite.Width / 2), (int)(Pos.Y - sprite.Height / 2), sprite.Width, sprite.Height),
                 new Rectangle(0, 0, sprite.Width, sprite.Height),
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None,
-                layerDepth: Parent.GetLayerDepth((int)Pos.Y / TileManager.TileSize) + 0.0005f);
+                layerDepth: TileMap.GetLayerDepth((int)Pos.Y / TileManager.TileSize) + 0.0005f);
         }
 
         public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
@@ -187,7 +223,7 @@ namespace Hivemind.World.Entity
             {
                 Vector2 FPos = (Pos.ToVector2() + new Vector2(0.5f)) * TileManager.TileSize;
                 FPos.Floor();
-                Parent.Cam.MoveTo(FPos);
+                TileMap.Cam.MoveTo(FPos);
                 Focused = false;
             }
 
@@ -201,7 +237,7 @@ namespace Hivemind.World.Entity
             spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X * TileManager.TileSize), (int)(Pos.Y * TileManager.TileSize), TileManager.TileSize * Size.X, TileManager.TileSize * Size.Y),
                 new Rectangle(0, 0, TileManager.TileSize * Size.Y, TileManager.TileSize * Size.Y),
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None,
-                layerDepth: Parent.GetLayerDepth((int)Pos.Y) + 0.0005f);
+                layerDepth: TileMap.GetLayerDepth((int)Pos.Y) + 0.0005f);
         }
 
         public override void Destroy()
@@ -209,7 +245,7 @@ namespace Hivemind.World.Entity
             Rectangle r = Bounds;
             for (int x = r.X; x < r.Right; x++)
                 for (int y = r.Y; y < r.Bottom; y++)
-                    Parent.RemoveTileEntity(new Point(x, y));
+                    TileMap.RemoveTileEntity(new Point(x, y));
 
             base.Destroy();
         }

@@ -1,6 +1,9 @@
-﻿using Hivemind.Utility;
+﻿using Hivemind.GUI;
+using Hivemind.Utility;
+using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Myra.Graphics2D.UI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -29,6 +32,25 @@ namespace Hivemind.World.Entity.Moving
         public override Point Size => USize;
         public override string Type => MaterialType.Name;
 
+        private Room _room;
+        public Room Room
+        {
+            get
+            {
+                return _room;
+            }
+            set
+            {
+                if (_room != null && _room.Materials != null)
+                    _room.Materials.Remove(this);
+
+                _room = value;
+
+                if(_room != null && _room.Materials != null && !_room.Materials.Contains(this))
+                    _room.Materials.Add(this);
+            }
+        }
+
 
         public Material MaterialType;
         public float Amount;
@@ -47,9 +69,45 @@ namespace Hivemind.World.Entity.Moving
             Amount = amount;
         }
 
-        public DroppedMaterial(Vector2 pos, Material material) : base(pos)
+        public override void Init()
         {
-            MaterialType = material;
+            base.Init();
+
+            Room r = TileMap.GetTile(TileMap.GetTileCoords(Pos)).Room;
+            if(r != null)
+            {
+                if(!r.Materials.Contains(this))
+                    r.Materials.Add(this);
+                this.Room = r;
+            }
+        }
+
+        public override void AddInfo(Panel panel)
+        {
+            var stack = new VerticalStackPanel
+            {
+                Spacing = 10
+            };
+            panel.AddChild<VerticalStackPanel>(stack);
+
+            var info = new Label()
+            {
+                Text = Type,
+                Font = GuiController.AutobusMedium,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            stack.AddChild<Label>(info);
+
+            info = new Label()
+            {
+                Text = @"\c[White]Amount: \c[#444444](" + Amount + ")\n" +
+                @"\c[White]Room: \c[#444444](" + Room.Size + ")\n",
+                Font = GuiController.AutobusSmaller,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+            stack.AddChild<Label>(info);
         }
 
         public DroppedMaterial(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -61,7 +119,24 @@ namespace Hivemind.World.Entity.Moving
             spriteBatch.Draw(MaterialType.Texture, new Rectangle((int)(Pos.X - MaterialType.Texture.Width / 2), (int)(Pos.Y - MaterialType.Texture.Height / 2), MaterialType.Texture.Width, MaterialType.Texture.Height),
                 new Rectangle(0, 0, MaterialType.Texture.Width, MaterialType.Texture.Height),
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None,
-                layerDepth: Parent.GetLayerDepth((int)Pos.Y / TileManager.TileSize) + 0.0005f);
+                layerDepth: TileMap.GetLayerDepth((int)Pos.Y / TileManager.TileSize) + 0.0005f);
+        }
+
+        public override void Destroy()
+        {
+            this.Room.Materials.Remove(this);
+            base.Destroy();
+        }
+
+        public float TryTake(float amount)
+        {
+            if (Amount > amount)
+            {
+                Amount -= amount;
+                return amount;
+            }
+            Destroy();
+            return Amount;
         }
     }
 }

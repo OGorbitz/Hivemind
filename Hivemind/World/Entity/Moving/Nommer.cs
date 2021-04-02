@@ -77,7 +77,7 @@ namespace Hivemind.World.Entity
 
                         Point goal = tpos + new Point((int)(Helper.Random() * 10 - 5), (int)(Helper.Random() * 10 - 5));
 
-                        List<TileEntity> returned = Parent.GetTileEntities(new Rectangle((int)tpos.X - 4, (int)tpos.Y - 4, 8, 8));
+                        List<TileEntity> returned = TileMap.GetTileEntities(new Rectangle((int)tpos.X - 4, (int)tpos.Y - 4, 8, 8));
 
                         if (returned.Count > 0)
                         {
@@ -118,7 +118,7 @@ namespace Hivemind.World.Entity
 
                     break;
                 case NommerState.ATTACKING:
-                    var e = Parent.GetTileEntity(Target);
+                    var e = TileMap.GetTileEntity(Target);
                     if(e != null)
                         e.Destroy();
 

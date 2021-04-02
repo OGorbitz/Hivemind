@@ -62,7 +62,7 @@ namespace Hivemind.World
         private SpacialHash<MovingEntity> EntityHash;
         public List<Room> Rooms = new List<Room>();
 
-        public TaskManager Tasks;
+        public TaskManager TaskManager;
 
         public Point BufferPosition = Point.Zero, BufferOffset = Point.Zero, BufferSize = Point.Zero;
         public bool Updated, Rendered;
@@ -88,7 +88,7 @@ namespace Hivemind.World
             Entities = new Dictionary<int, MovingEntity>();
             EntityHash = new SpacialHash<MovingEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
 
-            Tasks = new TaskManager(this);
+            TaskManager = new TaskManager(this);
 
             FloorBuffer = null;
 
@@ -254,13 +254,14 @@ namespace Hivemind.World
         {
             if (InBounds(pos))
             {
+                Tile t = GetTile(pos);
                 switch (tile.Layer)
                 {
                     case Layer.WALL:
-                        GetTile(pos).Wall = (BaseWall)tile;
+                        t.Wall = (BaseWall)tile;
                         break;
                     case Layer.FLOOR:
-                        GetTile(pos).Floor = (BaseFloor)tile;
+                        t.Floor = (BaseFloor)tile;
                         break;
                 }
             }
@@ -279,6 +280,7 @@ namespace Hivemind.World
                         GetTile(pos).HoloFloor = tile;
                         break;
                 }
+                TaskManager.AddTask(new BuildTask(1000, tile, this));
             }
         }
 
@@ -295,7 +297,7 @@ namespace Hivemind.World
 
             for(int i = entities.Count - 1; i > 0; i--)
             {
-                if (!region.Contains(entities[i].Pos))
+                if (!region.Intersects(entities[i].Bounds))
                     entities.RemoveAt(i);
             }
 
@@ -308,8 +310,9 @@ namespace Hivemind.World
             {
                 Entities.Add(entity.ID, entity);
             }
-            entity.Parent = this;
+            entity.TileMap = this;
             entity.Cell = EntityHash.AddMember(entity.Pos, entity);
+            entity.Init();
         }
 
         public void RemoveEntity(MovingEntity entity)

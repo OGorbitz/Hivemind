@@ -23,7 +23,29 @@ namespace Hivemind.World.Tiles
         
         TileMap TileMap;
         public Dictionary<Point, RoomTile> Tiles;
-        Dictionary<Material, float> Materials = new Dictionary<Material, float>();
+        public List<DroppedMaterial> Materials = new List<DroppedMaterial>();
+
+        public float GetMaterialAmount(Material m)
+        {
+            float amt = 0f;
+            foreach(DroppedMaterial mat in Materials)
+            {
+                if (mat.MaterialType == m)
+                    amt += mat.Amount;
+            }
+            return amt;
+        }
+
+        public List<DroppedMaterial> GetMaterials(Material m)
+        {
+            List<DroppedMaterial> rtn = new List<DroppedMaterial>();
+            foreach(DroppedMaterial mat in Materials)
+            {
+                if (mat.MaterialType == m)
+                    rtn.Add(mat);
+            }
+            return rtn;
+        }
 
         public Room(Point position, TileMap tileMap)
         {
@@ -152,15 +174,26 @@ namespace Hivemind.World.Tiles
                 TileMap.Rooms.Add(new Room(r.Tiles, TileMap));
             }
 
+            for (int i = Materials.Count - 1; i >= 0; i--)
+            {
+                DroppedMaterial m = Materials[i];
+                Tile t = TileMap.GetTile(TileMap.GetTileCoords(m.Pos));
+                if (t.Room != this)
+                    m.Room = t.Room;
+            }
+
         }
 
         public void MergeRoom(Room r)
         {
-            foreach(KeyValuePair<Point, RoomTile> t in r.Tiles){
+            for(int n = r.Materials.Count - 1; n >= 0; n--)
+            {
+                r.Materials[n].Room = this;
+            }
+            foreach (KeyValuePair<Point, RoomTile> t in r.Tiles){
                 if (!Tiles.ContainsKey(t.Key))
                 {
-                    Tiles.Add(t.Key, t.Value);
-                    t.Value.Tile.Room = this;
+                    AddTile(t.Key);
                 }
             }
         }
@@ -176,6 +209,12 @@ namespace Hivemind.World.Tiles
             {
                 Tiles.TryAdd(p, tile);
                 tile.Tile.Room = this;
+                Rectangle bounds = tile.Tile.WorldBounds;
+                foreach (MovingEntity m in TileMap.GetEntities(bounds))
+                {
+                    if (m.GetType() == typeof(DroppedMaterial) && bounds.Contains(m.Pos))
+                        ((DroppedMaterial)m).Room = this;
+                }
             }
         }
 
@@ -199,6 +238,10 @@ namespace Hivemind.World.Tiles
 
         public void Destroy()
         {
+            foreach(DroppedMaterial m in Materials)
+            {
+                m.Room = null;
+            }
             foreach(KeyValuePair<Point, RoomTile> k in Tiles)
             {
                 k.Value.Tile.Room = null;

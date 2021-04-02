@@ -1,4 +1,5 @@
 ﻿using Hivemind.Input;
+using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D.Brushes;
@@ -47,8 +48,12 @@ namespace Hivemind.GUI
             Reorder();
         }
 
-        public void AddButton(Type item, PlacingType objectType, Texture2D icon)
+        public void AddButton(Type item, Texture2D icon)
         {
+            PlacingType objectType = PlacingType.NONE;
+            if (item.IsSubclassOf(typeof(BaseTile)))
+                objectType = PlacingType.TILE;
+
             var i = new ImageButton()
             {
                 Image = new TextureRegion(icon, new Rectangle(0, 0, icon.Width, icon.Height)),

@@ -28,6 +28,7 @@ namespace Hivemind.Input
         public static int Rotation;
 
         private static bool FSCREEN = false;
+        private static bool DEBUG = false;
 
         private static bool DMOUSE_LEFT = false;
         private static bool DMOUSE_RIGHT = false;
@@ -59,6 +60,22 @@ namespace Hivemind.Input
             {
                 GameStateManager.Exit();
                 return;
+            }
+
+            if (!DEBUG)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.LeftControl) && Keyboard.GetState().IsKeyDown(Keys.LeftAlt) && Keyboard.GetState().IsKeyDown(Keys.F2))
+                {
+                    Hivemind.DebugMode = !Hivemind.DebugMode;
+                    DEBUG = true;
+                }
+            }
+            else
+            {
+                if (!(Keyboard.GetState().IsKeyDown(Keys.LeftControl) && Keyboard.GetState().IsKeyDown(Keys.LeftAlt) && Keyboard.GetState().IsKeyDown(Keys.F2)))
+                {
+                    DEBUG = false;
+                }
             }
 
             if (!FSCREEN)

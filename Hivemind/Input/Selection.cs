@@ -15,6 +15,7 @@ namespace Hivemind.Input
         public void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime);
         public void Command(Vector2 position);
         public bool SetFocused(bool focused);
+        public void AddInfo(Panel panel);
     }
 
     public class Selection
@@ -112,16 +113,10 @@ namespace Hivemind.Input
                     if (selected.GetType().IsSubclassOf(typeof(BaseEntity)))
                     {
                         BaseEntity entity = (BaseEntity)selected;
-                        var info = new Label()
-                        {
-                            Text = entity.Type,
-                            Font = GuiController.AutobusMedium,
-                            VerticalAlignment = VerticalAlignment.Top,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        };
-                        GuiController.infoPanel.AddChild<Label>(info);
+
                         GuiController.infoPanel.Width = 450;
                         GuiController.infoPanel.Height = 350;
+                        entity.AddInfo(GuiController.infoPanel);
                     }
                 }
             }

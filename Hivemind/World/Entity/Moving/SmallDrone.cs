@@ -1,4 +1,7 @@
 ﻿using Hivemind.Utility;
+using Hivemind.World.Colony;
+using Hivemind.World.Entity.Moving;
+using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,6 +12,9 @@ using System.Text;
 
 namespace Hivemind.World.Entity
 {
+    public enum SmallDrone_Behavior {IDLE, FINDING, GETTING, DELIVERING, BUILDING}
+
+
     [Serializable]
     public class SmallDrone : MovingEntity, IControllable
     {
@@ -21,9 +27,17 @@ namespace Hivemind.World.Entity
         public override Point Size => USize;
 
         public Vector2 Vel = Vector2.Zero;
-        public bool wait = false;
 
         public TimeSpan NextAction;
+
+        public SmallDrone_Behavior Thought = SmallDrone_Behavior.IDLE;
+        public BaseTask CurrentTask;
+        private Pathfinder Pathfinder;
+        private int CurrentPathNode;
+
+        public DroppedMaterial TargetMaterial;
+        public Material CarryType;
+        public float CarryAmount;
 
         public SmallDrone(Vector2 pos) : base(pos)
         {
@@ -56,24 +70,150 @@ namespace Hivemind.World.Entity
 
         public override void Update(GameTime gameTime)
         {
-            Vector2 CheckedVel = Vel * (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
-            CheckedVel = Collision.CheckWorld(CheckedVel, Bounds);
-            Pos += CheckedVel;
+            switch (Thought)
+            {
+                case SmallDrone_Behavior.IDLE:
+                    foreach (BaseTask t in TileMap.TaskManager.Tasks)
+                    {
+                        if(t.GetType() == typeof(BuildTask))
+                        {
+                            CurrentTask = t;
+                            Thought = SmallDrone_Behavior.FINDING;
+                        }
+                    }
+                    break;
+                case SmallDrone_Behavior.FINDING:
+                    if (Pathfinder == null)
+                    {
+                        float distance = -1;
+                        DroppedMaterial goal = null;
+                        foreach (DroppedMaterial m in TileMap.GetTile(TileMap.GetTileCoords(Pos)).Room.Materials)
+                        {
+                            if (m.Type == Material.CrushedRock.Name)
+                            {
+                                float d = (m.Pos - Pos).Length();
+                                if (d < distance || distance == -1)
+                                {
+                                    distance = d;
+                                    goal = m;
+                                }
+                            }
+                        }
+                        if (goal != null)
+                        {
+                            Pathfinder = new Pathfinder(TileMap.GetTileCoords(Pos), TileMap.GetTileCoords(goal.Pos), 5000);
+                            CurrentPathNode = -1;
+                            TargetMaterial = goal;
+                            Thought = SmallDrone_Behavior.GETTING;
+                        }
+                    }
+                    break;
+                case SmallDrone_Behavior.GETTING:
+                    if (CurrentPathNode == 0)
+                    {
+                        CarryType = TargetMaterial.MaterialType;
+                        CarryAmount = TargetMaterial.TryTake(500);
 
-            Vel = Vector2.Zero;
+                        Pathfinder = new Pathfinder(TileMap.GetTileCoords(Pos), ((BuildTask)CurrentTask).Tile.Pos, 5000);
+                        CurrentPathNode = -1;
+                        Thought = SmallDrone_Behavior.DELIVERING;
+                    }
+                    break;
+                case SmallDrone_Behavior.DELIVERING:
+                    if (CurrentPathNode == 0)
+                    {
+                        HoloTile t = ((BuildTask)CurrentTask).Tile;
+                        if (t.Materials.ContainsKey(CarryType))
+                        {
+                            t.Materials[CarryType] += CarryAmount;
+                        }
+                        else
+                        {
+                            t.Materials.Add(CarryType, CarryAmount);
+                        }
 
-            Vector2 v = new Vector2(CheckedVel.X, CheckedVel.Y);
+                        //IF MATERIALS MET
+                        Pathfinder = null;
+                        Thought = SmallDrone_Behavior.BUILDING;
+                    }
+                    break;
+                case SmallDrone_Behavior.BUILDING:
+                    CurrentTask.DoWork(100f/1000 * gameTime.ElapsedGameTime.Milliseconds);
+                    if (CurrentTask.Complete)
+                        Thought = SmallDrone_Behavior.IDLE;
+                    break;
+            }
+
+            if(Pathfinder != null)
+            {
+                if (Pathfinder.Finished)
+                {
+                    if (Pathfinder.Solution)
+                    {
+                        //Check distance to target node
+                        Vector2 dist = ((Pathfinder.Path[CurrentPathNode].Pos.ToVector2() + new Vector2(0.5f)) * TileManager.TileSize) - Pos;
+
+                        //Calculate desired velocity
+                        Vector2 targetVel = dist;
+                        targetVel.Normalize();
+                        targetVel *= USpeed;
+
+                        //Check if within a certain distance of next node
+                        if (dist.Length() < USpeed / 4)
+                        {
+                            if (CurrentPathNode == 0)
+                            {
+                                targetVel = Vector2.Zero;
+                                Vel = Vector2.Zero;
+                            }
+                            if (CurrentPathNode > 0)
+                            {
+                                CurrentPathNode--;
+                                dist = (Pathfinder.Path[CurrentPathNode].Pos.ToVector2() * TileManager.TileSize) - Pos;
+                            }
+                        }
+
+                        //Shift velocity towards desired velocity
+                        float time = (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
+                        time *= 4;
+                        Vel = (Vel + targetVel * time) / (1 + time);
+                        Pos += Vel * (float)(gameTime.ElapsedGameTime.TotalMilliseconds / 1000);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 100; i++)
+                    {
+                        Pathfinder.Cycle();
+                        if (Pathfinder.Finished)
+                        {
+                            if (Pathfinder.Solution)
+                            {
+                                CurrentPathNode = Pathfinder.Path.Count - 1;
+                            }
+                            else
+                            {
+                                Pathfinder = null;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+
+            Vector2 v = new Vector2(Vel.X, Vel.Y);
             v.Normalize();
             double angle = Math.Atan2(v.X, - v.Y);
-            if (angle < -(3f / 4f) * Math.PI || angle > (3f / 4f) * Math.PI)
+            if (angle <= -(3f / 4f) * Math.PI || angle >= (3f / 4f) * Math.PI)
                 Controller.SetAnimation("DOWN");
-            if (angle >= (-3f / 4f) * Math.PI && angle < (-1f / 4f) * Math.PI)
+            if (angle >= (-3f / 4f) * Math.PI && angle <= (-1f / 4f) * Math.PI)
                 Controller.SetAnimation("LEFT");
-            if (angle >= (-1f / 4f) * Math.PI && angle < (1f / 4f) * Math.PI)
+            if (angle >= (-1f / 4f) * Math.PI && angle <= (1f / 4f) * Math.PI)
                 Controller.SetAnimation("UP");
-            if (angle >= (1f / 4f) * Math.PI && angle < (3f / 4f) * Math.PI)
+            if (angle >= (1f / 4f) * Math.PI && angle <= (3f / 4f) * Math.PI)
                 Controller.SetAnimation("RIGHT");
-            if (CheckedVel == Vector2.Zero)
+            if (Vel == Vector2.Zero)
                 Controller.SetAnimation("IDLE");
 
             base.Update(gameTime);

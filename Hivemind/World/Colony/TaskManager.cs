@@ -1,4 +1,5 @@
-﻿using Hivemind.World.Tiles;
+﻿using Hivemind.World.Entity.Moving;
+using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,8 @@ namespace Hivemind.World.Colony
     {
         public TaskManager TaskManager;
         public TaskType Type;
-        public int WorkRequired, WorkDone;
+        public float WorkRequired, WorkDone;
+        public bool Complete = false;
         public int Priority;
 
         public BaseTask(int workRequired, TaskManager parent)
@@ -37,7 +39,7 @@ namespace Hivemind.World.Colony
             TaskManager = parent;
         }
 
-        public virtual void DoWork(int work)
+        public virtual void DoWork(float work)
         {
             WorkDone += work;
             if (WorkDone > WorkRequired)
@@ -47,14 +49,15 @@ namespace Hivemind.World.Colony
         public virtual void TaskFinished()
         {
             TaskManager.Tasks.Remove(this);
+            Complete = true;
         }
     }
 
     public class BuildTask : BaseTask
     {
-        HoloTile Tile;
+        public HoloTile Tile;
 
-        public BuildTask(int workRequired, HoloTile tile, TileMap tileMap) : base(workRequired, tileMap.Tasks)
+        public BuildTask(int workRequired, HoloTile tile, TileMap tileMap) : base(workRequired, tileMap.TaskManager)
         {
             Tile = tile;
         }
@@ -63,6 +66,16 @@ namespace Hivemind.World.Colony
         {
             base.TaskFinished();
             TaskManager.Parent.SetTile(Tile.Pos, Tile.Child);
+            Tile t = TaskManager.Parent.GetTile(Tile.Pos);
+            switch (Tile.Layer)
+            {
+                case Layer.WALL:
+                    t.HoloWall.Destroy();
+                    break;
+                case Layer.FLOOR:
+                    t.HoloFloor.Destroy();
+                    break;
+            }
         }
     }
 }

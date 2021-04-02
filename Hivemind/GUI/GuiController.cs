@@ -4,6 +4,7 @@ using FontStashSharp;
 using Hivemind.Input;
 using Hivemind.Utility;
 using Hivemind.World;
+using Hivemind.World.Entity.Moving;
 using Hivemind.World.Tiles;
 using Hivemind.World.Tiles.Floor;
 using Hivemind.World.Tiles.Wall;
@@ -215,7 +216,15 @@ namespace Hivemind.GUI
 
                     string Room = "";
                     if (t.Room != null)
-                        Room = " Room Size: " + t.Room.Size;
+                    {
+                        float crushedrock = 0;
+                        foreach (DroppedMaterial m in t.Room.Materials)
+                        {
+                            if (m.Type == Material.CrushedRock.Name)
+                                crushedrock += m.Amount;
+                        }
+                        Room = " Room Size: " + t.Room.Size + " Containing " + crushedrock + " Crushed Rock";
+                    }
 
                     DebugText = "Camera position: (" + WorldManager.GetActiveTileMap().Cam.Pos.X + ", " + WorldManager.GetActiveTileMap().Cam.Pos.Y + ")\n" +
                         "Camera scale: " + WorldManager.GetActiveTileMap().Cam.Scale + "\n" +
@@ -255,6 +264,8 @@ namespace Hivemind.GUI
             {
                 spriteBatch.Begin();
                 AutobusSmaller.DrawText(spriteBatch, DebugText, new Vector2(25), Color.White);
+                if(Hivemind.DebugMode)
+                    AutobusSmall.DrawText(spriteBatch, "DEBUG", new Vector2(Hivemind.ScreenWidth/2 - AutobusSmall.MeasureString("DEBUG", Vector2.One).X / 2, 25), Color.Red);
                 spriteBatch.End();
             }
         }
@@ -431,24 +442,18 @@ namespace Hivemind.GUI
             _tilemapHud.AddChild<VerticalStackPanel>(HardwareSelectionPanel);
             Buildables = new GUITab(3, HardwareSelectionPanel, new Rectangle(0, 0, Wall_Cinderblock.UIcon.Height + 8, Wall_Cinderblock.UIcon.Height + 8), 10);
 
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Dirt), PlacingType.TILE, Wall_Dirt.UIcon);
-            Buildables.AddButton(typeof(Floor_Concrete), PlacingType.TILE, Floor_Concrete.UIcon);
-            Buildables.AddButton(typeof(Floor_Dirt), PlacingType.TILE, Floor_Dirt.UIcon);
-            Buildables.AddButton(typeof(Floor_Grass), PlacingType.TILE, Floor_Grass.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), PlacingType.TILE, Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Dirt), Wall_Dirt.UIcon);
+            Buildables.AddButton(typeof(Floor_Concrete), Floor_Concrete.UIcon);
+            Buildables.AddButton(typeof(Floor_Dirt), Floor_Dirt.UIcon);
+            Buildables.AddButton(typeof(Floor_Grass), Floor_Grass.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
+            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
 
 
             SelectedShape = new ImageButton()

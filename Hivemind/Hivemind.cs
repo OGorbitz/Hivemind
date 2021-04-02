@@ -24,6 +24,8 @@ namespace Hivemind
         public static GameTime CurrentGameTime;
         public static ContentManager CManager;
 
+        public static bool DebugMode = false;
+
         public Hivemind()
         {
             _instance = this;

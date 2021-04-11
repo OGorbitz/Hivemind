@@ -1,10 +1,12 @@
-﻿using Hivemind.Utility;
+﻿using Hivemind.GUI;
+using Hivemind.Utility;
 using Hivemind.World.Colony;
 using Hivemind.World.Entity.Moving;
 using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Myra.Graphics2D.UI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -36,6 +38,7 @@ namespace Hivemind.World.Entity
         private int CurrentPathNode;
 
         public DroppedMaterial TargetMaterial;
+        public float HaulingAmount;
         public Material CarryType;
         public float CarryAmount;
 
@@ -68,6 +71,55 @@ namespace Hivemind.World.Entity
             UIcon = sprites[0];
         }
 
+        public override void AddInfo(Panel panel)
+        {
+            var stack = new VerticalStackPanel
+            {
+                Spacing = 10
+            };
+            panel.AddChild<VerticalStackPanel>(stack);
+
+            var info = new Label()
+            {
+                Text = Type,
+                Font = GuiController.AutobusMedium,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            stack.AddChild<Label>(info);
+
+            string action = null;
+
+            switch (Thought)
+            {
+                case SmallDrone_Behavior.IDLE:
+                    action = "Idle";
+                    break;
+                case SmallDrone_Behavior.FINDING:
+                    action = "Finding";
+                    break;
+                case SmallDrone_Behavior.GETTING:
+                    action = "Getting";
+                    break;
+                case SmallDrone_Behavior.DELIVERING:
+                    action = "Delivering";
+                    break;
+                case SmallDrone_Behavior.BUILDING:
+                    action = "Building";
+                    break;
+            }
+
+            info = new Label()
+            {
+                Text = @"\c[White]Current Action: \c[#444444]" + action + "\n" +
+                @"\c[White]Carrying: \c[#444444](" + CarryAmount + ")\n",
+                Font = GuiController.AutobusSmaller,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+            stack.AddChild<Label>(info);
+        }
+
         public override void Update(GameTime gameTime)
         {
             switch (Thought)
@@ -78,6 +130,11 @@ namespace Hivemind.World.Entity
                         if(t.GetType() == typeof(BuildTask))
                         {
                             CurrentTask = t;
+                            Thought = SmallDrone_Behavior.BUILDING;
+                        }
+                        if(t.GetType() == typeof(HaulTask))
+                        {
+                            CurrentTask = t;
                             Thought = SmallDrone_Behavior.FINDING;
                         }
                     }
@@ -85,11 +142,36 @@ namespace Hivemind.World.Entity
                 case SmallDrone_Behavior.FINDING:
                     if (Pathfinder == null)
                     {
+                        var task = ((HaulTask)CurrentTask);
+                        
+                        foreach(KeyValuePair<Material, float> p in task.Materials)
+                        {
+                            if (task.InProgress.ContainsKey(p.Key))
+                            {
+                                if(task.InProgress[p.Key] < task.Materials[p.Key])
+                                {
+                                    HaulingAmount = task.Materials[p.Key] - task.InProgress[p.Key];
+                                    CarryType = p.Key;
+                                    break;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                HaulingAmount = task.Materials[p.Key];
+                                CarryType = p.Key;
+                                break;
+                            }
+                        }
+
                         float distance = -1;
                         DroppedMaterial goal = null;
                         foreach (DroppedMaterial m in TileMap.GetTile(TileMap.GetTileCoords(Pos)).Room.Materials)
                         {
-                            if (m.Type == Material.CrushedRock.Name)
+                            if (m.Type == CarryType.Name)
                             {
                                 float d = (m.Pos - Pos).Length();
                                 if (d < distance || distance == -1)
@@ -112,7 +194,7 @@ namespace Hivemind.World.Entity
                     if (CurrentPathNode == 0)
                     {
                         CarryType = TargetMaterial.MaterialType;
-                        CarryAmount = TargetMaterial.TryTake(500);
+                        CarryAmount = TargetMaterial.TryTake(HaulingAmount);
 
                         Pathfinder = new Pathfinder(TileMap.GetTileCoords(Pos), ((BuildTask)CurrentTask).Tile.Pos, 5000);
                         CurrentPathNode = -1;
@@ -131,6 +213,7 @@ namespace Hivemind.World.Entity
                         {
                             t.Materials.Add(CarryType, CarryAmount);
                         }
+                        ((HaulTask)CurrentTask).Deposit(CarryType, CarryAmount);
 
                         //IF MATERIALS MET
                         Pathfinder = null;
@@ -148,7 +231,7 @@ namespace Hivemind.World.Entity
             {
                 if (Pathfinder.Finished)
                 {
-                    if (Pathfinder.Solution)
+                    if (Pathfinder.Solution && CurrentPathNode >= 0)
                     {
                         //Check distance to target node
                         Vector2 dist = ((Pathfinder.Path[CurrentPathNode].Pos.ToVector2() + new Vector2(0.5f)) * TileManager.TileSize) - Pos;
@@ -221,8 +304,21 @@ namespace Hivemind.World.Entity
 
         public void ControllerMove(Vector2 vel)
         {
-            Vel = vel;
-            Vel *= USpeed;
+            
+        }
+
+        public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
+        {
+            if (Pathfinder != null && Pathfinder.Finished && Pathfinder.Solution)
+            {
+                for (int i = CurrentPathNode - 1; i >= 0; i--)
+                {
+                    Helper.DrawLine(spriteBatch, Helper.pixel, Pathfinder.Path[i].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pathfinder.Path[i + 1].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Color.White);
+                }
+                Helper.DrawLine(spriteBatch, Helper.pixel, Pathfinder.Path[CurrentPathNode].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pos, Color.White);
+            }
+
+            base.DrawSelected(spriteBatch, graphicsDevice, gameTime);
         }
     }
 }

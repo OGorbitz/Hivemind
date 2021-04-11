@@ -94,7 +94,7 @@ namespace Hivemind.World.Tiles.Wall
             }
             else
             {
-                source.Height = TileManager.WallHeight;
+                source.Height = TileManager.TileSize;
                 dest = new Rectangle(
                     new Point((int)Pos.X * TileManager.TileSize,
                         (int)Pos.Y * TileManager.TileSize - TileManager.WallHeight),

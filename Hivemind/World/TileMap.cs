@@ -1,6 +1,7 @@
 ﻿using Hivemind.Input;
 using Hivemind.World.Colony;
 using Hivemind.World.Entity;
+using Hivemind.World.Entity.Moving;
 using Hivemind.World.Entity.Tile;
 using Hivemind.World.Generator;
 using Hivemind.World.Tiles;
@@ -280,7 +281,12 @@ namespace Hivemind.World
                         GetTile(pos).HoloFloor = tile;
                         break;
                 }
-                TaskManager.AddTask(new BuildTask(1000, tile, this));
+                Dictionary<Material, float> required = new Dictionary<Material, float>();
+                for(int i = 0; i < tile.CostMaterials.Length; i++)
+                {
+                    required.Add(tile.CostMaterials[i], tile.CostAmounts[i]);
+                }
+                TaskManager.AddTask(new HaulTask(TaskManager, tile, required));
             }
         }
 

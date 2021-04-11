@@ -1,7 +1,9 @@
-﻿using Hivemind.Utility;
+﻿using Hivemind.GUI;
+using Hivemind.Utility;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Myra.Graphics2D.UI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -61,6 +63,45 @@ namespace Hivemind.World.Entity
             EntityManager.sprites.Add(UType, sprites);
 
             UIcon = sprites[0];
+        }
+
+        public override void AddInfo(Panel panel)
+        {
+            var stack = new VerticalStackPanel
+            {
+                Spacing = 10
+            };
+            panel.AddChild<VerticalStackPanel>(stack);
+
+            var info = new Label()
+            {
+                Text = Type,
+                Font = GuiController.AutobusMedium,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            stack.AddChild<Label>(info);
+
+            string action = null;
+
+            switch (State)
+            {
+                case NommerState.IDLE:
+                    action = "Idle";
+                    break;
+                case NommerState.MOVING:
+                    action = "Moving";
+                    break;
+            }
+
+            info = new Label()
+            {
+                Text = @"\c[White]Current Action: \c[#663300]" + action,
+                Font = GuiController.AutobusSmaller,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+            stack.AddChild<Label>(info);
         }
 
         public override void Update(GameTime gameTime)

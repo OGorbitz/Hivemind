@@ -29,6 +29,8 @@ namespace Hivemind.Input
 
         public static bool UpdateCam()
         {
+            UpdateInfoPanel();
+
             if (ShouldFocus)
             {
                 if (Selected.Count == 1)
@@ -44,7 +46,6 @@ namespace Hivemind.Input
             Selected.Clear();
             Selected.Add(selection);
             ShouldFocus = true;
-            UpdateInfoPanel();
         }
 
         public static void Select(ISelectable selection)
@@ -52,7 +53,6 @@ namespace Hivemind.Input
             Selected.Clear();
             Selected.Add(selection);
             ShouldFocus = false;
-            UpdateInfoPanel();
         }
 
         public static void Select(List<ISelectable> selection)
@@ -60,28 +60,24 @@ namespace Hivemind.Input
             Selected.Clear();
             Selected.AddRange(selection);
             ShouldFocus = false;
-            UpdateInfoPanel();
         }
 
         public static void AddSelect(ISelectable selection)
         {
             Selected.Add(selection);
             ShouldFocus = false;
-            UpdateInfoPanel();
         }
 
         public static void AddSelect(List<ISelectable> selection)
         {
             Selected.AddRange(selection);
             ShouldFocus = false;
-            UpdateInfoPanel();
         }
 
         public static void ClearSelection()
         {
             Selected.Clear();
             ShouldFocus = false;
-            UpdateInfoPanel();
         }
 
         public static void UpdateInfoPanel()

@@ -18,11 +18,16 @@ namespace Hivemind.World.Tiles
         public const Layer ULayer = Layer.NULL;
         public const float UResistance = 0;
         public const int UBuildWork = 1000;
+        public readonly Material[] UCostMaterials = { Material.CrushedRock };
+        public readonly float[] UCostAmounts = { 69 };
 
         public virtual string Name => UName;
         public virtual Layer Layer => ULayer;
         public virtual float Resistance => UResistance;
         public virtual int BuildWork => UBuildWork;
+        public virtual Material[] CostMaterials => UCostMaterials;
+        public virtual float[] CostAmounts => UCostAmounts;
+
 
         //Instance variables
         public Tile Tile;
@@ -139,7 +144,7 @@ namespace Hivemind.World.Tiles
         }
     }
 
-    public class HoloTile : BaseTile
+    public class HoloTile : BaseTile, Inventory
     {
         public BaseTile Child;
         public BaseTask Task;
@@ -162,6 +167,8 @@ namespace Hivemind.World.Tiles
         public override string Name => UName + Child.Name;
         public override Layer Layer => Child.Layer;
         public override int BuildWork => Child.BuildWork;
+        public override Material[] CostMaterials => Child.CostMaterials;
+        public override float[] CostAmounts => Child.CostAmounts;
 
         public HoloTile(BaseTile tile)
         {
@@ -204,6 +211,53 @@ namespace Hivemind.World.Tiles
                     Tile.HoloFloor = null;
                     break;
             }
+        }
+
+        public float Withdraw(Material m, float a)
+        {
+            if (Materials.ContainsKey(m))
+            {
+                if(Materials[m] > a)
+                {
+                    Materials[m] -= a;
+                    return a;
+                }
+                else
+                {
+                    float r = Materials[m];
+                    Materials[m] = 0;
+                    return r;
+                }
+            }
+            return 0;
+        }
+
+        public float Deposit(Material m, float a)
+        {
+            if (Materials.ContainsKey(m))
+            {
+                Materials[m] += a;
+            }
+            else
+            {
+                Materials.Add(m, a);
+            }
+
+            bool satisfied = true;
+            for(int i = 0; i < CostMaterials.Length; i++)
+            {
+                if (!Materials.ContainsKey(CostMaterials[i]) || Materials[CostMaterials[i]] < CostAmounts[i])
+                {
+                    satisfied = false;
+                    break;
+                }
+            }
+            if (satisfied)
+            {
+                ((TileMap)Parent).TaskManager.AddTask(new BuildTask(BuildWork, this, (TileMap)Parent));
+            }
+
+            return a;
         }
     }
 }

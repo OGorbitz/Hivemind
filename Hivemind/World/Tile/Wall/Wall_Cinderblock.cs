@@ -14,11 +14,15 @@ namespace Hivemind.World.Tiles.Wall
         public const string UName = "WALL_CINDERBLOCK";
         public const Layer ULayer = Layer.WALL;
         public const float UResistance = -1;
+        public readonly Material[] UCostMaterials = { Material.CrushedRock };
+        public readonly float[] UCostAmounts = { 1000 };
 
         public override string Name => UName;
         public override float Resistance => UResistance;
         public override Layer Layer => ULayer;
         public virtual Texture2D Icon => UIcon;
+        public override Material[] CostMaterials => UCostMaterials;
+        public override float[] CostAmounts => UCostAmounts;
 
         //Assets
         public static Texture2D UIcon;

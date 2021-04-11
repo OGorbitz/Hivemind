@@ -12,6 +12,12 @@ namespace Hivemind.Utility
         public static Texture2D pixel;
 
 
+        public static void Init(GraphicsDevice graphicsDevice)
+        {
+            pixel = new Texture2D(graphicsDevice, 1, 1);
+            pixel.SetData(new[] { Color.White });
+        }
+
         public static void DrawLine(SpriteBatch spriteBatch, Texture2D t, Vector2 start, Vector2 end, Color color)
         {
             var edge = end - start;

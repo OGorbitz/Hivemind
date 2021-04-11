@@ -1,5 +1,6 @@
 ﻿using Hivemind.GUI;
 using Hivemind.Input;
+using Hivemind.Utility;
 using Hivemind.World;
 using Hivemind.World.Entity;
 using Microsoft.Xna.Framework;
@@ -72,6 +73,8 @@ namespace Hivemind
             base.Initialize();
 
             GuiController.Init(GraphicsDevice, Content);
+
+            Helper.Init(GraphicsDevice);
 
             GameStateManager.SetState(GameState.MAIN_MENU);
         }

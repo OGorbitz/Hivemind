@@ -55,7 +55,8 @@ namespace Hivemind.World.Tiles
             set
             {
                 _holoFloor = value;
-                _holoFloor.SetParent(this, Parent);
+                if (value != null)
+                    _holoFloor.SetParent(this, Parent);
             }
         }
 

@@ -23,8 +23,6 @@ namespace Hivemind.World
         public float GetLayerDepth(int y);
     }
 
-    public enum Visibility { HIDDEN, KNOWN, VISIBLE }
-
     [Serializable]
     public class TileMap : ITileMap
     {
@@ -61,6 +59,7 @@ namespace Hivemind.World
         private Tile[,] Tiles;
         private Dictionary<int, MovingEntity> Entities;
         private SpacialHash<MovingEntity> EntityHash;
+        public Dictionary<Point, TileEntity> TileEntities;
         public List<Room> Rooms = new List<Room>();
 
         public TaskManager TaskManager;
@@ -88,6 +87,7 @@ namespace Hivemind.World
             Generator = new WorldGenerator(69l, this);
             Entities = new Dictionary<int, MovingEntity>();
             EntityHash = new SpacialHash<MovingEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
+            TileEntities = new Dictionary<Point, TileEntity>();
 
             TaskManager = new TaskManager(this);
 
@@ -383,6 +383,7 @@ namespace Hivemind.World
                         if(t.TileEntity != null)
                             t.TileEntity.Destroy();
                         t.TileEntity = entity;
+                        TileEntities.Add(t.Pos, entity);
                     }
                 }
             }
@@ -461,6 +462,29 @@ namespace Hivemind.World
                     e.Floor.Update(gameTime);
                 if (e.Wall != null)
                     e.Wall.Update(gameTime);
+            }
+
+            UpdateFog();
+        }
+
+        public void UpdateFog()
+        {
+            for(int i = 0; i < Size; i++)
+            {
+                for(int j = 0; j < Size; j++)
+                {
+                    Tile t = GetTile(new Point(i, j));
+                    if (t.Visibility == Visibility.VISIBLE)
+                        t.Visibility = Visibility.KNOWN;
+                }
+            }
+            foreach(KeyValuePair<int, MovingEntity> e in Entities)
+            {
+                e.Value.UpdateVision();
+            }
+            foreach(KeyValuePair<Point, TileEntity> e in TileEntities)
+            {
+                e.Value.UpdateVision();
             }
         }
 

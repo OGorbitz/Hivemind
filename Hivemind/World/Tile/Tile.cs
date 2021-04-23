@@ -141,7 +141,7 @@ namespace Hivemind.World.Tiles
             }
         }
 
-        public Visibility Visible;
+        public Visibility Visibility;
 
         public TileEntity _tileEntity;
         public TileEntity TileEntity
@@ -179,13 +179,13 @@ namespace Hivemind.World.Tiles
         {
             Real = real;
             Pos = pos;
-            Visible = Visibility.HIDDEN;
+            Visibility = Visibility.HIDDEN;
             Parent = parent;
         }
         public Tile(Point pos, ITileMap parent)
         {
             Pos = pos;
-            Visible = Visibility.HIDDEN;
+            Visibility = Visibility.HIDDEN;
             Parent = parent;
         }
     }

@@ -31,7 +31,7 @@ namespace Hivemind
         {
             _instance = this;
 
-            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
+            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
             ScreenWidth = r.Width;
             ScreenHeight = r.Height;
 

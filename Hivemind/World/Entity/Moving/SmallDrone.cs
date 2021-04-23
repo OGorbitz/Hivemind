@@ -23,12 +23,15 @@ namespace Hivemind.World.Entity
         public const string UType = "SmallDrone";
         public readonly Point USize = new Point(32);
         public const int USpeed = 100;
+        public const float USightDistance = 5;
         public static Texture2D UIcon;
 
         public override string Type => UType;
         public override Point Size => USize;
+        public override float SightDistance => USightDistance;
 
         public Vector2 Vel = Vector2.Zero;
+
 
         public TimeSpan NextAction;
 

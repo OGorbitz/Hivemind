@@ -212,7 +212,14 @@ namespace Hivemind.GUI
                     if (tile == null)
                         name = "Null";
                     else
-                        name = tile.Name + " " + tile.Pos.ToString();
+                    {
+                        string color = @"\c[#FF0000]";
+                        if (t.Visibility == Visibility.KNOWN)
+                            color = @"\c[#FF8800]";
+                        if (t.Visibility == Visibility.VISIBLE)
+                            color = @"\c[00FF00]";
+                        name = color + tile.Name + @"\c[FFFFFF] " + tile.Pos.ToString();
+                    }
 
                     string Room = "";
                     if (t.Room != null)

@@ -132,11 +132,11 @@ namespace Hivemind.World.Entity
                             if (returned.Count > 0)
                             {
                                 int smallestindex = returned.Count - 1;
-                                float smallestdistance = Math.Abs((returned[smallestindex].Pos - tpos).ToVector2().Length());
+                                float smallestdistance = Math.Abs((returned[smallestindex].Pos.ToPoint() - tpos).ToVector2().Length());
 
                                 for (int x = returned.Count - 1; x >= 0; x--)
                                 {
-                                    Point v = returned[x].Pos;
+                                    Point v = returned[x].Pos.ToPoint();
                                     float dist = Math.Abs((v - tpos).ToVector2().Length());
                                     if (dist < smallestdistance)
                                     {
@@ -145,7 +145,7 @@ namespace Hivemind.World.Entity
                                     }
                                 }
 
-                                goal = returned[smallestindex].Pos;
+                                goal = returned[smallestindex].Pos.ToPoint();
                             }
                         }
 

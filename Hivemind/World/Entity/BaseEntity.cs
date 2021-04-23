@@ -17,9 +17,13 @@ namespace Hivemind.World.Entity
         //Entity type specific variables
         public const string UType = "BaseEntity";
         public const string UDescription = "Lazy Coder";
+        public const float USightDistance = 0;
      
         public virtual string Type => UType;
         public virtual string Description => UDescription;
+        public virtual float SightDistance => USightDistance;
+
+        public Vector2 Pos;
 
         public TileMap TileMap;
         public SpriteController Controller;
@@ -105,6 +109,8 @@ namespace Hivemind.World.Entity
             };
             stack.AddChild<Label>(info);
         }
+
+        public abstract void UpdateVision();
     }
 
     [Serializable]
@@ -125,7 +131,6 @@ namespace Hivemind.World.Entity
 
         public HashCell<MovingEntity> Cell;
         public int ID;
-        public Vector2 Pos;
 
         public MovingEntity(Vector2 pos)
         {
@@ -189,6 +194,14 @@ namespace Hivemind.World.Entity
             spriteBatch.Draw(EntityManager.Selected, Bounds, Color.White);
         }
 
+        public override void UpdateVision()
+        {
+            if (SightDistance > 0)
+            {
+                Sight.RevealCircle(TileMap.GetTileCoords(Pos), SightDistance, TileMap);
+            }
+        }
+
     }
 
     [Serializable]
@@ -199,7 +212,6 @@ namespace Hivemind.World.Entity
 
         public bool Updated = false, Rendered = false;
 
-        public Point Pos;
         public virtual Rectangle Bounds
         {
             get
@@ -210,7 +222,7 @@ namespace Hivemind.World.Entity
 
         public TileEntity(Point p)
         {
-            Pos = p;
+            Pos = p.ToVector2();
         }
 
         public TileEntity(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -221,7 +233,7 @@ namespace Hivemind.World.Entity
         {
             if (Focused)
             {
-                Vector2 FPos = (Pos.ToVector2() + new Vector2(0.5f)) * TileManager.TileSize;
+                Vector2 FPos = (Pos + new Vector2(0.5f)) * TileManager.TileSize;
                 FPos.Floor();
                 TileMap.Cam.MoveTo(FPos);
                 Focused = false;
@@ -247,6 +259,8 @@ namespace Hivemind.World.Entity
                 for (int y = r.Y; y < r.Bottom; y++)
                     TileMap.RemoveTileEntity(new Point(x, y));
 
+            TileMap.TileEntities.Remove(Pos.ToPoint());
+
             base.Destroy();
         }
 
@@ -254,6 +268,14 @@ namespace Hivemind.World.Entity
         {
             Rectangle r = new Rectangle((int)(Pos.X * TileManager.TileSize), (int)(Pos.Y * TileManager.TileSize), Size.X * TileManager.TileSize, Size.Y * TileManager.TileSize);
             spriteBatch.Draw(EntityManager.Selected, r, Color.White);
+        }
+
+        public override void UpdateVision()
+        {
+            if (SightDistance > 0)
+            {
+                Sight.RevealCircle(Pos.ToPoint(), SightDistance, TileMap);
+            }
         }
     }
 }

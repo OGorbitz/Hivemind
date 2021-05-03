@@ -24,7 +24,7 @@ namespace Hivemind.World.Entity
 
             SpaseShip.LoadAssets(content);
 
-            SmallDrone.LoadAssets(content);
+            Worker.LoadAssets(content);
             Nommer.LoadAssets(content);
             //Entity_BasicComputerClump.LoadAssets(content);
             //Entity_BasicComputer.LoadAssets(content);

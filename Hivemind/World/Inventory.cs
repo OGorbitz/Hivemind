@@ -1,4 +1,6 @@
-﻿using Hivemind.World.Entity.Moving;
+﻿using Hivemind.World.Entity;
+using Hivemind.World.Entity.Moving;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,5 +17,7 @@ namespace Hivemind.World
         /// <returns>Amount of material successfully withdrawn</returns>
         public float Withdraw(Material m, float a);
         public float Deposit(Material m, float a);
+        public Dictionary<Material, float> GetMaterials();
+        public Point GetPosition();
     }
 }

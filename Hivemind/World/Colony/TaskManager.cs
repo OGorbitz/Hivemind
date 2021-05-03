@@ -83,29 +83,47 @@ namespace Hivemind.World.Colony
     public class HaulTask : BaseTask
     {
         public Inventory Target;
-        public Dictionary<Material, float> Materials;
-        public Dictionary<Material, float> InProgress = new Dictionary<Material, float>();
+        public readonly Dictionary<Material, float> TotalMaterials;
+        public Dictionary<Material, float> MaterialsQueued = new Dictionary<Material, float>();
+        public Dictionary<Material, float> MaterialsNeeded = new Dictionary<Material, float>();
+        public Dictionary<Material, float> MaterialsStored => Target.GetMaterials();
 
         public HaulTask(TaskManager parent, Inventory target, Dictionary<Material, float> needed) : base(1, parent)
         {
             Target = target;
+            TotalMaterials = needed;
+            foreach(KeyValuePair<Material, float> m in TotalMaterials)
+            {
+                MaterialsQueued.Add(m.Key, 0);
+                MaterialsNeeded.Add(m.Key, m.Value);
+            }
+        }
+
+        public void QueueMaterial(Material m, float a)
+        {
+            MaterialsQueued[m] += a;
+            MaterialsNeeded[m] -= a;
         }
 
         public void Deposit(Material m, float a)
         {
-            InProgress[m] -= a;
-            Materials[m] -= a;
+            MaterialsQueued[m] -= a;
+            Target.Deposit(m, a);
 
-            if(Materials[m] <= 0)
+            foreach (KeyValuePair<Material, float> mat in MaterialsNeeded)
             {
-                Materials.Remove(m);
-                InProgress.Remove(m);
-
-                if(Materials.Count == 0)
+                if (mat.Value - MaterialsStored[mat.Key] > 0)
                 {
-                    TaskFinished();
+                    return;
                 }
             }
+
+            TaskFinished();
+        }
+
+        public override void TaskFinished()
+        {
+            base.TaskFinished();
         }
     }
 }

@@ -141,7 +141,29 @@ namespace Hivemind.World.Tiles
             }
         }
 
-        public Visibility Visibility;
+        public Visibility _visibility;
+        public Visibility Visibility
+        {
+            get
+            {
+                return _visibility;
+            }
+            set
+            {
+                if (value != _visibility)
+                {
+                    for (var i = 0; i < 9; i++)
+                    {
+                        Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
+                        Tile t = Parent.GetTile(v);
+                        if (t != null)
+                            t.DirtyFog = true;
+                    }
+                }
+
+                _visibility = value;
+            }
+        }
 
         public TileEntity _tileEntity;
         public TileEntity TileEntity
@@ -163,6 +185,8 @@ namespace Hivemind.World.Tiles
         public readonly Point Pos;
 
         public readonly bool Real = true;
+
+        public bool DirtyFog = true;
 
         public Room Room;
         public RoomTask RoomUpdate = RoomTask.NONE;

@@ -49,6 +49,7 @@ namespace Hivemind.World.Entity
 
         public virtual void Update(GameTime gameTime)
         {
+            UpdateVision();
         }
 
         public virtual void Init()
@@ -198,7 +199,7 @@ namespace Hivemind.World.Entity
         {
             if (SightDistance > 0)
             {
-                Sight.RevealCircle(TileMap.GetTileCoords(Pos), SightDistance, TileMap);
+                Fog.RevealCircle(Pos / TileManager.TileSize, SightDistance, TileMap);
             }
         }
 
@@ -274,7 +275,7 @@ namespace Hivemind.World.Entity
         {
             if (SightDistance > 0)
             {
-                Sight.RevealCircle(Pos.ToPoint(), SightDistance, TileMap);
+                Fog.RevealCircle(Pos, SightDistance, TileMap);
             }
         }
     }

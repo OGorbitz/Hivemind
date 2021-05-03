@@ -259,5 +259,15 @@ namespace Hivemind.World.Tiles
 
             return a;
         }
+        
+        public Dictionary<Material, float> GetMaterials()
+        {
+            return Materials;
+        }
+
+        public Point GetPosition()
+        {
+            return Tile.Pos;
+        }
     }
 }

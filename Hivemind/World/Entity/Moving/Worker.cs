@@ -14,11 +14,11 @@ using System.Text;
 
 namespace Hivemind.World.Entity
 {
-    public enum SmallDrone_Behavior {IDLE, FINDING, GETTING, DELIVERING, BUILDING}
+    public enum WorkerBehavior {IDLE, FINDING, GETTING, DELIVERING, BUILDING}
 
 
     [Serializable]
-    public class SmallDrone : MovingEntity, IControllable
+    public class Worker : MovingEntity, IControllable
     {
         public const string UType = "SmallDrone";
         public readonly Point USize = new Point(32);
@@ -35,7 +35,7 @@ namespace Hivemind.World.Entity
 
         public TimeSpan NextAction;
 
-        public SmallDrone_Behavior Thought = SmallDrone_Behavior.IDLE;
+        public WorkerBehavior Thought = WorkerBehavior.IDLE;
         public BaseTask CurrentTask;
         private Pathfinder Pathfinder;
         private int CurrentPathNode;
@@ -45,7 +45,7 @@ namespace Hivemind.World.Entity
         public Material CarryType;
         public float CarryAmount;
 
-        public SmallDrone(Vector2 pos) : base(pos)
+        public Worker(Vector2 pos) : base(pos)
         {
             Controller.AddAnimation("IDLE", new[] { 0, 1}, 3, true);
             Controller.AddAnimation("LEFT", new[] { 2, 3, 4, 5, 6}, 5, true);
@@ -55,7 +55,7 @@ namespace Hivemind.World.Entity
             Controller.SetAnimation("IDLE");
         }
 
-        public SmallDrone(SerializationInfo info, StreamingContext context) : base(info, context)
+        public Worker(SerializationInfo info, StreamingContext context) : base(info, context)
         {
             Controller.AddAnimation("IDLE", new[] { 0, 1}, 3, true);
             Controller.AddAnimation("LEFT", new[] { 2, 3, 4, 5, 6}, 5, true);
@@ -95,19 +95,19 @@ namespace Hivemind.World.Entity
 
             switch (Thought)
             {
-                case SmallDrone_Behavior.IDLE:
+                case WorkerBehavior.IDLE:
                     action = "Idle";
                     break;
-                case SmallDrone_Behavior.FINDING:
+                case WorkerBehavior.FINDING:
                     action = "Finding";
                     break;
-                case SmallDrone_Behavior.GETTING:
+                case WorkerBehavior.GETTING:
                     action = "Getting";
                     break;
-                case SmallDrone_Behavior.DELIVERING:
+                case WorkerBehavior.DELIVERING:
                     action = "Delivering";
                     break;
-                case SmallDrone_Behavior.BUILDING:
+                case WorkerBehavior.BUILDING:
                     action = "Building";
                     break;
             }
@@ -123,37 +123,44 @@ namespace Hivemind.World.Entity
             stack.AddChild<Label>(info);
         }
 
+        public virtual void ChooseTask()
+        {
+            foreach (BaseTask t in TileMap.TaskManager.Tasks)
+            {
+                if (t.GetType() == typeof(BuildTask))
+                {
+                    CurrentTask = t;
+                    Thought = WorkerBehavior.BUILDING;
+                    break;
+                }
+                if (t.GetType() == typeof(HaulTask))
+                {
+                    CurrentTask = t;
+                    Thought = WorkerBehavior.FINDING;
+                    break;
+                }
+            }
+        }
+
         public override void Update(GameTime gameTime)
         {
             switch (Thought)
             {
-                case SmallDrone_Behavior.IDLE:
-                    foreach (BaseTask t in TileMap.TaskManager.Tasks)
-                    {
-                        if(t.GetType() == typeof(BuildTask))
-                        {
-                            CurrentTask = t;
-                            Thought = SmallDrone_Behavior.BUILDING;
-                        }
-                        if(t.GetType() == typeof(HaulTask))
-                        {
-                            CurrentTask = t;
-                            Thought = SmallDrone_Behavior.FINDING;
-                        }
-                    }
+                case WorkerBehavior.IDLE:
+                    ChooseTask();
                     break;
-                case SmallDrone_Behavior.FINDING:
+                case WorkerBehavior.FINDING:
                     if (Pathfinder == null)
                     {
                         var task = ((HaulTask)CurrentTask);
                         
-                        foreach(KeyValuePair<Material, float> p in task.Materials)
+                        foreach(KeyValuePair<Material, float> p in task.TotalMaterials)
                         {
-                            if (task.InProgress.ContainsKey(p.Key))
+                            if (task.MaterialsQueued.ContainsKey(p.Key))
                             {
-                                if(task.InProgress[p.Key] < task.Materials[p.Key])
+                                if(task.MaterialsQueued[p.Key] < task.TotalMaterials[p.Key])
                                 {
-                                    HaulingAmount = task.Materials[p.Key] - task.InProgress[p.Key];
+                                    HaulingAmount = task.TotalMaterials[p.Key] - task.MaterialsQueued[p.Key];
                                     CarryType = p.Key;
                                     break;
                                 }
@@ -164,7 +171,7 @@ namespace Hivemind.World.Entity
                             }
                             else
                             {
-                                HaulingAmount = task.Materials[p.Key];
+                                HaulingAmount = task.TotalMaterials[p.Key];
                                 CarryType = p.Key;
                                 break;
                             }
@@ -189,44 +196,35 @@ namespace Hivemind.World.Entity
                             Pathfinder = new Pathfinder(TileMap.GetTileCoords(Pos), TileMap.GetTileCoords(goal.Pos), 5000);
                             CurrentPathNode = -1;
                             TargetMaterial = goal;
-                            Thought = SmallDrone_Behavior.GETTING;
+                            Thought = WorkerBehavior.GETTING;
                         }
                     }
                     break;
-                case SmallDrone_Behavior.GETTING:
+                case WorkerBehavior.GETTING:
                     if (CurrentPathNode == 0)
                     {
                         CarryType = TargetMaterial.MaterialType;
                         CarryAmount = TargetMaterial.TryTake(HaulingAmount);
 
-                        Pathfinder = new Pathfinder(TileMap.GetTileCoords(Pos), ((BuildTask)CurrentTask).Tile.Pos, 5000);
+                        Pathfinder = new Pathfinder(TileMap.GetTileCoords(Pos), ((HaulTask)CurrentTask).Target.GetPosition(), 5000);
                         CurrentPathNode = -1;
-                        Thought = SmallDrone_Behavior.DELIVERING;
+                        Thought = WorkerBehavior.DELIVERING;
                     }
                     break;
-                case SmallDrone_Behavior.DELIVERING:
+                case WorkerBehavior.DELIVERING:
                     if (CurrentPathNode == 0)
                     {
-                        HoloTile t = ((BuildTask)CurrentTask).Tile;
-                        if (t.Materials.ContainsKey(CarryType))
-                        {
-                            t.Materials[CarryType] += CarryAmount;
-                        }
-                        else
-                        {
-                            t.Materials.Add(CarryType, CarryAmount);
-                        }
                         ((HaulTask)CurrentTask).Deposit(CarryType, CarryAmount);
 
                         //IF MATERIALS MET
                         Pathfinder = null;
-                        Thought = SmallDrone_Behavior.BUILDING;
+                        Thought = WorkerBehavior.IDLE;
                     }
                     break;
-                case SmallDrone_Behavior.BUILDING:
+                case WorkerBehavior.BUILDING:
                     CurrentTask.DoWork(100f/1000 * gameTime.ElapsedGameTime.Milliseconds);
                     if (CurrentTask.Complete)
-                        Thought = SmallDrone_Behavior.IDLE;
+                        Thought = WorkerBehavior.IDLE;
                     break;
             }
 

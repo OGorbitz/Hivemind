@@ -206,7 +206,7 @@ namespace Hivemind.Input
                                         if (e.Bounds.Contains(worldpos))
                                             selected.Add(e);
                                     }
-                                    if (selected.Count == 1 && selected[0].GetType() == typeof(SmallDrone))
+                                    if (selected.Count == 1 && selected[0].GetType() == typeof(Worker))
                                     {
                                         Selection.SelectFocus(selected[0]);
                                     }

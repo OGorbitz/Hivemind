@@ -32,7 +32,7 @@ namespace Hivemind.World
         public WorldGenerator Generator;
 
         //Holds pre rendered floor
-        public RenderTarget2D FloorBuffer;
+        public RenderTarget2D FloorBuffer, FogBuffer;
         //Used to render floor
         public static RenderTarget2D RenderBuffer;
         //Blend state for rendering stencil effect
@@ -44,6 +44,16 @@ namespace Hivemind.World
             AlphaSourceBlend = Blend.Zero,
             AlphaBlendFunction = BlendFunction.ReverseSubtract,
             AlphaDestinationBlend = Blend.One
+        };
+
+        public static BlendState FogBlendState = new BlendState
+        {
+            ColorSourceBlend = Blend.SourceAlpha,
+            ColorBlendFunction = BlendFunction.Add,
+            ColorDestinationBlend = Blend.Zero,
+            AlphaSourceBlend = Blend.One,
+            AlphaBlendFunction = BlendFunction.Add,
+            AlphaDestinationBlend = Blend.Zero
         };
 
         //Specific data
@@ -141,7 +151,7 @@ namespace Hivemind.World
 
                 }
             }
-            AddEntity(new SmallDrone(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
+            AddEntity(new Worker(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
             SetTile(new Point(10, 10), new HoloTile(new Wall_Cinderblock()));
             
             
@@ -488,28 +498,28 @@ namespace Hivemind.World
             }
         }
 
-        public void DrawFloor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
+        public void UpdateBufferPosition()
         {
             Rectangle cam = Cam.GetBounds();
 
             bool run = true;
 
-            while(run)
+            while (run)
             {
                 run = false;
 
                 Point bdiff = GetTileCoords(new Vector2(cam.Left, cam.Top) - (BufferPosition.ToVector2() * TileManager.TileSize));
 
-                if(Math.Abs(bdiff.X - BufferOffset.X) > BufferSize.X || Math.Abs(bdiff.Y - BufferOffset.Y) > BufferSize.Y)
+                if (Math.Abs(bdiff.X - BufferOffset.X) > BufferSize.X || Math.Abs(bdiff.Y - BufferOffset.Y) > BufferSize.Y)
                 {
                     BufferPosition.X += (bdiff.X - (bdiff.X % BufferSize.X));
                     BufferOffset.X = bdiff.X % BufferSize.X;
                     BufferPosition.Y += bdiff.Y - (bdiff.Y % BufferSize.Y);
                     BufferOffset.Y = bdiff.Y % BufferSize.Y;
 
-                    for (int x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x ++)
+                    for (int x = BufferPosition.X + BufferOffset.X; x <= BufferPosition.X + BufferOffset.X + BufferSize.X; x++)
                     {
-                        for(int y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y ++)
+                        for (int y = BufferPosition.Y + BufferOffset.Y; y <= BufferPosition.Y + BufferOffset.Y + BufferSize.Y; y++)
                         {
                             RenderFloor(new Point(x, y));
                         }
@@ -579,6 +589,124 @@ namespace Hivemind.World
                     BufferPosition.Y -= BufferSize.Y;
                 }
             }
+        }
+
+        public static readonly int[,,] CornerCheck =
+        {
+            { { 0, -1 }, { -1, -1 }, { -1, 0 } },
+            { { 1, 0 }, { 1, -1 }, { 0, -1 } },
+            { { 0, 1 }, { 1, 1 }, { 1, 0 } },
+            { { -1, 0 }, { -1, 1 }, { 0, 1 } },
+
+        };
+
+        public static readonly Vector2[] CornerRenderOffset =
+        {
+            new Vector2(0, 0),
+            new Vector2(32, 0),
+            new Vector2(32, 32),
+            new Vector2(0, 32)
+        };
+
+        public void DrawFog(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
+        {
+            for (int l = 0; l < (int)FloorPriority.COUNT; l++)
+            {
+                graphicsDevice.SetRenderTarget(FogBuffer);
+
+                for (int x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
+                {
+                    for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
+                    {
+                        var ti = GetTile(new Point(x, y));
+                        if (ti == null || !ti.Real)
+                            continue;
+                        if (!ti.DirtyFog)
+                            continue;
+
+                        Point converted_coords = new Point(x - BufferPosition.X, y - BufferPosition.Y);
+                        if (converted_coords.X >= BufferSize.X)
+                            converted_coords.X -= BufferSize.X;
+                        if (converted_coords.Y >= BufferSize.Y)
+                            converted_coords.Y -= BufferSize.Y;
+
+
+                        spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: FogBlendState);
+                        spriteBatch.Draw(Fog.MaskAtlas, converted_coords.ToVector2() * TileManager.TileSize,
+                            sourceRectangle: new Rectangle(256, 64, 64, 64), Color.White);
+                        spriteBatch.End();
+
+
+                        spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+                        var visibility = GetTile(new Point(x, y)).Visibility;
+                        if (visibility == Visibility.HIDDEN)
+                            spriteBatch.Draw(Fog.MaskAtlas, converted_coords.ToVector2() * TileManager.TileSize,
+                                sourceRectangle: new Rectangle(256, 0, 64, 64), Color.White);
+                        else if(visibility == Visibility.KNOWN)
+                        {
+                            spriteBatch.Draw(Fog.MaskAtlas, converted_coords.ToVector2() * TileManager.TileSize,
+                                sourceRectangle: new Rectangle(256, 0, 64, 64), new Color(0f, 0f, 0f, 0.5f));
+                            for (int i = 0; i < 4; i++)
+                            {
+                                int index = 0;
+
+                                //For each indexed corner tile
+                                for (int n = 0; n < 3; n++)
+                                {
+                                    if (GetTile(new Point(CornerCheck[i, n, 0] + x, CornerCheck[i, n, 1] + y)).Visibility == Visibility.HIDDEN)
+                                        index += 1 << n;
+                                }
+
+                                spriteBatch.Draw(Fog.MaskAtlas, converted_coords.ToVector2() * TileManager.TileSize + CornerRenderOffset[i],
+                                sourceRectangle: new Rectangle(index * 32, i * 32, 32, 32), Color.White);
+                            }
+                        }
+                        else
+                        {
+                            //For each corner
+                            for (int i = 0; i < 4; i++)
+                            {
+                                int indexhidden = 0;
+                                int indexknown = 0;
+
+
+                                //For each indexed corner tile
+                                for (int n = 0; n < 3; n++)
+                                {
+                                    var vis = GetTile(new Point(CornerCheck[i, n, 0] + x, CornerCheck[i, n, 1] + y)).Visibility;
+                                    if (vis == Visibility.HIDDEN)
+                                        indexhidden += 1 << n;
+                                    if (vis == Visibility.KNOWN)
+                                        indexknown += 1 << n;
+                                }
+
+                                spriteBatch.Draw(Fog.MaskAtlas, converted_coords.ToVector2() * TileManager.TileSize + CornerRenderOffset[i],
+                                sourceRectangle: new Rectangle(indexhidden * 32, i * 32, 32, 32), Color.White);
+
+                                spriteBatch.Draw(Fog.MaskAtlas, converted_coords.ToVector2() * TileManager.TileSize + CornerRenderOffset[i],
+                                sourceRectangle: new Rectangle(indexknown * 32, i * 32, 32, 32), new Color(0, 0, 0, 0.5f));
+                            }
+                        }
+                        spriteBatch.End();
+                    }
+                }
+
+            }
+
+            for (int x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
+            {
+                for (int y = BufferPosition.Y + BufferOffset.Y; y < BufferPosition.Y + BufferSize.Y + BufferOffset.Y; y++)
+                {
+                    var tile = GetTile(new Point(x, y));
+                    if (tile == null || tile.Floor == null)
+                        continue;
+                    tile.DirtyFog = false;
+                }
+            }
+        }
+
+        public void DrawFloor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
+        {
 
 
             for (int l = 0; l < (int)FloorPriority.COUNT; l++)
@@ -697,12 +825,18 @@ namespace Hivemind.World
             width *= TileManager.TileSize;
             height *= TileManager.TileSize;
 
+            
             if (FloorBuffer == null)
-                FloorBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents); ;
+                FloorBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents);
             if (RenderBuffer == null)
                 RenderBuffer = new RenderTarget2D(graphicsDevice, width, height);
+            if (FogBuffer == null)
+                FogBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents);
+
+            UpdateBufferPosition();
 
             DrawFloor(spriteBatch, graphicsDevice, gameTime);
+            DrawFog(spriteBatch, graphicsDevice, gameTime);
 
             graphicsDevice.SetRenderTarget(RenderTarget);
 
@@ -795,6 +929,14 @@ namespace Hivemind.World
                 }
             }
             spriteBatch.End();
+
+            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            spriteBatch.Draw(FogBuffer, BufferPosition.ToVector2() * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FogBuffer, (BufferPosition.ToVector2() + new Vector2(BufferSize.X, 0)) * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FogBuffer, (BufferPosition.ToVector2() + new Vector2(0, BufferSize.Y)) * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(FogBuffer, (BufferPosition + BufferSize).ToVector2() * TileManager.TileSize, Color.White);
+            spriteBatch.End();
+
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             Selection.DrawSelectionRectangles(spriteBatch, graphicsDevice, gameTime);

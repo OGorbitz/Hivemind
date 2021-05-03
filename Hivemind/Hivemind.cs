@@ -31,7 +31,7 @@ namespace Hivemind
         {
             _instance = this;
 
-            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
+            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
             ScreenWidth = r.Width;
             ScreenHeight = r.Height;
 
@@ -90,6 +90,7 @@ namespace Hivemind
 
             FloorMask.LoadContent(Content, GraphicsDevice);
             TextureAtlas.Init(GraphicsDevice);
+            Fog.Init(Content, GraphicsDevice);
             TileManager.LoadTiles(Content, GraphicsDevice);
             EntityManager.LoadAssets(Content);
         }

@@ -23,7 +23,7 @@ namespace Hivemind.World.Entity
         public const string UType = "SmallDrone";
         public readonly Point USize = new Point(32);
         public const int USpeed = 100;
-        public const float USightDistance = 5;
+        public const float USightDistance = 8;
         public static Texture2D UIcon;
 
         public override string Type => UType;
@@ -310,7 +310,7 @@ namespace Hivemind.World.Entity
 
         public override void DrawSelected(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
-            if (Pathfinder != null && Pathfinder.Finished && Pathfinder.Solution)
+            if (Pathfinder != null && Pathfinder.Finished && Pathfinder.Solution && CurrentPathNode >= 0)
             {
                 for (int i = CurrentPathNode - 1; i >= 0; i--)
                 {

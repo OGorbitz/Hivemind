@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FontStashSharp;
 using Hivemind.Input;
 using Hivemind.Utility;
@@ -65,6 +67,13 @@ namespace Hivemind.GUI
         private static ConsoleText _creditText, _menuBackground;
         public static Label Credits, MenuBackground;
         public static string DebugText;
+
+        public static long TotalFrames { get; private set; }
+        public static float TotalSeconds { get; private set; }
+        public static float AverageFramesPerSecond { get; private set; }
+        public static float CurrentFramesPerSecond { get; private set; }
+        public const int MAXIMUM_SAMPLES = 100;
+        private static Queue<float> _sampleBuffer = new Queue<float>();
 
         public static GUITab Buildables;
 
@@ -241,6 +250,23 @@ namespace Hivemind.GUI
                 case GUIState.HUD_RESEARCH:
                     break;
             }
+
+            CurrentFramesPerSecond = 1000f / gameTime.ElapsedGameTime.Milliseconds;
+
+            _sampleBuffer.Enqueue(CurrentFramesPerSecond);
+
+            if (_sampleBuffer.Count > MAXIMUM_SAMPLES)
+            {
+                _sampleBuffer.Dequeue();
+                AverageFramesPerSecond = _sampleBuffer.Average(i => i);
+            }
+            else
+            {
+                AverageFramesPerSecond = CurrentFramesPerSecond;
+            }
+
+            TotalFrames++;
+            TotalSeconds += gameTime.ElapsedGameTime.Milliseconds * 1000f;
         }
 
         public static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
@@ -271,6 +297,7 @@ namespace Hivemind.GUI
             {
                 spriteBatch.Begin();
                 AutobusSmaller.DrawText(spriteBatch, DebugText, new Vector2(25), Color.White);
+                AutobusSmaller.DrawText(spriteBatch, "" + AverageFramesPerSecond + " FPS", new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString("" + AverageFramesPerSecond + " FPS", Vector2.One).X, 25), Color.White);
                 if(Hivemind.DebugMode)
                     AutobusSmall.DrawText(spriteBatch, "DEBUG", new Vector2(Hivemind.ScreenWidth/2 - AutobusSmall.MeasureString("DEBUG", Vector2.One).X / 2, 25), Color.Red);
                 spriteBatch.End();

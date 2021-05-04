@@ -39,6 +39,25 @@ namespace Hivemind.Utility
                 0);
         }
 
+        public static Color AverageColor(Texture2D texture)
+        {
+            float r = 0, g = 0, b = 0;
+            Color[] textureData = new Color[texture.Width * texture.Height];
+            texture.GetData<Color>(textureData);
+
+            for(int x = 0; x < textureData.Length; x++)
+            {
+                Vector4 c = textureData[x].ToVector4();
+                if (c.W < 1.0f)
+                    continue;
+
+                r += c.X;
+                g += c.Y;
+                b += c.Z;
+            }
+            return new Color(r / textureData.Length, g / textureData.Length, b / textureData.Length);
+        }
+
         public static float Random()
         {
             if (Rand == null)

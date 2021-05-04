@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using Hivemind.Utility;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -13,18 +14,28 @@ namespace Hivemind.World.Tiles.Wall
         public const string UName = "Wall_Dirt";
         public const Layer ULayer = Layer.WALL;
         public const float UResistance = -1;
+        private static Color UAverageColor = Color.Magenta;
 
         public override string Name => UName;
         public override float Resistance => UResistance;
         public override Layer Layer => ULayer;
         public virtual Texture2D Icon => UIcon;
+        public override Color AverageColor => UAverageColor;
+
 
         //Assets
         public static Texture2D UIcon;
         private static int[] Tex;
 
         //Custom variables
-        private static int[,] tilecheck;
+        private static int[,] tilecheck = new int[4, 3]
+            {
+                {1, 0, -1},
+                {2, 1, 0},
+                {4, 0, 1},
+                {8, -1, 0}
+            };
+
         private int renderindex;
 
         public Wall_Dirt()
@@ -41,20 +52,16 @@ namespace Hivemind.World.Tiles.Wall
             Tex = new int[textures.Length];
             for (var i = 0; i < 16; i++) textures[i] = content.Load<Texture2D>("Tiles/Wall/Dirt/" + (i + 1));
 
-            tilecheck = new int[4, 3]
-            {
-                {1, 0, -1},
-                {2, 1, 0},
-                {4, 0, 1},
-                {8, -1, 0}
-            };
-
             UIcon = textures[0];
 
+            Vector3 color = Vector3.Zero;
             for (int i = 0; i < textures.Length; i++)
             {
                 Tex[i] = TextureAtlas.AddTexture(textures[i], graphicsDevice);
+                color += Helper.AverageColor(textures[i]).ToVector3();
             }
+            color /= textures.Length;
+            UAverageColor = new Color(color);
         }
 
         public static void Unlock()

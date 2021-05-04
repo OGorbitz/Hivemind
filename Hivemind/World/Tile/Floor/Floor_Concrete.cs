@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Hivemind.Utility;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -16,11 +17,13 @@ namespace Hivemind.World.Tiles.Floor
         public new const Layer ULayer = Layer.FLOOR;
         public new const int URenderPriority = (int)FloorPriority.Floor_Concrete;
         public new const float UResistance = 1.5f;
+        private static Color UAverageColor = Color.Pink;
 
         public override string Name => UName;
         public override Layer Layer => ULayer;
         public override float Resistance => UResistance;
         public override int FloorLayer => URenderPriority;
+        public override Color AverageColor => UAverageColor;
 
         //Assets
         public static Texture2D UIcon;
@@ -41,6 +44,7 @@ namespace Hivemind.World.Tiles.Floor
         {
             texture = content.Load<Texture2D>("Tiles/Floor/Floor_Concrete");
             FloorMask.Textures[URenderPriority] = texture;
+            UAverageColor = Helper.AverageColor(texture);
 
             UIcon = content.Load<Texture2D>("Tiles/Floor/Floor_Concrete_Icon");
         }

@@ -60,6 +60,8 @@ namespace Hivemind.GUI
         private static Panel _mainMenu, _mainMenuCredits;
         private static Panel _tilemapHud;
 
+        public static Minimap Minimap;
+
         public static Panel infoPanel;
         public static VerticalStackPanel HardwareSelectionPanel;
         public static ImageButton SelectedShape;
@@ -91,6 +93,7 @@ namespace Hivemind.GUI
             ShapeRectangle = content.Load<Texture2D>("GUI/ShapeRectangle");
 
             InitMainMenu();
+            Minimap = new Minimap(new Point(200), graphicsDevice);
             InitHUD_Tilemap();
         }
 
@@ -402,6 +405,21 @@ namespace Hivemind.GUI
         {
             _tilemapHud = new Panel();
 
+            var minimap = new Image()
+            {
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Width = 200,
+                Height = 200,
+                Border = new SolidBrush(new Color(0.5f, 0.5f, 0.5f, 1)),
+                BorderThickness = new Thickness(4),
+            };
+            minimap.BeforeRender += (e) => {
+                minimap.Background = new TextureRegion(Minimap.RenderedMap);
+                Minimap.Redraw();
+            };
+
+            _tilemapHud.AddChild<Image>(minimap);
 
             var buttonPanel = new Panel()
             {

@@ -20,6 +20,7 @@ namespace Hivemind.World.Tiles
         public const int UBuildWork = 1000;
         public readonly Material[] UCostMaterials = { Material.CrushedRock };
         public readonly float[] UCostAmounts = { 69 };
+        public readonly Color UAverageColor = Color.Magenta;
 
         public virtual string Name => UName;
         public virtual Layer Layer => ULayer;
@@ -27,6 +28,7 @@ namespace Hivemind.World.Tiles
         public virtual int BuildWork => UBuildWork;
         public virtual Material[] CostMaterials => UCostMaterials;
         public virtual float[] CostAmounts => UCostAmounts;
+        public virtual Color AverageColor => UAverageColor;
 
 
         //Instance variables
@@ -153,6 +155,7 @@ namespace Hivemind.World.Tiles
         public static RenderTarget2D RenderTarget;
 
         public const string UName = "HOLO-";
+        public static readonly Color UAverageColor = Color.DarkGreen;
         public override float Resistance
         {
             get
@@ -169,6 +172,7 @@ namespace Hivemind.World.Tiles
         public override int BuildWork => Child.BuildWork;
         public override Material[] CostMaterials => Child.CostMaterials;
         public override float[] CostAmounts => Child.CostAmounts;
+        public override Color AverageColor => UAverageColor;
 
         public HoloTile(BaseTile tile)
         {

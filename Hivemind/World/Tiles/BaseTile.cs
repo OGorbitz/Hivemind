@@ -146,6 +146,10 @@ namespace Hivemind.World.Tiles
         }
     }
 
+    public abstract class BaseUtility : BaseTile
+    {
+    }
+
     public class HoloTile : BaseTile, Inventory
     {
         public BaseTile Child;

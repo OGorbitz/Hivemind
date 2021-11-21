@@ -70,13 +70,6 @@ namespace Hivemind.GUI
         public static Label Credits, MenuBackground;
         public static string DebugText;
 
-        public static long TotalFrames { get; private set; }
-        public static float TotalSeconds { get; private set; }
-        public static float AverageFramesPerSecond { get; private set; }
-        public static float CurrentFramesPerSecond { get; private set; }
-        public const int MAXIMUM_SAMPLES = 100;
-        private static Queue<float> _sampleBuffer = new Queue<float>();
-
         public static GUITab Buildables;
 
         private static GUIState CurrentState;
@@ -253,28 +246,11 @@ namespace Hivemind.GUI
                 case GUIState.HUD_RESEARCH:
                     break;
             }
-
-            CurrentFramesPerSecond = 1000f / gameTime.ElapsedGameTime.Milliseconds;
-
-            _sampleBuffer.Enqueue(CurrentFramesPerSecond);
-
-            if (_sampleBuffer.Count > MAXIMUM_SAMPLES)
-            {
-                _sampleBuffer.Dequeue();
-                AverageFramesPerSecond = _sampleBuffer.Average(i => i);
-            }
-            else
-            {
-                AverageFramesPerSecond = CurrentFramesPerSecond;
-            }
-
-            TotalFrames++;
-            TotalSeconds += gameTime.ElapsedGameTime.Milliseconds * 1000f;
         }
 
-        public static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
+        public static void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
-            if(CurrentState == GUIState.MAIN_MENU || CurrentState == GUIState.MAIN_MENU_CREDITS)
+            if (CurrentState == GUIState.MAIN_MENU || CurrentState == GUIState.MAIN_MENU_CREDITS)
             {
                 graphicsDevice.Clear(new Color(0f, 0.09f, 0f));
                 var ms = Hivemind.CurrentGameTime.TotalGameTime.Seconds * 1000 + Hivemind.CurrentGameTime.TotalGameTime.Milliseconds;
@@ -300,8 +276,16 @@ namespace Hivemind.GUI
             {
                 spriteBatch.Begin();
                 AutobusSmaller.DrawText(spriteBatch, DebugText, new Vector2(25), Color.White);
-                AutobusSmaller.DrawText(spriteBatch, "" + AverageFramesPerSecond + " FPS", new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString("" + AverageFramesPerSecond + " FPS", Vector2.One).X, 25), Color.White);
-                if(Hivemind.DebugMode)
+                string todraw = "" + Hivemind.AverageFramesPerSecond.ToString("N1") + " FPS";
+                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 25), Color.White);
+                todraw = "Walls: " + (int)(TileMap.AvgTimeWalls * 1000);
+                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 50), Color.White);
+                todraw = " Floors: " + (int)(TileMap.AvgTimeFloor * 1000);
+                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 70), Color.White);
+                todraw = " Fog: " + (int)(TileMap.AvgTimeFog * 1000);
+                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 90), Color.White);
+                
+                if (Hivemind.DebugMode)
                     AutobusSmall.DrawText(spriteBatch, "DEBUG", new Vector2(Hivemind.ScreenWidth/2 - AutobusSmall.MeasureString("DEBUG", Vector2.One).X / 2, 25), Color.Red);
                 spriteBatch.End();
             }

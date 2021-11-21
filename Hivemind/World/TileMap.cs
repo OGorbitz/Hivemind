@@ -31,6 +31,9 @@ namespace Hivemind.World
         private RenderTarget2D RenderTarget;
         public WorldGenerator Generator;
 
+        public static List<double> TimeFloor = new List<double>(), TimeFog = new List<double>(), TimeWalls = new List<double>(), TimeEntities = new List<double>();
+        public static double AvgTimeFloor, AvgTimeFog, AvgTimeWalls, AvgTimeEntities;
+
         //Holds pre rendered floor
         public RenderTarget2D FloorBuffer, FogBuffer;
         //Used to render floor
@@ -497,6 +500,14 @@ namespace Hivemind.World
             {
                 e.Value.UpdateVision();
             }
+            for (int i = 0; i < Size; i++)
+            {
+                for (int j = 0; j < Size; j++)
+                {
+                    Tile t = GetTile(new Point(i, j));
+                    t.PushVisibility();
+                }
+            }
         }
 
         public void UpdateBufferPosition()
@@ -691,7 +702,6 @@ namespace Hivemind.World
                         spriteBatch.End();
                     }
                 }
-
             }
 
             for (int x = BufferPosition.X + BufferOffset.X; x < BufferPosition.X + BufferSize.X + BufferOffset.X; x++)
@@ -708,8 +718,6 @@ namespace Hivemind.World
 
         public void DrawFloor(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
-
-
             for (int l = 0; l < (int)FloorPriority.COUNT; l++)
             {
                 graphicsDevice.SetRenderTarget(RenderBuffer);
@@ -886,9 +894,14 @@ namespace Hivemind.World
                 FogBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents);
 
             UpdateBufferPosition();
-
+            
+            DateTime StartTime = DateTime.Now;
             DrawFloor(spriteBatch, graphicsDevice, gameTime);
+            TimeFloor.Add((DateTime.Now - StartTime).TotalMilliseconds);
+
+            StartTime = DateTime.Now;
             DrawFog(spriteBatch, graphicsDevice, gameTime);
+            TimeFog.Add((DateTime.Now - StartTime).TotalMilliseconds);
 
             graphicsDevice.SetRenderTarget(RenderTarget);
 
@@ -963,6 +976,7 @@ namespace Hivemind.World
                 e.Value.Draw(spriteBatch, gameTime);
             }
 
+            StartTime = DateTime.Now;
             for (int x = (int)p1.X; x < p2.X; x++)
             {
                 for (int y = (int)p1.Y; y < p2.Y; y++)
@@ -981,6 +995,7 @@ namespace Hivemind.World
                 }
             }
             spriteBatch.End();
+            TimeWalls.Add((DateTime.Now - StartTime).TotalMilliseconds);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             spriteBatch.Draw(FogBuffer, BufferPosition.ToVector2() * TileManager.TileSize, Color.White);
@@ -1003,6 +1018,34 @@ namespace Hivemind.World
             spriteBatch.Begin(transformMatrix: Cam.ScaleOffset, samplerState: SamplerState.PointClamp);
             spriteBatch.Draw(RenderTarget, Vector2.Zero, Color.White);
             spriteBatch.End();
+
+            while (TimeWalls.Count > 100)
+                TimeWalls.RemoveAt(0);
+            while (TimeFloor.Count > 100)
+                TimeFloor.RemoveAt(0);
+            while (TimeFog.Count > 100)
+                TimeFog.RemoveAt(0);
+
+            AvgTimeWalls = 0;
+            for(int i = 0; i < TimeWalls.Count; i++)
+            {
+                AvgTimeWalls += TimeWalls[i];
+            }
+            AvgTimeWalls /= TimeWalls.Count;
+
+            AvgTimeFloor = 0;
+            for (int i = 0; i < TimeFloor.Count; i++)
+            {
+                AvgTimeFloor += TimeFloor[i];
+            }
+            AvgTimeFloor /= TimeFloor.Count;
+
+            AvgTimeFog = 0;
+            for (int i = 0; i < TimeFog.Count; i++)
+            {
+                AvgTimeFog += TimeFog[i];
+            }
+            AvgTimeFog /= TimeFog.Count;
 
         }
     }

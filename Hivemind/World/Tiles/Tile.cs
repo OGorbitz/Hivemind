@@ -1,4 +1,5 @@
 ﻿using Hivemind.World.Entity;
+using Hivemind.World.Tiles.Utilities;
 using Hivemind.World.Tiles;
 using Microsoft.Xna.Framework;
 using System;
@@ -141,7 +142,33 @@ namespace Hivemind.World.Tiles
             }
         }
 
+        public PowerCable _powerCable;
+        public PowerCable PowerCable
+        {
+            get
+            {
+                return _powerCable;
+            }
+            set
+            {
+                _powerCable = value;
+                if (value != null)
+                {
+                    _powerCable.SetParent(this, Parent);
+                    for (var i = 0; i < 4; i++)
+                    {
+                        Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
+                        Tile t = Parent.GetTile(v);
+                        if (t != null && t.PowerCable != null)
+                            t.PowerCable.Dirty = true;
+                    }
+                }
+
+            }
+        }
+
         public Visibility _visibility;
+        public Visibility _unpushedVisibility;
         public Visibility Visibility
         {
             get
@@ -150,18 +177,7 @@ namespace Hivemind.World.Tiles
             }
             set
             {
-                if (value != _visibility)
-                {
-                    for (var i = 0; i < 9; i++)
-                    {
-                        Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
-                        Tile t = Parent.GetTile(v);
-                        if (t != null)
-                            t.DirtyFog = true;
-                    }
-                }
-
-                _visibility = value;
+                _unpushedVisibility = value;
             }
         }
 
@@ -211,6 +227,21 @@ namespace Hivemind.World.Tiles
             Pos = pos;
             Visibility = Visibility.HIDDEN;
             Parent = parent;
+        }
+
+        public void PushVisibility()
+        {
+            if (_unpushedVisibility != _visibility)
+            {
+                for (var i = 0; i < 9; i++)
+                {
+                    Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
+                    Tile t = Parent.GetTile(v);
+                    if (t != null)
+                        t.DirtyFog = true;
+                }
+                _visibility = _unpushedVisibility;
+            }
         }
     }
 }

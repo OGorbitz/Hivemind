@@ -12,7 +12,8 @@ namespace Hivemind.World
     {
         FLOOR,
         WALL,
-        WIRE,
+        POWER,
+        DATA,
         LENGTH,
         NULL
     }

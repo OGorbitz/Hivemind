@@ -7,6 +7,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Hivemind
@@ -23,6 +26,16 @@ namespace Hivemind
         public static int ScreenWidth, ScreenHeight;
 
         public static GameTime CurrentGameTime;
+        public static float CurrentFPS = 0;
+
+        public static long TotalFrames { get; private set; }
+        public static float TotalSeconds { get; private set; }
+        public static float AverageFramesPerSecond { get; private set; }
+        public static float CurrentFramesPerSecond { get; private set; }
+        private static double last = 0, now = 0;
+        public const int MAXIMUM_SAMPLES = 100;
+        private static Queue<float> _sampleBuffer = new Queue<float>();
+
         public static ContentManager CManager;
 
         public static bool DebugMode = false;
@@ -31,7 +44,7 @@ namespace Hivemind
         {
             _instance = this;
 
-            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
+            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
             ScreenWidth = r.Width;
             ScreenHeight = r.Height;
 
@@ -43,9 +56,10 @@ namespace Hivemind
             
             IsMouseVisible = true;
 
+            IsFixedTimeStep = true;
 
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
-            _graphics.ApplyChanges();
+            _graphics.SynchronizeWithVerticalRetrace = false;
 
             _graphics.PreferredBackBufferWidth = r.Width;
             _graphics.PreferredBackBufferHeight = r.Height;
@@ -111,6 +125,27 @@ namespace Hivemind
         {
             CurrentGameTime = gameTime;
 
+            last = now;
+            now = gameTime.TotalGameTime.TotalSeconds;
+
+            CurrentFramesPerSecond = (float)(1.0 / (now - last));
+
+            _sampleBuffer.Enqueue(CurrentFramesPerSecond);
+
+            if (_sampleBuffer.Count > MAXIMUM_SAMPLES)
+            {
+                _sampleBuffer.Dequeue();
+                AverageFramesPerSecond = _sampleBuffer.Average(i => i);
+            }
+            else
+            {
+                AverageFramesPerSecond = CurrentFramesPerSecond;
+            }
+
+            TotalFrames++;
+            TotalSeconds += gameTime.ElapsedGameTime.Milliseconds * 1000f;
+
+
             switch (GameStateManager.State())
             {
                 case GameState.TILEMAP:
@@ -124,7 +159,7 @@ namespace Hivemind
                     break;
             }
 
-            GuiController.Draw(_spriteBatch, GraphicsDevice);
+            GuiController.Draw(_spriteBatch, GraphicsDevice, gameTime);
 
             base.Draw(gameTime);
         }

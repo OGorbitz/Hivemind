@@ -478,8 +478,8 @@ namespace Hivemind.GUI
             _tilemapHud.AddChild<VerticalStackPanel>(HardwareSelectionPanel);
             Buildables = new GUITab(3, HardwareSelectionPanel, new Rectangle(0, 0, Wall_Cinderblock.UIcon.Height + 8, Wall_Cinderblock.UIcon.Height + 8), 10);
 
-            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Dirt), Wall_Dirt.UIcon);
+            Buildables.AddButton(PlacingType.TILE, Wall_Cinderblock.UName, Wall_Cinderblock.UIcon);
+            Buildables.AddButton(PlacingType.TILE, Wall_Dirt.UName, Wall_Dirt.UIcon);
             Buildables.AddButton(typeof(Floor_Concrete), Floor_Concrete.UIcon);
             Buildables.AddButton(typeof(Floor_Dirt), Floor_Dirt.UIcon);
             Buildables.AddButton(typeof(Floor_Grass), Floor_Grass.UIcon);

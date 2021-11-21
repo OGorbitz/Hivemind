@@ -47,8 +47,14 @@ namespace Hivemind.World.Tiles.Floor
             UAverageColor = Helper.AverageColor(texture);
 
             UIcon = content.Load<Texture2D>("Tiles/Floor/Floor_Concrete_Icon");
+
+            TileConstructor.RegisterConstructor(UName, Constructor);
         }
 
+        public static BaseFloor Constructor()
+        {
+            return new Floor_Concrete();
+        }
         public override void Draw(SpriteBatch spriteBatch, Color color)
         {
             var sourcepos = new Rectangle((int)Pos.X % 8 * TileManager.TileSize,

@@ -62,6 +62,13 @@ namespace Hivemind.World.Tiles.Wall
             }
             color /= textures.Length;
             UAverageColor = new Color(color);
+
+            TileConstructor.RegisterConstructor(UName, Constructor);
+        }
+
+        public static BaseWall Constructor()
+        {
+            return new Wall_Dirt();
         }
 
         public static void Unlock()

@@ -8,6 +8,7 @@ using Myra.Graphics2D.UI;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static Hivemind.World.Tiles.TileConstructor;
 
 namespace Hivemind.GUI
 {
@@ -48,12 +49,8 @@ namespace Hivemind.GUI
             Reorder();
         }
 
-        public void AddButton(Type item, Texture2D icon)
+        public void AddButton(PlacingType placingType, string tileName, Texture2D icon)
         {
-            PlacingType objectType = PlacingType.NONE;
-            if (item.IsSubclassOf(typeof(BaseTile)))
-                objectType = PlacingType.TILE;
-
             var i = new ImageButton()
             {
                 Image = new TextureRegion(icon, new Rectangle(0, 0, icon.Width, icon.Height)),
@@ -63,11 +60,11 @@ namespace Hivemind.GUI
             };
             i.Click += (s, e) =>
             {
-                Editing.SetType(item, objectType);
+                Editing.SetType(placingType, tileName);
             };
             i.BeforeRender += (s) =>
             {
-                if (Editing.SelectedType == item)
+                if (Editing.SelectedTileName == tileName)
                     i.Enabled = false;
                 else
                     i.Enabled = true;

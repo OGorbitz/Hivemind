@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static Hivemind.World.Tiles.TileConstructor;
 
 namespace Hivemind.Input
 {
@@ -18,15 +19,15 @@ namespace Hivemind.Input
     {
         public static EditShape Shape = EditShape.LINE;
         public static PlacingType PlacingType { get; private set; } = PlacingType.TILE;
-        public static Type SelectedType { get; private set; } = typeof(Wall_Cinderblock);
+        public static string SelectedTileName { get; private set; } = Wall_Cinderblock.UName;
         public static bool PlaceHolo = true;
 
         public static Point Start;
 
-        public static void SetType(Type selectedType, PlacingType placetype)
+        public static void SetType(PlacingType placingType, string tileName)
         {
-            SelectedType = selectedType; 
-            PlacingType = placetype;
+            PlacingType = placingType;
+            SelectedTileName = tileName;
         }
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace Hivemind.Input
         /// <param name="location"></param>
         public static void Hover(Point location)
         {
-            WorldManager.GetEditorTileMap().SetTile(location, (BaseTile)Activator.CreateInstance(SelectedType));
+            WorldManager.GetEditorTileMap().SetTile(location, TileConstructor.ConstructTile(SelectedTileName));
         }
 
 
@@ -43,12 +44,12 @@ namespace Hivemind.Input
         {
             if (PlaceHolo)
             {
-                HoloTile t = new HoloTile((BaseTile)Activator.CreateInstance(SelectedType));
+                HoloTile t = new HoloTile(TileConstructor.ConstructTile(SelectedTileName));
                 WorldManager.GetActiveTileMap().SetTile(p, t);
             }
             else
             {
-                BaseTile t = (BaseTile)Activator.CreateInstance(SelectedType);
+                BaseTile t = TileConstructor.ConstructTile(SelectedTileName);
                 WorldManager.GetActiveTileMap().SetTile(p, t);
             }
         }
@@ -60,13 +61,13 @@ namespace Hivemind.Input
                 Tile t = WorldManager.GetActiveTileMap().GetTile(p);
                 if (t.Wall != null)
                 {
-                    BaseTile tile = (BaseTile)Activator.CreateInstance(t.Wall.GetType());
+                    BaseTile tile = TileConstructor.ConstructTile(t.Wall.Name);
                     WorldManager.GetEditorTileMap().SetTile(p, tile);
                 }
             }
             else
             {
-                BaseTile tile = (BaseTile)Activator.CreateInstance(SelectedType);
+                BaseTile tile = TileConstructor.ConstructTile(SelectedTileName);
                 WorldManager.GetEditorTileMap().SetTile(p, tile);
             }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Serialization;
+using Hivemind.Utility;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -60,6 +61,13 @@ namespace Hivemind.World.Tiles.Wall
             {
                 Tex[i] = TextureAtlas.AddTexture(textures[i], graphicsDevice);
             }
+
+            TileConstructor.RegisterConstructor(UName, Constructor);
+        }
+
+        public static BaseWall Constructor()
+        {
+            return new Wall_Door((ShapeSelecter.Rotation & 1) > 0);
         }
 
         public float GetResistance()

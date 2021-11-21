@@ -7,6 +7,21 @@ namespace Hivemind.Utility
 {
     public class ShapeSelecter
     {
+        private static int _rotation = 0;
+        
+        public static int Rotation
+        {
+            get 
+            { 
+                return _rotation; 
+            }
+            set 
+            { 
+                int i = value % 4;
+                _rotation = i < 0 ? i + 4 : i;
+            }
+        }
+
         public static List<Point> GetCircle(Vector2 position, float size)
         {
             List<Point> selected = new List<Point>();

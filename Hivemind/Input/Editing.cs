@@ -34,9 +34,18 @@ namespace Hivemind.Input
         /// Shows holographic placement on editor tilemap
         /// </summary>
         /// <param name="location"></param>
-        public static void Hover(Point location)
+        public static void Hover(Point location, Action action)
         {
-            WorldManager.GetEditorTileMap().SetTile(location, TileConstructor.ConstructTile(SelectedTileName));
+            if (action == Action.BUILD)
+            {
+                WorldManager.GetEditorTileMap().SetTile(location, TileConstructor.ConstructTile(SelectedTileName));
+            }
+            else if (action == Action.DESTROY)
+            {
+                BaseTile tile = WorldManager.GetActiveTileMap().GetTile(location).Wall;
+                if (tile != null)
+                    WorldManager.GetEditorTileMap().SetTile(location, TileConstructor.ConstructTile(tile.Name));
+            }
         }
 
 

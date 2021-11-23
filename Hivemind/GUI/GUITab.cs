@@ -76,7 +76,7 @@ namespace Hivemind.GUI
         {
             _panel.Widgets.Clear();
          
-            for(int i = 0; i < _items.Count / Width; i++)
+            for(int i = 0; i < Math.Ceiling((float)_items.Count / Width); i++)
             {
                 var stack = new HorizontalStackPanel
                 {

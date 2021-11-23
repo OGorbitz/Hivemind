@@ -31,7 +31,18 @@ namespace Hivemind.World.Tiles.Utilities
 
         public override void Draw(SpriteBatch spriteBatch, Color color)
         {
-
+            for (int i = 0; i < 4; i++)
+            {
+                Point p = new Point(Pos.X + neighbors[i, 0], Pos.Y + neighbors[i, 1]);
+                Tile n = Parent.GetTile(p);
+                if (n.PowerCable != null)
+                {
+                    if (n.PowerCable.Tier < Tier)
+                    {
+                        
+                    }
+                }
+            }
         }
 
         public static void LoadAssets(ContentManager content, GraphicsDevice graphicsDevice)

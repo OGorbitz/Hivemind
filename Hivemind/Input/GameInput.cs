@@ -165,6 +165,22 @@ namespace Hivemind.Input
                     if (NotOverHUD)
                         WorldManager.GetActiveTileMap().Cam.UpdateScale();
 
+                    //Update build mode, destroy or build based on control press
+                    if (CurrentAction == Action.BUILD || CurrentAction == Action.DESTROY)
+                    {
+                        ctrl = false;
+                        if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
+                        {
+                            WorldManager.GetEditorTileMap().RenderColor = EditorTileMap.RColorRed;
+                            CurrentAction = Action.DESTROY;
+                            ctrl = true;
+                        }
+                        else
+                        {
+                            WorldManager.GetEditorTileMap().RenderColor = EditorTileMap.RColorGreen;
+                            CurrentAction = Action.BUILD;
+                        }
+                    }
 
                     var tm = WorldManager.GetActiveTileMap();
                     var worldpos = tm.Cam.Unproject(mousepos);
@@ -179,24 +195,12 @@ namespace Hivemind.Input
                             {
                                 //New mouse click
                                 DMOUSE_LEFT = true;
-
-                                if (CurrentAction == Action.BUILD || CurrentAction == Action.DESTROY)
+                                
+                                if(CurrentAction == Action.BUILD || CurrentAction == Action.DESTROY)
                                 {
                                     Editing.StartEditing(tilepos);
-                                    ctrl = false;
-                                    if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
-                                    {
-                                        WorldManager.GetEditorTileMap().RenderColor = EditorTileMap.RColorRed;
-                                        CurrentAction = Action.DESTROY;
-                                        ctrl = true;
-                                    }
-                                    else
-                                    {
-                                        WorldManager.GetEditorTileMap().RenderColor = EditorTileMap.RColorGreen;
-                                        CurrentAction = Action.BUILD;
-                                    }
                                 }
-                                else if(CurrentAction == Action.SELECT)
+                                else if (CurrentAction == Action.SELECT)
                                 {
                                     var pointed = WorldManager.GetActiveTileMap().GetEntities(new Rectangle(worldpos.ToPoint(), new Point(1, 1)));
 
@@ -261,10 +265,7 @@ namespace Hivemind.Input
                                         break;
                                 }
                             }
-                            else if(CurrentAction == Action.BUILD)
-                            {
-                                Editing.Hover(tilepos);
-                            }
+                            Editing.Hover(tilepos, CurrentAction);
                         }
                         if (Mouse.GetState().RightButton == ButtonState.Pressed)
                         {

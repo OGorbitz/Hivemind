@@ -480,16 +480,12 @@ namespace Hivemind.GUI
 
             Buildables.AddButton(PlacingType.TILE, Wall_Cinderblock.UName, Wall_Cinderblock.UIcon);
             Buildables.AddButton(PlacingType.TILE, Wall_Dirt.UName, Wall_Dirt.UIcon);
-            Buildables.AddButton(typeof(Floor_Concrete), Floor_Concrete.UIcon);
-            Buildables.AddButton(typeof(Floor_Dirt), Floor_Dirt.UIcon);
-            Buildables.AddButton(typeof(Floor_Grass), Floor_Grass.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
-            Buildables.AddButton(typeof(Wall_Cinderblock), Wall_Cinderblock.UIcon);
+            Buildables.AddButton(PlacingType.TILE, Floor_Concrete.UName, Floor_Concrete.UIcon);
+            Buildables.AddButton(PlacingType.TILE, Floor_Dirt.UName, Floor_Dirt.UIcon);
+            Buildables.AddButton(PlacingType.TILE, Floor_Grass.UName, Floor_Grass.UIcon);
+            Buildables.AddButton(PlacingType.TILE, Wall_Cinderblock.UName, Wall_Cinderblock.UIcon);
+
+
 
 
             SelectedShape = new ImageButton()

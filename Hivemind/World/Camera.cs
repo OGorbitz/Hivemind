@@ -13,6 +13,8 @@ namespace Hivemind
 
         public bool uplvl, downlvl;
         public Matrix Translate { get; private set; }
+        public Matrix TranslateOffset { get; private set; }
+
         public Matrix ScaleOffset { get; private set; }
         public Matrix TranslateScaleOffset { get; private set; }
 
@@ -36,6 +38,7 @@ namespace Hivemind
             var translate =
                 Matrix.CreateTranslation(-Pos.X + Hivemind.ScreenWidth, -Pos.Y + Hivemind.ScreenHeight, 0);
             Translate = translate;
+            TranslateOffset = translate * offset;
             ScaleOffset = negoffset * scalematrix * offset;
             TranslateScaleOffset = translate * negoffset * scalematrix * offset;
         }

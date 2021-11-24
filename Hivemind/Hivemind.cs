@@ -33,7 +33,7 @@ namespace Hivemind
         public static float AverageFramesPerSecond { get; private set; }
         public static float CurrentFramesPerSecond { get; private set; }
         private static double last = 0, now = 0;
-        public const int MAXIMUM_SAMPLES = 100;
+        public const int MAXIMUM_SAMPLES = 10;
         private static Queue<float> _sampleBuffer = new Queue<float>();
 
         public static ContentManager CManager;
@@ -44,7 +44,7 @@ namespace Hivemind
         {
             _instance = this;
 
-            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
+            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
             ScreenWidth = r.Width;
             ScreenHeight = r.Height;
 
@@ -56,10 +56,8 @@ namespace Hivemind
             
             IsMouseVisible = true;
 
-            IsFixedTimeStep = true;
-
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
-            _graphics.SynchronizeWithVerticalRetrace = false;
+            _graphics.SynchronizeWithVerticalRetrace = true;
 
             _graphics.PreferredBackBufferWidth = r.Width;
             _graphics.PreferredBackBufferHeight = r.Height;
@@ -126,7 +124,7 @@ namespace Hivemind
             CurrentGameTime = gameTime;
 
             last = now;
-            now = gameTime.TotalGameTime.TotalSeconds;
+            now = DateTime.Now.Subtract(DateTime.MinValue).TotalSeconds;
 
             CurrentFramesPerSecond = (float)(1.0 / (now - last));
 
@@ -161,7 +159,7 @@ namespace Hivemind
 
             GuiController.Draw(_spriteBatch, GraphicsDevice, gameTime);
 
-            base.Draw(gameTime);
+            //base.Draw(gameTime);
         }
     }
 }

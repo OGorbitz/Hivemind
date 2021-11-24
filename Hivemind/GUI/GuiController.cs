@@ -240,8 +240,7 @@ namespace Hivemind.GUI
 
                     DebugText = "Camera position: (" + WorldManager.GetActiveTileMap().Cam.Pos.X + ", " + WorldManager.GetActiveTileMap().Cam.Pos.Y + ")\n" +
                         "Camera scale: " + WorldManager.GetActiveTileMap().Cam.Scale + "\n" +
-                        "Pointed Block: " + name + Room + "\n" +
-                        "BufferPos: " + WorldManager.GetActiveTileMap().BufferPosition.ToString() + " BufferOffset: " + WorldManager.GetActiveTileMap().BufferOffset.ToString();
+                        "Pointed Block: " + name + Room + "\n";
                     break;
                 case GUIState.HUD_RESEARCH:
                     break;
@@ -269,8 +268,8 @@ namespace Hivemind.GUI
                         new Color(1f, 1f, 1f, 0.25f));
                 spriteBatch.End();
             }
-
             _desktop.Render();
+
 
             if(CurrentState == GUIState.HUD_TILEMAP)
             {

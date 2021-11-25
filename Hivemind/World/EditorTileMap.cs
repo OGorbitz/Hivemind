@@ -1,6 +1,7 @@
 ﻿using Hivemind.World.Entity;
 using Hivemind.World.Tiles;
 using Hivemind.World.Tiles.Floor;
+using Hivemind.World.Tiles.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -75,6 +76,9 @@ namespace Hivemind.World
                         case Layer.FLOOR:
                             Tiles[pos].Floor = (BaseFloor)tile;
                             break;
+                        case Layer.POWER:
+                            Tiles[pos].PowerCable = (PowerCable)tile;
+                            break;
                     }
 
                 }
@@ -88,6 +92,9 @@ namespace Hivemind.World
                             break;
                         case Layer.FLOOR:
                             t.Floor = (BaseFloor)tile;
+                            break;
+                        case Layer.POWER:
+                            t.PowerCable = (PowerCable)tile;
                             break;
                     }
                     Tiles.Add(pos, t);
@@ -154,6 +161,15 @@ namespace Hivemind.World
                 if (t.Value.Wall == null)
                     continue;
                 t.Value.Wall.Draw(spriteBatch);
+            }
+            spriteBatch.End();
+
+            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            foreach (KeyValuePair<Point, Tile> t in Tiles)
+            {
+                if (t.Value.PowerCable == null)
+                    continue;
+                spriteBatch.Draw(PowerCable.UIcon[t.Value.PowerCable.Tier], position: t.Value.Pos.ToVector2() * TileManager.TileSize, Color.White);
             }
             spriteBatch.End();
 

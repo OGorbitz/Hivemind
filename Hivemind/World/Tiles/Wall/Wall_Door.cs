@@ -108,7 +108,7 @@ namespace Hivemind.World.Tiles.Wall
             SetState(!IsOpen);
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Color color)
+        public override void Draw(SpriteBatch spriteBatch, Color color, Point dest)
         {
             /*if (Rotation)
             {

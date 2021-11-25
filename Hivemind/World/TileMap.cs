@@ -164,8 +164,10 @@ namespace Hivemind.World
                                 SetTileEntity(new Rock1(pos));
                         }
                     }
-                    if (x == 5 || y == 5)
+                    if (x == 5)
                         GetTile(new Point(x, y)).PowerCable = (PowerCable) TileConstructor.ConstructTile("PowerCableT1");
+                    if (x - y == 0 || x - y == 1)
+                        GetTile(new Point(x, y)).PowerCable = (PowerCable)TileConstructor.ConstructTile("PowerCableT2");
                 }
             }
             AddEntity(new Worker(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
@@ -291,6 +293,9 @@ namespace Hivemind.World
                     case Layer.FLOOR:
                         t.Floor = (BaseFloor)tile;
                         break;
+                    case Layer.POWER:
+                        t.PowerCable = (PowerCable)tile;
+                        break;
                 }
             }
         }
@@ -306,6 +311,9 @@ namespace Hivemind.World
                         break;
                     case Layer.FLOOR:
                         GetTile(pos).HoloFloor = tile;
+                        break;
+                    case Layer.POWER:
+                        GetTile(pos).HoloPowerCable = tile;
                         break;
                 }
                 Dictionary<Material, float> required = new Dictionary<Material, float>();
@@ -814,8 +822,8 @@ namespace Hivemind.World
         public void DrawCables(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
             graphicsDevice.SetRenderTarget(CableBuffer);
-            
-            
+
+
             //Draw alpha masks for the texture
             spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: OverWriteState);
             for (int x = _buffer.BufferPosition.X; x < _buffer.BufferPosition.X + _buffer.BufferSize.X; x++)
@@ -828,57 +836,57 @@ namespace Hivemind.World
                     //convert coords to buffer-specific coordinates
                     Point buffer_coords = _buffer.GetBufferPosition(new Point(x, y));
 
-                    //if (DirtyPoints.Contains(new Point(x, y)))
-                        //spriteBatch.Draw(Helper.pixel, new Rectangle(new Point(TileManager.TileSize) * buffer_coords, new Point(TileManager.TileSize)), Color.Transparent);
+                    if (DirtyPoints.Contains(new Point(x, y)))
+                        spriteBatch.Draw(Helper.pixel, new Rectangle(new Point(TileManager.TileSize) * buffer_coords, new Point(TileManager.TileSize)), Color.Transparent);
 
-                    if (ti == null || ti.PowerCable == null || !ti.DirtyCable)
+                }
+            }
+            spriteBatch.End();
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            for (int x = _buffer.BufferPosition.X; x < _buffer.BufferPosition.X + _buffer.BufferSize.X; x++)
+            {
+                for (int y = _buffer.BufferPosition.Y; y < _buffer.BufferPosition.Y + _buffer.BufferSize.Y; y++)
+                {
+                    var ti = GetTile(new Point(x, y));
+                    //if tile is null, ignore
+
+                    //convert coords to buffer-specific coordinates
+                    Point buffer_coords = _buffer.GetBufferPosition(new Point(x, y));
+
+                    if (ti == null)
+                        continue;
+                    if (ti.PowerCable == null)
+                        continue;
+                    if (!ti.DirtyCable && !DirtyPoints.Contains(new Point(x, y)))
                         continue;
 
                     var powercable = ti.PowerCable;
 
                     //if point is in dirtypoints, needs to be updated, so ignore other continues
 
-
-                    for(int t = 0; t < powercable.Tier; t++)
-                    {
-                        int ind = 0;
-
-                        for (int i = 0; i < 4; i++)
-                        {
-                            Point p = new Point(x + neighbors[i, 0], y + neighbors[i, 1]);
-                            Tile n = GetTile(p);
-                            if (n != null && n.PowerCable != null)
-                            {
-                                if (n.PowerCable.Tier < powercable.Tier)
-                                {
-                                    ind += 1 << i;
-                                }
-                            }
-                        }
-
-                        spriteBatch.Draw(TextureAtlas.Atlas, new Vector2(TileManager.TileSize) * buffer_coords.ToVector2(), sourceRectangle: TextureAtlas.GetSourceRect(PowerCable.Tex[t, ind]), Color.White);
-                    }
-
-                    int index = 0;
-
-                    for (int i = 0; i < 4; i++)
-                    {
-                        Point p = new Point(x + neighbors[i, 0], y + neighbors[i, 1]);
-                        Tile n = GetTile(p);
-                        if (n != null && n.PowerCable != null)
-                        {
-                            if (n.PowerCable.Tier == powercable.Tier)
-                            {
-                                index += 1 << i;
-                            }
-                        }
-                    }
-
-                    spriteBatch.Draw(TextureAtlas.Atlas, new Vector2(TileManager.TileSize) * buffer_coords.ToVector2(), sourceRectangle: TextureAtlas.GetSourceRect(PowerCable.Tex[powercable.Tier, index]), Color.White);
+                    powercable.Draw(spriteBatch, Color.White, buffer_coords * new Point(TileManager.TileSize));
 
                 }
             }
             spriteBatch.End();
+
+            for (int x = _buffer.BufferPosition.X; x < _buffer.BufferPosition.X + _buffer.BufferSize.X; x++)
+            {
+                for (int y = _buffer.BufferPosition.Y; y < _buffer.BufferPosition.Y + _buffer.BufferSize.Y; y++)
+                {
+                    var tile = GetTile(new Point(x, y));
+                    if (tile == null || tile.Floor == null)
+                        continue;
+                    tile.DirtyCable = false;
+                }
+            }
+            foreach (Point p in DirtyPoints)
+            {
+                var tile = GetTile(p);
+                if (tile == null || tile.Floor == null)
+                    continue;
+                tile.DirtyCable = false;
+            }
         }
 
 
@@ -1023,6 +1031,12 @@ namespace Hivemind.World
 
                     HoloTile ht = GetTile(new Point(x, y)).HoloWall;
                     if (ht != null)
+                    {
+                        ht.Draw(spriteBatch);
+                    }
+
+                    ht = GetTile(new Point(x, y)).HoloPowerCable;
+                    if(ht != null)
                     {
                         ht.Draw(spriteBatch);
                     }

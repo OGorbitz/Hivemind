@@ -27,7 +27,6 @@ namespace Hivemind.World.Tiles.Floor
 
         //Assets
         public static Texture2D UIcon;
-        private static Texture2D texture;
 
         //Instance variables
 
@@ -54,13 +53,6 @@ namespace Hivemind.World.Tiles.Floor
         public static BaseFloor Constructor()
         {
             return new Floor_Concrete();
-        }
-        public override void Draw(SpriteBatch spriteBatch, Color color)
-        {
-            var sourcepos = new Rectangle((int)Pos.X % 8 * TileManager.TileSize,
-                (int)Pos.Y % 8 * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);
-            spriteBatch.Draw(texture, new Vector2(Pos.X * TileManager.TileSize, Pos.Y * TileManager.TileSize),
-                sourceRectangle: sourcepos, color: color);
         }
     }
 }

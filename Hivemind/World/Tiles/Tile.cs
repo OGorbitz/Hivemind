@@ -169,6 +169,21 @@ namespace Hivemind.World.Tiles
             }
         }
 
+        private HoloTile _holoPowerCable;
+        public HoloTile HoloPowerCable
+        {
+            get
+            {
+                return _holoPowerCable;
+            }
+            set
+            {
+                _holoPowerCable = value;
+                if (value != null)
+                    _holoPowerCable.SetParent(this, Parent);
+            }
+        }
+
         public Visibility _visibility;
         public Visibility _unpushedVisibility;
         public Visibility Visibility

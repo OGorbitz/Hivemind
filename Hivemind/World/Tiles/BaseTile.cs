@@ -68,8 +68,12 @@ namespace Hivemind.World.Tiles
         {
             Draw(spriteBatch, Color.White);
         }
-        public abstract void Draw(SpriteBatch spriteBatch, Color color);
+        public virtual void Draw(SpriteBatch spriteBatch, Color color)
+        {
+            Draw(spriteBatch, color, Pos * new Point(TileManager.TileSize));
+        }
 
+        public abstract void Draw(SpriteBatch spriteBatch, Color color, Point dest);
         /// <summary>
         /// Actions to be performed if tile is destroyed
         /// </summary>
@@ -106,6 +110,8 @@ namespace Hivemind.World.Tiles
         public override float Resistance => UResistance;
         public override Layer Layer => ULayer;
 
+        protected static Texture2D texture;
+
         //Constructors and serializers
         public BaseFloor()
         {
@@ -117,6 +123,18 @@ namespace Hivemind.World.Tiles
         public override void Destroy()
         {
             Tile.Floor = null;
+        }
+
+        public override void Draw(SpriteBatch spriteBatch, Color color)
+        {
+            Draw(spriteBatch, color, Pos * new Point(TileManager.TileSize));
+        }
+        public override void Draw(SpriteBatch spriteBatch, Color color, Point dest)
+        {
+            var sourcepos = new Rectangle((int)Pos.X * TileManager.TileSize % texture.Width,
+                (int)Pos.Y * TileManager.TileSize % texture.Height, TileManager.TileSize, TileManager.TileSize);
+            spriteBatch.Draw(texture, dest.ToVector2(),
+                sourceRectangle: sourcepos, color: color);
         }
     }
 
@@ -143,6 +161,41 @@ namespace Hivemind.World.Tiles
         public override void Destroy()
         {
             Tile.Wall = null;
+        }
+
+        public override void Draw(SpriteBatch spriteBatch, Color color)
+        {
+            Draw(spriteBatch, color, Pos * new Point(TileManager.TileSize) - new Point(0, TileManager.WallHeight));
+        }
+
+        public virtual void Draw(SpriteBatch spriteBatch, Color color, Point dest, int atlasindex)
+        {
+            Rectangle dest_rect;
+            Rectangle source = TextureAtlas.GetSourceRect(atlasindex);
+
+            if (!IsHolo || (Parent.GetType() == typeof(TileMap) && ((TileMap)Parent).GetTile(Pos + new Point(0, 1)).Wall == null))
+            {
+                dest_rect = new Rectangle(
+                    dest,
+                    new Point(TileManager.TileSize, TileManager.TileSize + TileManager.WallHeight));
+            }
+            else
+            {
+                source.Height = TileManager.TileSize;
+                dest_rect = new Rectangle(
+                    dest,
+                    new Point(TileManager.TileSize, TileManager.TileSize));
+            }
+
+            spriteBatch.Draw(
+                TextureAtlas.Atlas,
+                destinationRectangle: dest_rect,
+                sourceRectangle: source,
+                rotation: 0f,
+                origin: Vector2.Zero,
+                effects: SpriteEffects.None,
+                color: color,
+                layerDepth: Parent.GetLayerDepth((int)Pos.Y));
         }
     }
 
@@ -203,7 +256,7 @@ namespace Hivemind.World.Tiles
                 DepthFormat.Depth24);
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Color color)
+        public override void Draw(SpriteBatch spriteBatch, Color color, Point dest)
         {
             Child.Draw(spriteBatch, new Color(0.25f, 0.5f, 0.125f, 0.75f));
         }

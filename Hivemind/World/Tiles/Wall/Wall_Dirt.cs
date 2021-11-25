@@ -91,39 +91,12 @@ namespace Hivemind.World.Tiles.Wall
             renderindex = ri;
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Color color)
+        public override void Draw(SpriteBatch spriteBatch, Color color, Point dest)
         {
             if (Dirty)
                 UpdateRenderIndex();
 
-            Rectangle dest;
-            Rectangle source = TextureAtlas.GetSourceRect(Tex[renderindex]);
-
-            if (!IsHolo || (Parent.GetType() == typeof(TileMap) && ((TileMap)Parent).GetTile(Pos + new Point(0, 1)).Wall == null))
-            {
-                dest = new Rectangle(
-                    new Point((int)Pos.X * TileManager.TileSize,
-                        (int)Pos.Y * TileManager.TileSize - TileManager.WallHeight),
-                    new Point(TileManager.TileSize, TileManager.TileSize + TileManager.WallHeight));
-            }
-            else
-            {
-                source.Height = TileManager.TileSize;
-                dest = new Rectangle(
-                    new Point((int)Pos.X * TileManager.TileSize,
-                        (int)Pos.Y * TileManager.TileSize - TileManager.WallHeight),
-                    new Point(TileManager.TileSize, TileManager.TileSize));
-            }
-
-            spriteBatch.Draw(
-                TextureAtlas.Atlas,
-                destinationRectangle: dest,
-                sourceRectangle: source,
-                rotation: 0f,
-                origin: Vector2.Zero,
-                effects: SpriteEffects.None,
-                color: color,
-                layerDepth: Parent.GetLayerDepth((int)Pos.Y));
+            base.Draw(spriteBatch, color, dest, Tex[renderindex]);
         }
     }
 }

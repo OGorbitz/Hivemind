@@ -55,13 +55,5 @@ namespace Hivemind.World.Tiles.Floor
         {
             return new Floor_Grass();
         }
-
-        public override void Draw(SpriteBatch spriteBatch, Color color)
-        {
-            var sourcepos = new Rectangle((int)Pos.X % 8 * TileManager.TileSize,
-                (int)Pos.Y % 8 * TileManager.TileSize, TileManager.TileSize, TileManager.TileSize);
-            spriteBatch.Draw(texture, new Vector2(Pos.X * TileManager.TileSize, Pos.Y * TileManager.TileSize),
-                sourceRectangle: sourcepos, color: color);
-        }
     }
 }

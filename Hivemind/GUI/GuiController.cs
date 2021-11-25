@@ -9,6 +9,7 @@ using Hivemind.World;
 using Hivemind.World.Entity.Moving;
 using Hivemind.World.Tiles;
 using Hivemind.World.Tiles.Floor;
+using Hivemind.World.Tiles.Utilities;
 using Hivemind.World.Tiles.Wall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -482,7 +483,8 @@ namespace Hivemind.GUI
             Buildables.AddButton(PlacingType.TILE, Floor_Concrete.UName, Floor_Concrete.UIcon);
             Buildables.AddButton(PlacingType.TILE, Floor_Dirt.UName, Floor_Dirt.UIcon);
             Buildables.AddButton(PlacingType.TILE, Floor_Grass.UName, Floor_Grass.UIcon);
-            Buildables.AddButton(PlacingType.TILE, Wall_Cinderblock.UName, Wall_Cinderblock.UIcon);
+            Buildables.AddButton(PlacingType.TILE, PowerCable.UName[0], PowerCable.UIcon[0]);
+            Buildables.AddButton(PlacingType.TILE, PowerCable.UName[1], PowerCable.UIcon[1]);
 
 
 

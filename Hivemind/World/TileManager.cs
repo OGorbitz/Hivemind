@@ -1,4 +1,5 @@
 ﻿using Hivemind.World.Tiles.Floor;
+using Hivemind.World.Tiles.Utilities;
 using Hivemind.World.Tiles.Wall;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -34,7 +35,7 @@ namespace Hivemind.World
             Wall_Dirt.LoadAssets(content, graphicsDevice);
             //Wall_Door.LoadAssets();
 
-            //Wire.LoadAssets();
+            PowerCable.LoadAssets(content, graphicsDevice);
         }
 
     }

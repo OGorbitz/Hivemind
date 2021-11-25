@@ -152,6 +152,8 @@ namespace Hivemind.World.Tiles
             set
             {
                 _powerCable = value;
+                DirtyCable = true;
+
                 if (value != null)
                 {
                     _powerCable.SetParent(this, Parent);
@@ -159,8 +161,8 @@ namespace Hivemind.World.Tiles
                     {
                         Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
                         Tile t = Parent.GetTile(v);
-                        if (t != null && t.PowerCable != null)
-                            t.PowerCable.Dirty = true;
+                        if (t != null)
+                            t.DirtyCable = true;
                     }
                 }
 
@@ -203,6 +205,7 @@ namespace Hivemind.World.Tiles
         public readonly bool Real = true;
 
         public bool DirtyFog = true;
+        public bool DirtyCable = true;
 
         public Room Room;
         public RoomTask RoomUpdate = RoomTask.NONE;

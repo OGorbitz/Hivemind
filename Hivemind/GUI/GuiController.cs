@@ -210,7 +210,7 @@ namespace Hivemind.GUI
                     var wpos = WorldManager.GetActiveTileMap().Cam.Unproject(mouse.Position.ToVector2());
                     var tpos = TileMap.GetTileCoords(wpos);
                     var t = WorldManager.GetActiveTileMap().GetTile(tpos);
-                    BaseTile tile = t.Wall;
+                    BaseTile tile = t.PowerCable;
                     string name;
                     if (tile == null)
                         tile = t.Floor;

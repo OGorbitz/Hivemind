@@ -12,7 +12,7 @@ namespace Hivemind.World.Tiles.Utilities
     public class PowerCable : BaseTile
     {
         public static Texture2D[] UIcon;
-        private static int[,] Tex;
+        public static int[,] Tex;
 
         public int Tier = 0;
 
@@ -63,12 +63,12 @@ namespace Hivemind.World.Tiles.Utilities
                 spriteBatch.Begin();
                 for (int j = 1; j < 5; j++)
                 {
-                    if ((i & 1 << j) != 0)
+                    if ((i & 1 << (j - 1)) != 0)
                     {
-                        spriteBatch.Draw(texture, new Rectangle(0, 0, 64, 64), sourceRectangle: new Rectangle(i * 64, 0, 64, 64), Color.White);
+                        spriteBatch.Draw(texture, new Rectangle(0, 0, 64, 64), sourceRectangle: new Rectangle(j * 64, 0, 64, 64), Color.White);
                     }
                 }
-                if (i == 10 || i == 5)
+                if (i == 15 || i == 14 || i == 13 || i == 11 || i == 7)
                 {
                     spriteBatch.Draw(texture, new Rectangle(0, 0, 64, 64), sourceRectangle: new Rectangle(0, 0, 64, 64), Color.White);
                 }
@@ -83,7 +83,7 @@ namespace Hivemind.World.Tiles.Utilities
                     spriteBatch.End();
                 }
 
-                Tex[1,i] = TextureAtlas.AddTexture((Texture2D)buffer, graphicsDevice);
+                Tex[0,i] = TextureAtlas.AddTexture((Texture2D)buffer, graphicsDevice);
             }
 
             for (int i = 0; i < 16; i++)
@@ -113,7 +113,7 @@ namespace Hivemind.World.Tiles.Utilities
                     spriteBatch.End();
                 }
 
-                Tex[2, i] = TextureAtlas.AddTexture((Texture2D)buffer, graphicsDevice);
+                Tex[1, i] = TextureAtlas.AddTexture((Texture2D)buffer, graphicsDevice);
             }
 
             TileConstructor.RegisterConstructor("PowerCableT1", T1Constructor);

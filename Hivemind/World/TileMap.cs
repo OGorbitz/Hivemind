@@ -1,4 +1,5 @@
 ﻿using Hivemind.Input;
+using Hivemind.Utility;
 using Hivemind.World.Colony;
 using Hivemind.World.Entity;
 using Hivemind.World.Entity.Moving;
@@ -6,6 +7,7 @@ using Hivemind.World.Entity.Tile;
 using Hivemind.World.Generator;
 using Hivemind.World.Tiles;
 using Hivemind.World.Tiles.Floor;
+using Hivemind.World.Tiles.Utilities;
 using Hivemind.World.Tiles.Wall;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -37,7 +39,7 @@ namespace Hivemind.World
         public static double AvgTimeFloor, AvgTimeFog, AvgTimeWalls, AvgTimeEntities;
 
         //Holds pre rendered floor
-        public RenderTarget2D FloorBuffer, FogBuffer;
+        public RenderTarget2D FloorBuffer, FogBuffer, CableBuffer;
         //Used to render floor
         public static RenderTarget2D RenderBuffer;
         //Blend state for rendering stencil effect
@@ -54,6 +56,16 @@ namespace Hivemind.World
         public static BlendState FogBlendState = new BlendState
         {
             ColorSourceBlend = Blend.SourceAlpha,
+            ColorBlendFunction = BlendFunction.Add,
+            ColorDestinationBlend = Blend.Zero,
+            AlphaSourceBlend = Blend.One,
+            AlphaBlendFunction = BlendFunction.Add,
+            AlphaDestinationBlend = Blend.Zero
+        };
+
+        public static BlendState OverWriteState = new BlendState
+        {
+            ColorSourceBlend = Blend.One,
             ColorBlendFunction = BlendFunction.Add,
             ColorDestinationBlend = Blend.Zero,
             AlphaSourceBlend = Blend.One,
@@ -152,7 +164,8 @@ namespace Hivemind.World
                                 SetTileEntity(new Rock1(pos));
                         }
                     }
-
+                    if (x == 5 || y == 5)
+                        GetTile(new Point(x, y)).PowerCable = (PowerCable) TileConstructor.ConstructTile("PowerCableT1");
                 }
             }
             AddEntity(new Worker(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
@@ -790,6 +803,84 @@ namespace Hivemind.World
             }
         }
 
+        public readonly int[,] neighbors =
+{
+            { -1, 0 },
+            { 0, -1 },
+            { 1, 0 },
+            { 0, 1 }
+        };
+
+        public void DrawCables(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
+        {
+            graphicsDevice.SetRenderTarget(CableBuffer);
+            
+            
+            //Draw alpha masks for the texture
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: OverWriteState);
+            for (int x = _buffer.BufferPosition.X; x < _buffer.BufferPosition.X + _buffer.BufferSize.X; x++)
+            {
+                for (int y = _buffer.BufferPosition.Y; y < _buffer.BufferPosition.Y + _buffer.BufferSize.Y; y++)
+                {
+                    var ti = GetTile(new Point(x, y));
+                    //if tile is null, ignore
+
+                    //convert coords to buffer-specific coordinates
+                    Point buffer_coords = _buffer.GetBufferPosition(new Point(x, y));
+
+                    //if (DirtyPoints.Contains(new Point(x, y)))
+                        //spriteBatch.Draw(Helper.pixel, new Rectangle(new Point(TileManager.TileSize) * buffer_coords, new Point(TileManager.TileSize)), Color.Transparent);
+
+                    if (ti == null || ti.PowerCable == null || !ti.DirtyCable)
+                        continue;
+
+                    var powercable = ti.PowerCable;
+
+                    //if point is in dirtypoints, needs to be updated, so ignore other continues
+
+
+                    for(int t = 0; t < powercable.Tier; t++)
+                    {
+                        int ind = 0;
+
+                        for (int i = 0; i < 4; i++)
+                        {
+                            Point p = new Point(x + neighbors[i, 0], y + neighbors[i, 1]);
+                            Tile n = GetTile(p);
+                            if (n != null && n.PowerCable != null)
+                            {
+                                if (n.PowerCable.Tier < powercable.Tier)
+                                {
+                                    ind += 1 << i;
+                                }
+                            }
+                        }
+
+                        spriteBatch.Draw(TextureAtlas.Atlas, new Vector2(TileManager.TileSize) * buffer_coords.ToVector2(), sourceRectangle: TextureAtlas.GetSourceRect(PowerCable.Tex[t, ind]), Color.White);
+                    }
+
+                    int index = 0;
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Point p = new Point(x + neighbors[i, 0], y + neighbors[i, 1]);
+                        Tile n = GetTile(p);
+                        if (n != null && n.PowerCable != null)
+                        {
+                            if (n.PowerCable.Tier == powercable.Tier)
+                            {
+                                index += 1 << i;
+                            }
+                        }
+                    }
+
+                    spriteBatch.Draw(TextureAtlas.Atlas, new Vector2(TileManager.TileSize) * buffer_coords.ToVector2(), sourceRectangle: TextureAtlas.GetSourceRect(PowerCable.Tex[powercable.Tier, index]), Color.White);
+
+                }
+            }
+            spriteBatch.End();
+        }
+
 
         public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, GameTime gameTime)
         {
@@ -828,15 +919,20 @@ namespace Hivemind.World
                 RenderBuffer = new RenderTarget2D(graphicsDevice, width, height);
             if (FogBuffer == null)
                 FogBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents);
+            if (CableBuffer == null)
+                CableBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents);
 
-            
+
+
             DateTime StartTime = DateTime.Now;
             DrawFloor(spriteBatch, graphicsDevice, gameTime);
             TimeFloor.Add((DateTime.Now - StartTime).TotalMilliseconds);
 
             StartTime = DateTime.Now;
-            DrawFog(spriteBatch, graphicsDevice, gameTime);
+            //DrawFog(spriteBatch, graphicsDevice, gameTime);
             TimeFog.Add((DateTime.Now - StartTime).TotalMilliseconds);
+
+            DrawCables(spriteBatch, graphicsDevice, gameTime);
 
             graphicsDevice.SetRenderTarget(RenderTarget);
 
@@ -934,6 +1030,13 @@ namespace Hivemind.World
             }
             spriteBatch.End();
             TimeWalls.Add((DateTime.Now - StartTime).TotalMilliseconds);
+
+            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            spriteBatch.Draw(CableBuffer, bufferpos * TileManager.TileSize, Color.White);
+            spriteBatch.Draw(CableBuffer, bufferpos * TileManager.TileSize + new Vector2(CableBuffer.Width, 0), Color.White);
+            spriteBatch.Draw(CableBuffer, bufferpos * TileManager.TileSize + new Vector2(0, CableBuffer.Height), Color.White);
+            spriteBatch.Draw(CableBuffer, bufferpos * TileManager.TileSize + new Vector2(CableBuffer.Width, CableBuffer.Height), Color.White);
+            spriteBatch.End();
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             spriteBatch.Draw(FogBuffer, bufferpos * TileManager.TileSize, Color.White);

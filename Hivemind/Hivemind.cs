@@ -57,7 +57,9 @@ namespace Hivemind
             IsMouseVisible = true;
 
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
-            _graphics.SynchronizeWithVerticalRetrace = true;
+            _graphics.SynchronizeWithVerticalRetrace = false;
+
+            IsFixedTimeStep = false;
 
             _graphics.PreferredBackBufferWidth = r.Width;
             _graphics.PreferredBackBufferHeight = r.Height;

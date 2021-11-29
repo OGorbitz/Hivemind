@@ -35,6 +35,8 @@ namespace Hivemind.World
         private RenderTarget2D RenderTarget;
         public WorldGenerator Generator;
 
+        public Rectangle RenderBounds;
+
         public static List<double> TimeFloor = new List<double>(), TimeFog = new List<double>(), TimeWalls = new List<double>(), TimeEntities = new List<double>();
         public static double AvgTimeFloor, AvgTimeFog, AvgTimeWalls, AvgTimeEntities;
 
@@ -486,18 +488,21 @@ namespace Hivemind.World
                 e.Value.Update(gameTime);
             }
 
-            foreach (var e in Tiles)
+            if (false)
             {
-                if (e.TileEntity != null)
-                    if (e.TileEntity.Updated = Updated)
-                    {
-                        e.TileEntity.Updated = !e.TileEntity.Updated;
-                        e.TileEntity.Update(gameTime);
-                    }
-                if (e.Floor != null)
-                    e.Floor.Update(gameTime);
-                if (e.Wall != null)
-                    e.Wall.Update(gameTime);
+                foreach (var e in Tiles)
+                {
+                    if (e.TileEntity != null)
+                        if (e.TileEntity.Updated = Updated)
+                        {
+                            e.TileEntity.Updated = !e.TileEntity.Updated;
+                            e.TileEntity.Update(gameTime);
+                        }
+                    if (e.Floor != null)
+                        e.Floor.Update(gameTime);
+                    if (e.Wall != null)
+                        e.Wall.Update(gameTime);
+                } 
             }
 
             UpdateFog();
@@ -505,11 +510,11 @@ namespace Hivemind.World
 
         public void UpdateFog()
         {
-            for(int i = 0; i < Size; i++)
+            for (int x = RenderBounds.Left; x < RenderBounds.Right; x++)
             {
-                for(int j = 0; j < Size; j++)
+                for (int y = RenderBounds.Top; y < RenderBounds.Bottom; y++)
                 {
-                    Tile t = GetTile(new Point(i, j));
+                    Tile t = GetTile(new Point(x, y));
                     if (t.Visibility == Visibility.VISIBLE)
                         t.Visibility = Visibility.KNOWN;
                 }
@@ -522,11 +527,11 @@ namespace Hivemind.World
             {
                 e.Value.UpdateVision();
             }
-            for (int i = 0; i < Size; i++)
+            for (int x = RenderBounds.Left; x < RenderBounds.Right; x++)
             {
-                for (int j = 0; j < Size; j++)
+                for (int y = RenderBounds.Top; y < RenderBounds.Bottom; y++)
                 {
-                    Tile t = GetTile(new Point(i, j));
+                    Tile t = GetTile(new Point(x, y));
                     t.PushVisibility();
                 }
             }
@@ -937,7 +942,7 @@ namespace Hivemind.World
             TimeFloor.Add((DateTime.Now - StartTime).TotalMilliseconds);
 
             StartTime = DateTime.Now;
-            //DrawFog(spriteBatch, graphicsDevice, gameTime);
+            DrawFog(spriteBatch, graphicsDevice, gameTime);
             TimeFog.Add((DateTime.Now - StartTime).TotalMilliseconds);
 
             DrawCables(spriteBatch, graphicsDevice, gameTime);
@@ -978,6 +983,8 @@ namespace Hivemind.World
                 p2.Y = 0;
             if (p2.Y >= Size)
                 p2.Y = Size;
+
+            RenderBounds = new Rectangle(p1, p2);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             for (int x = (int)p1.X; x < p2.X; x++)

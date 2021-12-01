@@ -208,7 +208,7 @@ namespace Hivemind.World.Tiles
             set
             {
                 _tileEntity = value;
-                if(value != null)
+                if(value != null && Parent.GetType() == typeof(TileMap))
                     _tileEntity.TileMap = (TileMap)Parent;
             }
         }

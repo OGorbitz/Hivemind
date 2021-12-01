@@ -5,192 +5,110 @@ using System.Text;
 
 namespace Hivemind.Utility
 {
+    public enum NodeType
+    {
+        WIRE,
+        PRODUCER,
+        CONSUMER,
+        STORAGE,
+        MIXED
+    }
+
     public class PowerNetwork
     {
-        public List<IPowerProducer> Producers = new List<IPowerProducer>();
+        public List<IPowerNode> Nodes = new List<IPowerNode>();
 
-        public void AddNode(IPowerProducer node)
+        public bool IsActive = false;
+
+        public void Merge(PowerNetwork powerNetwork)
         {
-            if (!Producers.Contains(node))
+            foreach(IPowerNode n in powerNetwork.Nodes)
             {
-                Producers.Add(node);
-                node.OnNetworkJoin(this);
+                n.OnNetworkLeave();
+                n.SetNetwork(this);
             }
         }
 
-        public void RemoveNode(IPowerProducer node)
+        public void AddNode(IPowerNode node)
         {
-            if (Producers.Contains(node))
+            if (!Nodes.Contains(node))
             {
-                Producers.Remove(node);
-                node.OnNetworkLeave(this);
+                Nodes.Add(node);
+                node.OnNetworkJoin();
             }
         }
 
-        public List<IPowerConsumer> Consumers = new List<IPowerConsumer>();
-
-        public void AddNode(IPowerConsumer node)
+        public void RemoveNode(IPowerNode node)
         {
-            if (!Consumers.Contains(node))
+            if (Nodes.Contains(node))
             {
-                Consumers.Add(node);
-                node.OnNetworkJoin(this);
+                Nodes.Remove(node);
+                node.OnNetworkLeave();
             }
         }
 
-        public void RemoveNode(IPowerConsumer node)
+        public void PowerOn()
         {
-            if (Consumers.Contains(node))
+            IsActive = true;
+
+            foreach(IPowerNode n in Nodes)
             {
-                Consumers.Remove(node);
-                node.OnNetworkLeave(this);
+                n.PowerOn();
             }
         }
 
-        public List<IPowerStorage> Storages = new List<IPowerStorage>();
-
-        public void AddNode(IPowerStorage node)
+        public void PowerOff()
         {
-            if (!Storages.Contains(node))
-            {
-                Storages.Add(node);
-                node.OnNetworkJoin(this);
-            }
-        }
+            IsActive = false;
 
-        public void RemoveNode(IPowerStorage node)
-        {
-            if (Storages.Contains(node))
+            foreach(IPowerNode n in Nodes)
             {
-                Storages.Remove(node);
-                node.OnNetworkLeave(this);
+                n.PowerOff();
             }
         }
 
         public void Update(GameTime gameTime)
         {
-            float RequestedPower = 0f;
-            foreach(IPowerConsumer node in Consumers)
+            float consumedPower = 0f;
+            float producedPower = 0f;
+
+            foreach (IPowerNode n in Nodes)
             {
-                RequestedPower += node.GetRequested();
-            }
+                n.UpdatePower();
 
-            float ProducedPower = 0f;
-            foreach(IPowerProducer node in Producers)
-            {
-                ProducedPower += node.GetPower();
-            }
-
-            float StoredPower = 0f;
-            float StorageCapacity = 0f;
-            foreach(IPowerStorage node in Storages)
-            {
-                StoredPower += node.GetStored();
-                StorageCapacity += node.GetCapacity();
-            }
-
-            if(ProducedPower >= RequestedPower)
-            {
-                foreach(IPowerConsumer node in Consumers)
+                switch (n.GetNodeType())
                 {
-                    node.StorePower(node.GetRequested());
-                }
-
-                float considered = 0f;
-
-                foreach (IPowerStorage node in Storages)
-                {
-                    considered += node.GetCapacity();
-                }
-
-                float powertostore = ProducedPower - RequestedPower;
-                float perstorage = powertostore / considered;
-
-                foreach(IPowerStorage node in Storages)
-                {
-                    float nodeSpace = node.GetCapacity() - node.GetStored();
-                    if(nodeSpace > 0)
-                    {
-                        if (nodeSpace < perstorage * node.GetCapacity())
-                        {
-                            node.StorePower(nodeSpace);
-                            powertostore -= nodeSpace;
-                            considered -= node.GetCapacity();
-                            perstorage = powertostore / considered;
-                        }
-                        else
-                        {
-                            node.StorePower(perstorage * node.GetCapacity());
-                            powertostore -= perstorage * node.GetCapacity();
-                            considered -= node.GetCapacity();
-                        }
-                    }
-                }
-
-
-            }
-
-            if(ProducedPower < RequestedPower)
-            {
-                float considered = 0f;
-
-                foreach (IPowerConsumer node in Consumers)
-                {
-                    considered += node.GetRequested();
-                }
-
-                float powertostore = ProducedPower - RequestedPower;
-                float perstorage = powertostore / considered;
-
-                //Add if statement for if batteries have power stored
-                foreach (IPowerConsumer node in Consumers)
-                {
-                    if (node.GetRequested() > 0)
-                    {
-                        if (node.GetRequested() < perstorage * node.GetRequested())
-                        {
-                            node.StorePower(node.GetRequested());
-                            powertostore -= node.GetRequested();
-                            considered -= node.GetRequested();
-                            perstorage = powertostore / considered;
-                        }
-                        else
-                        {
-                            node.StorePower(perstorage * node.GetRequested());
-                            powertostore -= perstorage * node.GetRequested();
-                            considered -= node.GetRequested();
-                        }
-                    }
+                    case NodeType.PRODUCER:
+                        producedPower += n.GetPower();
+                        break;
+                    case NodeType.CONSUMER:
+                        consumedPower += n.GetPower();
+                        break;
                 }
             }
 
+            if (IsActive)
+            {
+                if (consumedPower > producedPower)
+                    PowerOff();
+            }
+            else
+            {
+
+            }
         }
     }
 
-    public interface IPowerProducer
+    public interface IPowerNode
     {
+        public abstract NodeType GetNodeType();
         public abstract float GetPower();
-        public abstract float TakePower(float amount);
-        public abstract void OnNetworkJoin(PowerNetwork powerNetwork);
-        public abstract void OnNetworkLeave(PowerNetwork powerNetwork);
-    }
+        public abstract void UpdatePower();
+        public abstract void PowerOn();
+        public abstract void PowerOff();
 
-    public interface IPowerConsumer
-    {
-        public abstract float GetRequested();
-        public abstract float GetStored();
-        public abstract float StorePower(float amount);
-        public abstract void OnNetworkJoin(PowerNetwork powerNetwork);
-        public abstract void OnNetworkLeave(PowerNetwork powerNetwork);
-    }
-
-    public interface IPowerStorage
-    {
-        public abstract float GetStored();
-        public abstract float GetCapacity();
-        public abstract void StorePower(float amount);
-        public abstract void TakePower(float amount);
-        public abstract void OnNetworkJoin(PowerNetwork powerNetwork);
-        public abstract void OnNetworkLeave(PowerNetwork powerNetwork);
+        public abstract void SetNetwork(PowerNetwork powerNetwork);
+        public abstract void OnNetworkJoin();
+        public abstract void OnNetworkLeave();
     }
 }

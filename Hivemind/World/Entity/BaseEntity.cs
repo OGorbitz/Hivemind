@@ -121,7 +121,12 @@ namespace Hivemind.World.Entity
         public override string Type => UType;
 
         public readonly Point USize = new Point(TileManager.TileSize, TileManager.TileSize);
+        public readonly Point USpriteSize = new Point(64);
         public virtual Point Size => USize;
+        public virtual Point SpriteSize => USpriteSize;
+        public static Texture2D USpriteSheet = null;
+        public virtual Texture2D SpriteSheet => USpriteSheet;
+
         public virtual Rectangle Bounds
         {
             get
@@ -183,9 +188,12 @@ namespace Hivemind.World.Entity
         public override void Draw(SpriteBatch spriteBatch, GameTime gameTime)
         {
             var frame = Controller.GetFrame(gameTime);
-            var sprite = EntityManager.GetSprite(Type, frame);
-            spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X - sprite.Width / 2), (int)(Pos.Y - sprite.Height / 2), sprite.Width, sprite.Height),
-                new Rectangle(0, 0, sprite.Width, sprite.Height),
+            Rectangle drawpos = new Rectangle(
+                new Point((int)Pos.X - SpriteSize.X / 2, (int)Pos.Y - SpriteSize.Y / 2), SpriteSize);
+            int w = SpriteSheet.Width / SpriteSize.X;
+            int f = Controller.GetFrame(gameTime);
+            Rectangle source = new Rectangle(new Point((f % w) * SpriteSize.X, (f / w) * SpriteSize.Y), SpriteSize);
+            spriteBatch.Draw(SpriteSheet, drawpos, sourceRectangle: source,
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None,
                 layerDepth: TileMap.GetLayerDepth((int)Pos.Y / TileManager.TileSize) + 0.0005f);
         }
@@ -210,6 +218,8 @@ namespace Hivemind.World.Entity
     {
         public readonly Point USize = new Point(1, 1);
         public virtual Point Size => USize;
+        public static Texture2D USpriteSheet = null;
+        public virtual Texture2D SpriteSheet => USpriteSheet;
 
         public bool Updated = false, Rendered = false;
 
@@ -230,6 +240,10 @@ namespace Hivemind.World.Entity
         {
         }
 
+        public virtual void OnPlace()
+        {
+        }
+
         public new virtual void Update(GameTime gameTime)
         {
             if (Focused)
@@ -246,11 +260,27 @@ namespace Hivemind.World.Entity
         public override void Draw(SpriteBatch spriteBatch, GameTime gameTime)
         {
             var frame = Controller.GetFrame(gameTime);
-            var sprite = EntityManager.GetSprite(Type, frame);
-            spriteBatch.Draw(sprite, new Rectangle((int)(Pos.X * TileManager.TileSize), (int)(Pos.Y * TileManager.TileSize), TileManager.TileSize * Size.X, TileManager.TileSize * Size.Y),
-                new Rectangle(0, 0, TileManager.TileSize * Size.Y, TileManager.TileSize * Size.Y),
+            Rectangle drawpos = new Rectangle(
+                new Point((int)Pos.X * TileManager.TileSize, (int)Pos.Y * TileManager.TileSize), Size * new Point(TileManager.TileSize));
+            int w = SpriteSheet.Width / (Size.X * TileManager.TileSize);
+            int f = Controller.GetFrame(gameTime);
+            Rectangle source = new Rectangle(new Point((f % w) * Size.X * TileManager.TileSize, (f / w) * Size.Y * TileManager.TileSize), Size * new Point(TileManager.TileSize));
+            spriteBatch.Draw(SpriteSheet, drawpos, sourceRectangle: source,
                 Color.White, 0f, Vector2.Zero, SpriteEffects.None,
-                layerDepth: TileMap.GetLayerDepth((int)Pos.Y) + 0.0005f);
+                layerDepth: TileMap.GetLayerDepth((int)Pos.Y / TileMap.Size) + 0.0005f);
+        }
+
+        public virtual void DrawEditor(SpriteBatch spriteBatch, GameTime gameTime)
+        {
+            var frame = Controller.GetFrame(gameTime);
+            Rectangle drawpos = new Rectangle(
+                new Point((int)Pos.X * TileManager.TileSize, (int)Pos.Y * TileManager.TileSize), Size * new Point(TileManager.TileSize));
+            int w = SpriteSheet.Width / (Size.X * TileManager.TileSize);
+            int f = Controller.GetFrame(gameTime);
+            Rectangle source = new Rectangle(new Point((f % w) * Size.X * TileManager.TileSize, (f / w) * Size.Y * TileManager.TileSize), Size * new Point(TileManager.TileSize));
+            spriteBatch.Draw(SpriteSheet, drawpos, sourceRectangle: source,
+                Color.White, 0f, Vector2.Zero, SpriteEffects.None,
+                layerDepth: 0.5f);
         }
 
         public override void Destroy()

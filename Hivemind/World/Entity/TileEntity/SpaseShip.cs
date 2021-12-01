@@ -12,6 +12,8 @@ namespace Hivemind.World.Entity.Tile
     {
         public const string UType = "Entity_SpaseShip";
         public readonly Point USize = new Point(3, 3);
+        public Texture2D USPriteSheet;
+        public override Texture2D SpriteSheet => USpriteSheet;
 
         public override string Type => UType;
         public override Point Size => USize;
@@ -32,14 +34,9 @@ namespace Hivemind.World.Entity.Tile
 
         public static void LoadAssets(ContentManager content)
         {
-            var sprites = new Texture2D[1];
-            for (var i = 0; i < 1; i++)
-            {
-                sprites[i] = content.Load<Texture2D>("Entity/TileEntity/Mechanical/SpaseShip" + (i + 1));
-            }
-            EntityManager.sprites.Add(UType, sprites);
+            USpriteSheet = content.Load<Texture2D>("Entity/TileEntity/Mechanical/SpaseShip");
 
-            UIcon = sprites[0];
+            UIcon = USpriteSheet;
         }
 
         public override void Destroy()

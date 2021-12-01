@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Hivemind.World.Tiles.Utilities
 {
-    public class PowerCable : BaseTile
+    public class PowerCable : BaseTile, IPowerNode
     {
         public static Layer ULayer = Layer.POWER;
         public override Layer Layer => ULayer;
@@ -195,6 +195,46 @@ namespace Hivemind.World.Tiles.Utilities
             PowerCable cable = new PowerCable();
             cable.Tier = 1;
             return cable;
+        }
+
+        public NodeType GetNodeType()
+        {
+            throw new NotImplementedException();
+        }
+
+        public float GetPower()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdatePower()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PowerOn()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PowerOff()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetNetwork(PowerNetwork powerNetwork)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnNetworkJoin()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnNetworkLeave()
+        {
+            throw new NotImplementedException();
         }
     }
 }

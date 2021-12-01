@@ -102,6 +102,25 @@ namespace Hivemind.World
             }
         }
 
+        public void SetTileEntity(Point pos, TileEntity entity)
+        {
+            if (InBounds(pos))
+            {
+
+                if (Tiles.ContainsKey(pos))
+                {
+                    Tiles[pos].TileEntity = entity;
+
+                }
+                else
+                {
+                    Tile t = new Tile(pos, this);
+                    t.TileEntity = entity;
+                    Tiles.Add(pos, t);
+                }
+            }
+        }
+
         public void ClearTiles()
         {
             Tiles.Clear();
@@ -158,9 +177,10 @@ namespace Hivemind.World
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             foreach (KeyValuePair<Point, Tile> t in Tiles)
             {
-                if (t.Value.Wall == null)
-                    continue;
-                t.Value.Wall.Draw(spriteBatch);
+                if (t.Value.Wall != null)
+                    t.Value.Wall.Draw(spriteBatch);
+                if (t.Value.TileEntity != null)
+                    t.Value.TileEntity.DrawEditor(spriteBatch, gameTime);
             }
             spriteBatch.End();
 

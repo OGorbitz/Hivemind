@@ -423,6 +423,8 @@ namespace Hivemind.World
                         TileEntities.Add(t.Pos, entity);
                     }
                 }
+                entity.TileMap = this;
+                entity.OnPlace();
             }
         }
 
@@ -1003,7 +1005,7 @@ namespace Hivemind.World
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
 
-            /*for (int x = (int)p1.X; x < p2.X; x++)
+            for (int x = (int)p1.X; x < p2.X; x++)
             {
                 for (int y = (int)p1.Y; y < p2.Y; y++)
                 {
@@ -1017,7 +1019,7 @@ namespace Hivemind.World
                             e.Draw(spriteBatch, gameTime);
                         }
                 }
-            }*/
+            }
 
 
             foreach (KeyValuePair<int, MovingEntity> e in Entities)

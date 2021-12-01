@@ -1,4 +1,5 @@
 ﻿using Hivemind.World;
+using Hivemind.World.Entity;
 using Hivemind.World.Tiles;
 using Hivemind.World.Tiles.Wall;
 using Microsoft.Xna.Framework;
@@ -36,48 +37,93 @@ namespace Hivemind.Input
         /// <param name="location"></param>
         public static void Hover(Point location, Action action)
         {
-            if (action == Action.BUILD)
+            if (PlacingType == PlacingType.TILE)
             {
-                WorldManager.GetEditorTileMap().SetTile(location, TileConstructor.ConstructTile(SelectedTileName));
+                if (action == Action.BUILD)
+                {
+                    WorldManager.GetEditorTileMap().SetTile(location, TileConstructor.ConstructTile(SelectedTileName));
+                }
+                else if (action == Action.DESTROY)
+                {
+                    BaseTile tile = WorldManager.GetActiveTileMap().GetTile(location).Wall;
+                    if (tile != null)
+                        WorldManager.GetEditorTileMap().SetTile(location, TileConstructor.ConstructTile(tile.Name));
+                }
             }
-            else if (action == Action.DESTROY)
+            else if(PlacingType == PlacingType.TILE_ENTITY)
             {
-                BaseTile tile = WorldManager.GetActiveTileMap().GetTile(location).Wall;
-                if (tile != null)
-                    WorldManager.GetEditorTileMap().SetTile(location, TileConstructor.ConstructTile(tile.Name));
+                if(action == Action.BUILD)
+                {
+                    WorldManager.GetEditorTileMap().SetTileEntity(location, (TileEntity)EntityManager.CreateEntity(SelectedTileName, location.ToVector2()));
+                }
+                else if (action == Action.DESTROY)
+                {
+                    TileEntity tile = WorldManager.GetActiveTileMap().GetTile(location).TileEntity;
+                    if (tile != null)
+                        WorldManager.GetEditorTileMap().SetTile(tile.Pos.ToPoint(), TileConstructor.ConstructTile(tile.Type));
+                }
             }
+
         }
 
 
         public static void SetTile(Point p)
         {
-            if (PlaceHolo)
+            if(PlacingType == PlacingType.TILE)
             {
-                HoloTile t = new HoloTile(TileConstructor.ConstructTile(SelectedTileName));
-                WorldManager.GetActiveTileMap().SetTile(p, t);
+                if (PlaceHolo)
+                {
+                    HoloTile t = new HoloTile(TileConstructor.ConstructTile(SelectedTileName));
+                    WorldManager.GetActiveTileMap().SetTile(p, t);
+                }
+                else
+                {
+                    BaseTile t = TileConstructor.ConstructTile(SelectedTileName);
+                    WorldManager.GetActiveTileMap().SetTile(p, t);
+                }
             }
-            else
+            else if(PlacingType == PlacingType.TILE_ENTITY)
             {
-                BaseTile t = TileConstructor.ConstructTile(SelectedTileName);
-                WorldManager.GetActiveTileMap().SetTile(p, t);
+                TileEntity t = (TileEntity)EntityManager.CreateEntity(SelectedTileName, p.ToVector2());
+                WorldManager.GetActiveTileMap().SetTileEntity(t);
             }
         }
 
         public static void SetEditorTile(Point p, bool d)
         {
-            if (d)
+            if (PlacingType == PlacingType.TILE)
             {
-                Tile t = WorldManager.GetActiveTileMap().GetTile(p);
-                if (t.Wall != null)
+                if (d)
                 {
-                    BaseTile tile = TileConstructor.ConstructTile(t.Wall.Name);
+                    Tile t = WorldManager.GetActiveTileMap().GetTile(p);
+                    if (t.Wall != null)
+                    {
+                        BaseTile tile = TileConstructor.ConstructTile(t.Wall.Name);
+                        WorldManager.GetEditorTileMap().SetTile(p, tile);
+                    }
+                }
+                else
+                {
+                    BaseTile tile = TileConstructor.ConstructTile(SelectedTileName);
                     WorldManager.GetEditorTileMap().SetTile(p, tile);
                 }
             }
-            else
+            else if(PlacingType == PlacingType.TILE_ENTITY)
             {
-                BaseTile tile = TileConstructor.ConstructTile(SelectedTileName);
-                WorldManager.GetEditorTileMap().SetTile(p, tile);
+                if (d)
+                {
+                    Tile t = WorldManager.GetActiveTileMap().GetTile(p);
+                    if (t.TileEntity != null)
+                    {
+                        TileEntity te = (TileEntity)EntityManager.CreateEntity(t.TileEntity.Type, p.ToVector2());
+                        WorldManager.GetEditorTileMap().SetTileEntity(p, te);
+                    }
+                }
+                else
+                {
+                    var e = (TileEntity)(TileEntity)EntityManager.CreateEntity(SelectedTileName, p.ToVector2());
+                    WorldManager.GetEditorTileMap().SetTileEntity(p, e);
+                }
             }
 
         }
@@ -109,11 +155,11 @@ namespace Hivemind.Input
         /// <param name="current"></param>
         public static void UpdateEditing(Point current, Action action)
         {
-            if(Shape == EditShape.SINGLE)
+            if (Shape == EditShape.SINGLE)
             {
-                if(Start != current)
+                if (Start != current)
                 {
-                    if(action == Action.BUILD)
+                    if (action == Action.BUILD)
                     {
                         SetTile(current);
                         Start = current;
@@ -123,7 +169,7 @@ namespace Hivemind.Input
                         RemoveTile(current);
                         Start = current;
                     }
-                    
+
                 }
             }
             else
@@ -143,7 +189,6 @@ namespace Hivemind.Input
                         SetEditorTile(p, true);
                     }
                 }
-
             }
         }
 
@@ -153,17 +198,37 @@ namespace Hivemind.Input
         /// <param name="end"></param>
         public static void EndEditing(Point end, Action action)
         {
-            if (Shape != EditShape.SINGLE)
+            if(PlacingType == PlacingType.TILE)
             {
-                foreach (Point p in GetAffectedTiles(end))
+                if (Shape != EditShape.SINGLE)
                 {
-                    if (action == Action.DESTROY)
+                    foreach (Point p in GetAffectedTiles(end))
                     {
-                        RemoveTile(p);
+                        if (action == Action.DESTROY)
+                        {
+                            RemoveTile(p);
+                        }
+                        else if (action == Action.BUILD)
+                        {
+                            SetTile(p);
+                        }
                     }
-                    else if(action == Action.BUILD)
+                }
+            }
+            else if(PlacingType == PlacingType.TILE_ENTITY)
+            {
+                if (Shape != EditShape.SINGLE)
+                {
+                    foreach (Point p in GetAffectedTiles(end))
                     {
-                        SetTile(p);
+                        if (action == Action.DESTROY)
+                        {
+                            RemoveTile(p);
+                        }
+                        else if (action == Action.BUILD)
+                        {
+                            SetTile(p);
+                        }
                     }
                 }
             }

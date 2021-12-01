@@ -22,12 +22,16 @@ namespace Hivemind.World.Entity
     {
         public const string UType = "SmallDrone";
         public readonly Point USize = new Point(32);
+        public readonly Point USpriteSize = new Point(64);
         public const int USpeed = 100;
         public const float USightDistance = 8;
+        public static Texture2D USpriteSheet;
+        public override Texture2D SpriteSheet => USpriteSheet;
         public static Texture2D UIcon;
 
         public override string Type => UType;
         public override Point Size => USize;
+        public override Point SpriteSize => USpriteSize;
         public override float SightDistance => USightDistance;
 
         public Vector2 Vel = Vector2.Zero;
@@ -67,11 +71,9 @@ namespace Hivemind.World.Entity
 
         public static void LoadAssets(ContentManager content)
         {
-            var sprites = new Texture2D[18];
-            for (var i = 0; i < 18; i++) sprites[i] = content.Load<Texture2D>("Entity/Robot/SmallDrone/" + (i + 1));
-            EntityManager.sprites.Add("SmallDrone", sprites);
+            USpriteSheet = content.Load<Texture2D>("Entity/Robot/SmallDrone");
 
-            UIcon = sprites[0];
+            UIcon = content.Load<Texture2D>("Entity/Robot/SmallDroneIcon");
         }
 
         public override void AddInfo(Panel panel)

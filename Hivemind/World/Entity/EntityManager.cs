@@ -11,18 +11,20 @@ namespace Hivemind.World.Entity
     class EntityManager
     {
         public static Texture2D Selected;
-        public static Dictionary<string, Texture2D[]> sprites;
         private static int CurrentID = 0;
+
+        public delegate BaseEntity EntityConstructorMethod(Vector2 position);
+        public static Dictionary<string, EntityConstructorMethod> EntityConstructors = new Dictionary<string, EntityConstructorMethod>();
 
         public static void LoadAssets(ContentManager content)
         {
             Selected = content.Load<Texture2D>("selected");
-            sprites = new Dictionary<string, Texture2D[]>();
 
             Bush1.LoadAssets(content);
             Rock1.LoadAssets(content);
 
             SpaseShip.LoadAssets(content);
+            BasicGenerator.LoadAssets(content);
 
             Worker.LoadAssets(content);
             Nommer.LoadAssets(content);
@@ -37,30 +39,24 @@ namespace Hivemind.World.Entity
             //SparkSource.LoadAssets(g);
         }
 
-        public static Texture2D GetSprite(string id, int index)
-        {
-            if (sprites.ContainsKey(id))
-            {
-                if (index < sprites[id].Length) return sprites[id][index];
-                throw new Exception("Sprite index out of bounds for " + id + ": " + index);
-            }
-
-            throw new Exception("No such sprite sheet for type " + id);
-        }
-
         public static int GetID()
         {
             CurrentID++;
             return CurrentID;
         }
 
+        public static void AddConstructor(string t, EntityConstructorMethod c)
+        {
+            if (!EntityConstructors.ContainsKey(t))
+                EntityConstructors.Add(t, c);
+        }
+
         //Creates a new Entity instance of the type t
         public static BaseEntity CreateEntity(string t, Vector2 pos)
         {
-            switch (t)
+            if (EntityConstructors.ContainsKey(t))
             {
-                //case Entity_Rat.UType:
-                    //return new Entity_Rat(p);
+                return EntityConstructors[t](pos);
             }
 
             return null;

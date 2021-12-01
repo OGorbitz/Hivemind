@@ -18,8 +18,12 @@ namespace Hivemind.World.Entity
     {
         public const string UType = "Nommer";
         public readonly Point USize = new Point(48, 48);
+        public readonly Point USpriteSize = new Point(48, 48);
         public override Point Size => USize;
+        public override Point SpriteSize => USpriteSize;
         public override string Type => UType;
+        public static Texture2D USpriteSheet;
+        public override Texture2D SpriteSheet => USpriteSheet;
 
         public const int USpeed = 50;
         public static Texture2D UIcon;
@@ -58,11 +62,8 @@ namespace Hivemind.World.Entity
 
         public static void LoadAssets(ContentManager content)
         {
-            var sprites = new Texture2D[12];
-            for (var i = 0; i < sprites.Length; i++) sprites[i] = content.Load<Texture2D>("Entity/Alien/Nommer/" + (i + 1));
-            EntityManager.sprites.Add(UType, sprites);
-
-            UIcon = sprites[0];
+            USpriteSheet = content.Load<Texture2D>("Entity/Alien/Nommer");
+            UIcon = content.Load<Texture2D>("Entity/Alien/NommerIcon");
         }
 
         public override void AddInfo(Panel panel)

@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Hivemind.World;
+using Hivemind.World.Entity.Tile;
+using Hivemind.World.Tiles;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,19 +17,31 @@ namespace Hivemind.Utility
         MIXED
     }
 
+
+
     public class PowerNetwork
     {
         public List<IPowerNode> Nodes = new List<IPowerNode>();
+        public SpaseShip Core;
+        public TileMap TileMap;
 
-        public bool IsActive = false;
+        public bool Dirty = true;
 
-        public void Merge(PowerNetwork powerNetwork)
+        private List<IPowerNode> _nodeCalculation = new List<IPowerNode>();
+        private List<Point> _calculatedPoints = new List<Point>();
+
+
+        static readonly int[,] Neighbors =
         {
-            foreach(IPowerNode n in powerNetwork.Nodes)
-            {
-                n.OnNetworkLeave();
-                n.SetNetwork(this);
-            }
+                {0, -1},
+                {1, 0},
+                {0, 1},
+                {-1, 0}
+        };
+
+        public PowerNetwork(TileMap tileMap)
+        {
+            TileMap = tileMap;
         }
 
         public void AddNode(IPowerNode node)
@@ -34,7 +49,7 @@ namespace Hivemind.Utility
             if (!Nodes.Contains(node))
             {
                 Nodes.Add(node);
-                node.OnNetworkJoin();
+                node.OnNetworkJoin(this);
             }
         }
 
@@ -47,28 +62,11 @@ namespace Hivemind.Utility
             }
         }
 
-        public void PowerOn()
-        {
-            IsActive = true;
-
-            foreach(IPowerNode n in Nodes)
-            {
-                n.PowerOn();
-            }
-        }
-
-        public void PowerOff()
-        {
-            IsActive = false;
-
-            foreach(IPowerNode n in Nodes)
-            {
-                n.PowerOff();
-            }
-        }
-
         public void Update(GameTime gameTime)
         {
+            if (Dirty)
+                RecalculateNodes();
+            
             float consumedPower = 0f;
             float producedPower = 0f;
 
@@ -87,14 +85,72 @@ namespace Hivemind.Utility
                 }
             }
 
-            if (IsActive)
-            {
-                if (consumedPower > producedPower)
-                    PowerOff();
-            }
-            else
-            {
+        }
 
+        public void RecalculateNodes()
+        {
+            _nodeCalculation.Clear();
+            _calculatedPoints.Clear();
+
+            _nodeCalculation.Add(Core);
+
+            for (int x = Core.Bounds.Left; x <= Core.Bounds.Right; x++)
+            {
+                for (int y = Core.Bounds.Top; y <= Core.Bounds.Bottom; y++)
+                {
+                    Point p = new Point(x, y);
+                    CalculateNode(p);
+                }
+            }
+
+            foreach(IPowerNode node in Nodes)
+            {
+                if (!_nodeCalculation.Contains(node))
+                {
+                    node.OnNetworkLeave();
+                }
+            }
+
+            Nodes.Clear();
+            Nodes.AddRange(_nodeCalculation);
+            Dirty = false;
+        }
+
+        public void CalculateNode(Point position)
+        {
+            if (_calculatedPoints.Contains(position))
+                return;
+            _calculatedPoints.Add(position);
+
+            Tile n = TileMap.GetTile(position);
+            if(n != null && n.PowerCable != null)
+            {
+                if (!_nodeCalculation.Contains(n.PowerCable))
+                {
+                    _nodeCalculation.Add(n.PowerCable);
+
+                    if(n.TileEntity != null && n.TileEntity is IPowerNode && !_nodeCalculation.Contains((IPowerNode)n.TileEntity))
+                    {
+                        _nodeCalculation.Add((IPowerNode)n.TileEntity);
+                        for(int x = n.TileEntity.Bounds.Left; x < n.TileEntity.Bounds.Right; x++)
+                        {
+                            for(int y = n.TileEntity.Bounds.Top; y < n.TileEntity.Bounds.Bottom; y++)
+                            {
+                                Point p = new Point(x, y);
+                                CalculateNode(p);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for(int i = 0; i < 4; i++)
+            {
+                Point p = position + new Point(Neighbors[i, 0], Neighbors[i, 1]);
+
+                Tile t = TileMap.GetTile(p);
+                if (t != null && t.PowerCable != null)
+                    CalculateNode(p);
             }
         }
     }
@@ -104,11 +160,7 @@ namespace Hivemind.Utility
         public abstract NodeType GetNodeType();
         public abstract float GetPower();
         public abstract void UpdatePower();
-        public abstract void PowerOn();
-        public abstract void PowerOff();
-
-        public abstract void SetNetwork(PowerNetwork powerNetwork);
-        public abstract void OnNetworkJoin();
+        public abstract void OnNetworkJoin(PowerNetwork powerNetwork);
         public abstract void OnNetworkLeave();
     }
 }

@@ -166,13 +166,13 @@ namespace Hivemind.World
                                 SetTileEntity(new Rock1(pos));
                         }
                     }
-                    if (x == 5)
+                    if (x >= 20 && x < 40 && y == 23)
                         GetTile(new Point(x, y)).PowerCable = (PowerCable) TileConstructor.ConstructTile("PowerCableT1");
-                    if (x - y == 0 || x - y == 1)
-                        GetTile(new Point(x, y)).PowerCable = (PowerCable)TileConstructor.ConstructTile("PowerCableT2");
                 }
             }
             AddEntity(new Worker(new Vector2(8 * TileManager.TileSize, 8 * TileManager.TileSize)));
+            AddEntity(new Worker(new Vector2(20 * TileManager.TileSize, 8 * TileManager.TileSize)));
+            AddEntity(new Worker(new Vector2(15 * TileManager.TileSize, 15 * TileManager.TileSize)));
             SetTile(new Point(10, 10), new HoloTile(new Wall_Cinderblock()));
             
             
@@ -507,6 +507,16 @@ namespace Hivemind.World
                 } 
             }
 
+            foreach(KeyValuePair<Point, TileEntity> e in TileEntities)
+            {
+                if (e.Value != null)
+                    if (e.Value.Updated = Updated)
+                    {
+                        e.Value.Updated = !e.Value.Updated;
+                        e.Value.Update(gameTime);
+                    }
+            }
+
             UpdateFog();
         }
 
@@ -702,6 +712,7 @@ namespace Hivemind.World
                             for (int i = 0; i < 4; i++)
                             {
                                 int index = 0;
+                                bool draw = false;
 
                                 //For each indexed corner tile
                                 for (int n = 0; n < 3; n++)
@@ -711,8 +722,10 @@ namespace Hivemind.World
                                         continue;
                                     if (ctile.Floor.FloorLayer >= l)
                                         index += 1 << n;
+                                    if (ctile.Floor.FloorLayer == l)
+                                        draw = true;
                                 }
-                                if (index == 0)
+                                if (index == 0 || draw == false)
                                     continue;
 
                                 spriteBatch.Draw(FloorMask.DirtMask, buffer_coords.ToVector2() * TileManager.TileSize + CornerRenderOffset[i],

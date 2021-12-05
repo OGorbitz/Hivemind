@@ -15,7 +15,7 @@ namespace Hivemind.World.Entity.Tile
         public const string UType = "BasicGenerator";
         public override string Type => UType;
         public const string UDescription = "Just a plain old basic generator.\nWhat is this doing on an alien planet?";
-        public override string Description => UDescription;
+        public override string Description => GetDescription();
         public readonly Point USize = new Point(1);
         public override Point Size => USize;
         public static Texture2D USpriteSheet;
@@ -48,22 +48,15 @@ namespace Hivemind.World.Entity.Tile
         {
             return PowerOutput;
         }
-        public void SetNetwork(PowerNetwork powerNetwork)
+
+        public void OnNetworkJoin(PowerNetwork powerNetwork)
         {
             PNetwork = powerNetwork;
         }
 
-        public void OnNetworkJoin(PowerNetwork powerNetwork)
-        {
-        }
-
-        public void OnNetworkJoin()
-        {
-            throw new NotImplementedException();
-        }
-
         public void OnNetworkLeave()
         {
+            PNetwork = null;
         }
 
         public void PowerOff()
@@ -80,12 +73,15 @@ namespace Hivemind.World.Entity.Tile
         {
         }
 
-        public virtual void OnPlace()
+        public override void OnPlace()
         {
             var t = TileMap.GetTile(Pos.ToPoint());
-            if (t != null && t.PowerCable != null)
+            if (t != null)
             {
-                PNetwork.AddNode(this);
+                if (t.PowerCable != null && t.PowerCable.PowerNetwork != null)
+                {
+                    t.PowerCable.PowerNetwork.AddNode(this);
+                }
             }
         }
 
@@ -100,6 +96,16 @@ namespace Hivemind.World.Entity.Tile
         public static BaseEntity Constructor(Vector2 position)
         {
             return new BasicGenerator(position.ToPoint());
+        }
+
+        public string GetDescription()
+        {
+            string nodes = @"\c[Red]ERROR! " + "\n" + "Not connected to a power network!";
+
+            if(PNetwork != null)
+                nodes = @"There are \c[Green]" + PNetwork.Nodes.Count + @"\c[White] nodes in this network.";
+
+            return UDescription + "\n\n" + nodes;
         }
     }
 }

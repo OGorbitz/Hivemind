@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Hivemind.Utility;
 
 namespace Hivemind.World.Tiles
 {
@@ -157,12 +158,19 @@ namespace Hivemind.World.Tiles
                 if (value != null)
                 {
                     _powerCable.SetParent(this, Parent);
+
                     for (var i = 0; i < 4; i++)
                     {
                         Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
                         Tile t = Parent.GetTile(v);
                         if (t != null)
+                        {
                             t.DirtyCable = true;
+                            if(t.PowerCable != null && t.PowerCable.PowerNetwork != null)
+                            {
+                                t.PowerCable.PowerNetwork.Dirty = true;
+                            }
+                        }
                     }
                 }
 

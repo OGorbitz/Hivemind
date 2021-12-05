@@ -23,7 +23,7 @@ namespace Hivemind.World.Entity
         public const string UType = "SmallDrone";
         public readonly Point USize = new Point(32);
         public readonly Point USpriteSize = new Point(64);
-        public const int USpeed = 100;
+        public const int USpeed = 200;
         public const float USightDistance = 8;
         public static Texture2D USpriteSheet;
         public override Texture2D SpriteSheet => USpriteSheet;
@@ -110,7 +110,7 @@ namespace Hivemind.World.Entity
                     action = "Delivering";
                     break;
                 case WorkerBehavior.BUILDING:
-                    action = "Building";
+                    action = "Building " + (int) (100 * CurrentTask.WorkDone / CurrentTask.WorkRequired) + "%";
                     break;
             }
 
@@ -224,7 +224,7 @@ namespace Hivemind.World.Entity
                     }
                     break;
                 case WorkerBehavior.BUILDING:
-                    CurrentTask.DoWork(100f/1000 * gameTime.ElapsedGameTime.Milliseconds);
+                    CurrentTask.DoWork(1000f/1000 * gameTime.ElapsedGameTime.Milliseconds);
                     if (CurrentTask.Complete)
                         Thought = WorkerBehavior.IDLE;
                     break;

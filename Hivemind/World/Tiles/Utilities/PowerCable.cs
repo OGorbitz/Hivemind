@@ -19,6 +19,7 @@ namespace Hivemind.World.Tiles.Utilities
         public static Texture2D[] UIcon;
         public static int[,] Tex;
 
+        public PowerNetwork PowerNetwork;
         public int Tier = 0;
 
         public readonly int[,] neighbors =
@@ -199,42 +200,34 @@ namespace Hivemind.World.Tiles.Utilities
 
         public NodeType GetNodeType()
         {
-            throw new NotImplementedException();
+            return NodeType.WIRE;
         }
 
         public float GetPower()
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
         public void UpdatePower()
         {
-            throw new NotImplementedException();
         }
 
         public void PowerOn()
         {
-            throw new NotImplementedException();
         }
 
         public void PowerOff()
         {
-            throw new NotImplementedException();
         }
 
-        public void SetNetwork(PowerNetwork powerNetwork)
+        public void OnNetworkJoin(PowerNetwork powerNetwork)
         {
-            throw new NotImplementedException();
-        }
-
-        public void OnNetworkJoin()
-        {
-            throw new NotImplementedException();
+            PowerNetwork = powerNetwork;
         }
 
         public void OnNetworkLeave()
         {
-            throw new NotImplementedException();
+            PowerNetwork = null;
         }
     }
 }

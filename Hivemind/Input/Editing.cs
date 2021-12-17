@@ -1,4 +1,5 @@
-﻿using Hivemind.World;
+﻿using Hivemind.GUI;
+using Hivemind.World;
 using Hivemind.World.Entity;
 using Hivemind.World.Tiles;
 using Hivemind.World.Tiles.Wall;
@@ -71,14 +72,14 @@ namespace Hivemind.Input
         {
             if(PlacingType == PlacingType.TILE)
             {
-                if (PlaceHolo)
+                if (GuiController.DebugMode)
                 {
-                    HoloTile t = new HoloTile(TileConstructor.ConstructTile(SelectedTileName));
+                    BaseTile t = TileConstructor.ConstructTile(SelectedTileName);
                     WorldManager.GetActiveTileMap().SetTile(p, t);
                 }
                 else
                 {
-                    BaseTile t = TileConstructor.ConstructTile(SelectedTileName);
+                    HoloTile t = new HoloTile(TileConstructor.ConstructTile(SelectedTileName));
                     WorldManager.GetActiveTileMap().SetTile(p, t);
                 }
             }

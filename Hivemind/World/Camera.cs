@@ -38,7 +38,7 @@ namespace Hivemind
             var translate =
                 Matrix.CreateTranslation(-Pos.X + Hivemind.ScreenWidth, -Pos.Y + Hivemind.ScreenHeight, 0);
             Translate = translate;
-            TranslateOffset = translate * offset;
+            TranslateOffset = translate * negoffset;
             ScaleOffset = negoffset * scalematrix * offset;
             TranslateScaleOffset = translate * negoffset * scalematrix * offset;
         }

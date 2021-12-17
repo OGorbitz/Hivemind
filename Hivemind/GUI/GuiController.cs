@@ -54,6 +54,9 @@ namespace Hivemind.GUI
         public static SpriteFontBase AutobusLarge => Autobus.GetFont(128);
 
         public static Texture2D ShapeSingle, ShapeLine, ShapeRectangle;
+        public static Texture2D DebugEnabled, DebugDisabled;
+
+        public static bool DebugMode = false;
 
         public static int TooltipTime = 1000;
 
@@ -87,6 +90,9 @@ namespace Hivemind.GUI
             ShapeLine = content.Load<Texture2D>("GUI/ShapeLine");
             ShapeRectangle = content.Load<Texture2D>("GUI/ShapeRectangle");
 
+            DebugEnabled = content.Load<Texture2D>("GUI/DebugEnabled");
+            DebugDisabled = content.Load<Texture2D>("GUI/DebugDisabled");
+
             InitMainMenu();
             Minimap = new Minimap(new Point(200), graphicsDevice);
             InitHUD_Tilemap();
@@ -112,19 +118,19 @@ namespace Hivemind.GUI
                                 line = String.Format(@"\c[#555555]Checking sector {0:X} RNN modules for corruption:", (int)(Helper.Random() * int.MaxValue));
                                 break;
                             case 1:
-                                line = String.Format(@"\c[#555555]    Repairing block {0}:", (int)(Helper.Random() * 4096));
+                                line = String.Format(@"\c[#555555]    Repairing block \c[#552200]{0}\c[#555555]:", (int)(Helper.Random() * 4096));
                                 break;
                             case 2:
-                                line = String.Format(@"\c[#555555]        Refactoring RNN node {0:X} weight and bias values:", (int)(Helper.Random() * 4096));
+                                line = String.Format(@"\c[#555555]        Refactoring RNN node \c[#552200]{0:X}\c[#555555] weight and bias values:", (int)(Helper.Random() * 65565));
                                 break;
                             case 3:
                                 string working = @"\c[#225500]Nominal";
                                 float r = Helper.Random();
                                 if (r > 0.9f)
-                                    working = @"\c[#3A0000]Fault Detected - Weight value higher than expected";
+                                    working = @"\c[#3A0000]Fault Detected - Exception: Corrupt weight value detected";
                                 if (r > 0.95f)
-                                    working = @"\c[#3A0000]Fault Detected - Invalid bias value";
-                                line = String.Format(@"\c[#555555]            {0:X}: " + working, (int)(Helper.Random() * 4096));
+                                    working = @"\c[#3A0000]Fault Detected - Exception: Bias value out of bounds";
+                                line = String.Format(@"\c[#555555]            Sector \c[#555500]{0:X}\c[#555555]: " + working, (int)(Helper.Random() * 65565));
                                 break;
                             default:
                                 line = "\n";
@@ -263,7 +269,7 @@ namespace Hivemind.GUI
                             new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 5)),
                         new Color(1f, 1f, 1f, 0.3f));
                 n = (int)(ms % 2000 / 2000f * 64f);
-                for (var x = n - 64; x <= graphicsDevice.Viewport.Height; x += Hivemind.ComputerLines.Height * 2)
+                for (var x = n - 64; x <= graphicsDevice.Viewport.Height; x += Hivemind.ComputerLines.Height * 3)
                     spriteBatch.Draw(Hivemind.ComputerLines,
                         new Rectangle(new Point(0, x),
                             new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 3)),
@@ -278,16 +284,16 @@ namespace Hivemind.GUI
                 spriteBatch.Begin();
                 AutobusSmaller.DrawText(spriteBatch, DebugText, new Vector2(25), Color.White);
                 string todraw = "" + Hivemind.AverageFramesPerSecond.ToString("N1") + " FPS";
-                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 25), Color.White);
+                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 220 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 10), Color.White);
                 todraw = "Walls: " + (int)(TileMap.AvgTimeWalls * 1000);
-                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 50), Color.White);
+                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 220 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 30), Color.White);
                 todraw = " Floors: " + (int)(TileMap.AvgTimeFloor * 1000);
-                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 70), Color.White);
+                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 220 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 50), Color.White);
                 todraw = " Fog: " + (int)(TileMap.AvgTimeFog * 1000);
-                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 25 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 90), Color.White);
+                AutobusSmaller.DrawText(spriteBatch, todraw, new Vector2(Hivemind.ScreenWidth - 220 - AutobusSmaller.MeasureString(todraw, Vector2.One).X, 70), Color.White);
                 
                 if (Hivemind.DebugMode)
-                    AutobusSmall.DrawText(spriteBatch, "DEBUG", new Vector2(Hivemind.ScreenWidth/2 - AutobusSmall.MeasureString("DEBUG", Vector2.One).X / 2, 25), Color.Red);
+                    AutobusSmall.DrawText(spriteBatch, "DEBUG", new Vector2(Hivemind.ScreenWidth/2 - AutobusSmall.MeasureString("DEBUG", Vector2.One).X / 2, 10), Color.Red);
                 spriteBatch.End();
             }
         }
@@ -426,6 +432,34 @@ namespace Hivemind.GUI
             buttonPanel.AddChild<Grid>(buttonGrid);
 
             Color buttonBorderColor = new Color(0.15f, 0.15f, 0.15f, 1);
+
+            if (Hivemind.DebugMode)
+            {
+                var debugEnabled = new TextureRegion(DebugEnabled, new Rectangle(0, 0, 50, 50));
+                var debugDisabled = new TextureRegion(DebugDisabled, new Rectangle(0, 0, 50, 50));
+                var DebugPlace = new ImageButton()
+                {
+                    Image = debugDisabled,
+                    Background = new SolidBrush(Color.Transparent),
+                    FocusedBackground = new SolidBrush(Color.Transparent),
+                    DisabledBackground = new SolidBrush(Color.Transparent),
+                    PressedBackground = new SolidBrush(Color.Transparent),
+                    OverBackground = new SolidBrush(Color.Transparent),
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    GridColumn = 0
+                };
+                DebugPlace.Click += (s, a) =>
+                {
+                    DebugMode = !DebugMode;
+                    if (DebugMode)
+                        ((ImageButton)s).Image = debugEnabled;
+                    else
+                        ((ImageButton)s).Image = debugDisabled;
+                };
+
+                buttonGrid.AddChild(DebugPlace);
+            }
 
             var Hardware = new TextButton()
             {

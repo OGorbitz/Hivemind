@@ -103,6 +103,14 @@ namespace Hivemind.Utility
                 }
             }
 
+            foreach (IPowerNode node in _nodeCalculation)
+            {
+                if (!Nodes.Contains(node))
+                {
+                    node.OnNetworkJoin(this);
+                }
+            }
+
             foreach(IPowerNode node in Nodes)
             {
                 if (!_nodeCalculation.Contains(node))

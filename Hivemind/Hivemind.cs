@@ -44,7 +44,7 @@ namespace Hivemind
         {
             _instance = this;
 
-            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
+            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
             ScreenWidth = r.Width;
             ScreenHeight = r.Height;
 
@@ -66,6 +66,8 @@ namespace Hivemind
             _graphics.ApplyChanges();
 
             CManager = Content;
+
+            DebugMode = true;
 
             Content.RootDirectory = "Content";
         }

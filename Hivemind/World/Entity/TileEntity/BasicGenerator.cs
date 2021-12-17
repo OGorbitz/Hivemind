@@ -107,5 +107,12 @@ namespace Hivemind.World.Entity.Tile
 
             return UDescription + "\n\n" + nodes;
         }
+
+        public override void Destroy()
+        {
+            if (PNetwork != null)
+                PNetwork.RemoveNode(this);
+            base.Destroy();
+        }
     }
 }

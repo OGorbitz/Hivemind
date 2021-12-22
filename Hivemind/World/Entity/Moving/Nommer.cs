@@ -1,5 +1,6 @@
 ﻿using Hivemind.GUI;
 using Hivemind.Utility;
+using Hivemind.World.Particle;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -163,6 +164,8 @@ namespace Hivemind.World.Entity
                     var e = TileMap.GetTileEntity(Target);
                     if(e != null)
                         e.Destroy();
+
+                    TileMap.AddParticleSource(new SparkSource(Pos, 50));
 
                     State = NommerState.IDLE;
                     break;

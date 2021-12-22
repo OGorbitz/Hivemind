@@ -3,6 +3,7 @@ using Hivemind.Input;
 using Hivemind.Utility;
 using Hivemind.World;
 using Hivemind.World.Entity;
+using Hivemind.World.Particle;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -44,7 +45,7 @@ namespace Hivemind
         {
             _instance = this;
 
-            var r = System.Windows.Forms.Screen.AllScreens[0].Bounds;
+            var r = System.Windows.Forms.Screen.AllScreens[1].Bounds;
             ScreenWidth = r.Width;
             ScreenHeight = r.Height;
 
@@ -109,6 +110,7 @@ namespace Hivemind
             Fog.Init(Content, GraphicsDevice);
             TileManager.LoadTiles(Content, GraphicsDevice);
             EntityManager.LoadAssets(Content);
+            Particle.LoadAssets(Content);
         }
 
         protected override void Update(GameTime gameTime)

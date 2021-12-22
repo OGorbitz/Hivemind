@@ -5,6 +5,7 @@ using Hivemind.World.Entity;
 using Hivemind.World.Entity.Moving;
 using Hivemind.World.Entity.Tile;
 using Hivemind.World.Generator;
+using Hivemind.World.Particle;
 using Hivemind.World.Tiles;
 using Hivemind.World.Tiles.Floor;
 using Hivemind.World.Tiles.Utilities;
@@ -89,9 +90,10 @@ namespace Hivemind.World
         }
 
         private Tile[,] Tiles;
-        public Dictionary<int, MovingEntity> Entities;
+        public List<ParticleSource> ParticleSources = new List<ParticleSource>();
+        public Dictionary<int, MovingEntity> Entities = new Dictionary<int, MovingEntity>();
+        public Dictionary<Point, TileEntity> TileEntities = new Dictionary<Point, TileEntity>();
         private SpacialHash<MovingEntity> EntityHash;
-        public Dictionary<Point, TileEntity> TileEntities;
         public List<Room> Rooms = new List<Room>();
 
         public TaskManager TaskManager;
@@ -116,9 +118,7 @@ namespace Hivemind.World
 
             Cam = new Camera(this);
             Generator = new WorldGenerator(69l, this);
-            Entities = new Dictionary<int, MovingEntity>();
             EntityHash = new SpacialHash<MovingEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
-            TileEntities = new Dictionary<Point, TileEntity>();
 
             TaskManager = new TaskManager(this);
 
@@ -198,6 +198,11 @@ namespace Hivemind.World
                 }
             }
             SetTileEntity(new SpaseShip(new Point(32, 23)));
+        }
+
+        public void AddParticleSource(ParticleSource particleSource)
+        {
+            ParticleSources.Add(particleSource);
         }
 
         public TileMap(SerializationInfo info, StreamingContext context)
@@ -692,13 +697,13 @@ namespace Hivemind.World
                 spriteBatch.Draw(Hivemind.ComputerLines,
                     new Rectangle(new Point(0, x),
                         new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 5)),
-                    new Color(1f, 1f, 1f, 0.3f));
+                    new Color(1f, 1f, 1f, 0.25f));
             t = (int)(ms % 2000 / 2000f * 64f);
-            for (var x = t - 64; x <= graphicsDevice.Viewport.Height; x += Hivemind.ComputerLines.Height * 3)
+            for (var x = t - 64; x <= graphicsDevice.Viewport.Height; x += Hivemind.ComputerLines.Height * 2)
                 spriteBatch.Draw(Hivemind.ComputerLines,
                     new Rectangle(new Point(0, x),
-                        new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 3)),
-                    new Color(1f, 1f, 1f, 0.25f));
+                        new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 2)),
+                    new Color(1f, 1f, 1f, 0.3f));
             spriteBatch.End();
 
             graphicsDevice.SetRenderTarget(FogDrawn);
@@ -1122,8 +1127,13 @@ namespace Hivemind.World
             Selection.DrawSelectionRectangles(spriteBatch, graphicsDevice, gameTime);
             spriteBatch.End();
 
-            //TODO: Render particles
-
+            spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.NonPremultiplied);
+            for (int i = ParticleSources.Count - 1; i >= 0; i--)
+            {
+                if (ParticleSources[i].Draw(spriteBatch, gameTime))
+                    ParticleSources.RemoveAt(i);
+            }
+            spriteBatch.End();
 
             graphicsDevice.SetRenderTarget(null);
             graphicsDevice.Clear(Color.Black);

@@ -8,7 +8,7 @@ namespace Hivemind.Utility
 {
     public class Helper
     {
-        public static Random Rand;
+        public static Random Rand = new System.Random();
         public static Texture2D pixel;
 
 
@@ -18,6 +18,15 @@ namespace Hivemind.Utility
             pixel.SetData(new[] { Color.White });
         }
 
+        /// <summary>
+        /// Draws a line
+        /// <para>Note: Does not call spriteBatch.Begin() or spriteBatch.End()</para>
+        /// </summary>
+        /// <param name="spriteBatch">SpriteBatch to be used on draw call</param>
+        /// <param name="t"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="color"></param>
         public static void DrawLine(SpriteBatch spriteBatch, Texture2D t, Vector2 start, Vector2 end, Color color)
         {
             var edge = end - start;
@@ -39,6 +48,11 @@ namespace Hivemind.Utility
                 0);
         }
 
+        /// <summary>
+        /// Averages pixels of a given Texture2D
+        /// </summary>
+        /// <param name="texture">Texture to be averaged</param>
+        /// <returns>Average color of given texture</returns>
         public static Color AverageColor(Texture2D texture)
         {
             float r = 0, g = 0, b = 0;
@@ -58,10 +72,13 @@ namespace Hivemind.Utility
             return new Color(r / textureData.Length, g / textureData.Length, b / textureData.Length);
         }
 
+
+        /// <summary>
+        /// Random double generator
+        /// </summary>
+        /// <returns>Double from 0.0 to 1.0</returns>
         public static float Random()
         {
-            if (Rand == null)
-                Rand = new Random();
             return (float)Rand.NextDouble();
         }
     }

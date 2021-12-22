@@ -267,13 +267,13 @@ namespace Hivemind.GUI
                     spriteBatch.Draw(Hivemind.ComputerLines,
                         new Rectangle(new Point(0, x),
                             new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 5)),
-                        new Color(1f, 1f, 1f, 0.3f));
+                        new Color(1f, 1f, 1f, 0.25f));
                 n = (int)(ms % 2000 / 2000f * 64f);
-                for (var x = n - 64; x <= graphicsDevice.Viewport.Height; x += Hivemind.ComputerLines.Height * 3)
+                for (var x = n - 64; x <= graphicsDevice.Viewport.Height; x += Hivemind.ComputerLines.Height * 2)
                     spriteBatch.Draw(Hivemind.ComputerLines,
                         new Rectangle(new Point(0, x),
-                            new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 3)),
-                        new Color(1f, 1f, 1f, 0.25f));
+                            new Point(graphicsDevice.Viewport.Width, Hivemind.ComputerLines.Height * 2)),
+                        new Color(1f, 1f, 1f, 0.3f));
                 spriteBatch.End();
             }
             _desktop.Render();

@@ -92,7 +92,7 @@ namespace Hivemind.World.Particle
         public static Texture2D UTexture;
         public override Texture2D Texture => UTexture;
 
-        static int FlipTime = 200;
+        static float FlipTime = 0.2f;
         int TimeOffset = (int)(Helper.Random() * FlipTime);
 
         private bool Fading = false;

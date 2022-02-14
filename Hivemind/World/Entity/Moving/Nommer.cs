@@ -94,6 +94,9 @@ namespace Hivemind.World.Entity
                 case NommerState.MOVING:
                     action = "Moving";
                     break;
+                case NommerState.ATTACKING:
+                    action = "Attacking";
+                    break;
             }
 
             info = new Label()
@@ -161,6 +164,9 @@ namespace Hivemind.World.Entity
 
                     break;
                 case NommerState.ATTACKING:
+                    if (!Controller.AnimationFinished)
+                        break;
+
                     var e = TileMap.GetTileEntity(Target);
                     if(e != null)
                         e.Destroy();
@@ -187,6 +193,8 @@ namespace Hivemind.World.Entity
                             {
                                 DesiredVel = Vector2.Zero;
                                 State = NextState;
+                                Controller.SetAnimation("ATTACK_DOWN");
+                                break;
                             }
                             if (CurrentPathNode > 0)
                             {
@@ -246,9 +254,9 @@ namespace Hivemind.World.Entity
             {
                 for (int i = CurrentPathNode - 1; i >= 0; i--)
                 {
-                    Helper.DrawLine(spriteBatch, pixel, Pathfind.Path[i].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pathfind.Path[i + 1].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Color.White);
+                    Helper.DrawLine(spriteBatch, Pathfind.Path[i].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pathfind.Path[i + 1].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Color.White);
                 }
-                Helper.DrawLine(spriteBatch, pixel, Pathfind.Path[CurrentPathNode].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pos, Color.White);
+                Helper.DrawLine(spriteBatch, Pathfind.Path[CurrentPathNode].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pos, Color.White);
             }
 
             base.DrawSelected(spriteBatch, graphicsDevice, gameTime);

@@ -6,6 +6,7 @@ using FontStashSharp;
 using Hivemind.Input;
 using Hivemind.Utility;
 using Hivemind.World;
+using Hivemind.World.Entity;
 using Hivemind.World.Entity.Moving;
 using Hivemind.World.Entity.Tile;
 using Hivemind.World.Tiles;
@@ -521,6 +522,7 @@ namespace Hivemind.GUI
             Buildables.AddButton(PlacingType.TILE, PowerCable.UName[0], PowerCable.UIcon[0]);
             Buildables.AddButton(PlacingType.TILE, PowerCable.UName[1], PowerCable.UIcon[1]);
             Buildables.AddButton(PlacingType.TILE_ENTITY, BasicGenerator.UType, BasicGenerator.UIcon);
+            Buildables.AddButton(PlacingType.TILE_ENTITY, GunTurret.UType, GunTurret.UIcon);
 
 
 

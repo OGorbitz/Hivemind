@@ -27,19 +27,19 @@ namespace Hivemind.Utility
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <param name="color"></param>
-        public static void DrawLine(SpriteBatch spriteBatch, Texture2D t, Vector2 start, Vector2 end, Color color)
+        public static void DrawLine(SpriteBatch spriteBatch, Vector2 start, Vector2 end, Color color, int width = 1)
         {
             var edge = end - start;
             // calculate angle to rotate line
             var angle = (float)Math.Atan2(edge.Y, edge.X);
 
 
-            spriteBatch.Draw(t,
+            spriteBatch.Draw(pixel,
                 new Rectangle( // rectangle defines shape of line and position of start of line
                     (int)start.X,
-                    (int)start.Y,
+                    (int)(start.Y - width / 2),
                     (int)edge.Length(), //sb will strech the texture to fill this rectangle
-                    1), //width of line, change this to make thicker line
+                    width), //width of line, change this to make thicker line
                 null,
                 color, //colour of line
                 angle, //angle of line (calulated above)

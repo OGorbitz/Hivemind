@@ -25,6 +25,8 @@ namespace Hivemind.World.Entity
 
         public Vector2 Pos;
 
+        public float Health = 0;
+
         public TileMap TileMap;
         public SpriteController Controller;
 
@@ -50,6 +52,16 @@ namespace Hivemind.World.Entity
         public virtual void Update(GameTime gameTime)
         {
             UpdateVision();
+        }
+
+        public bool Damage(float damage, BaseEntity sender)
+        {
+            Health -= damage;
+
+            if (Health <= 0)
+                Destroy();
+
+            return true;
         }
 
         public virtual void Init()

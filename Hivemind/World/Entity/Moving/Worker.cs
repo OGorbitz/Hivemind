@@ -316,9 +316,9 @@ namespace Hivemind.World.Entity
             {
                 for (int i = CurrentPathNode - 1; i >= 0; i--)
                 {
-                    Helper.DrawLine(spriteBatch, Helper.pixel, Pathfinder.Path[i].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pathfinder.Path[i + 1].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Color.White);
+                    Helper.DrawLine(spriteBatch, Pathfinder.Path[i].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pathfinder.Path[i + 1].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Color.White);
                 }
-                Helper.DrawLine(spriteBatch, Helper.pixel, Pathfinder.Path[CurrentPathNode].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pos, Color.White);
+                Helper.DrawLine(spriteBatch, Pathfinder.Path[CurrentPathNode].Pos.ToVector2() * new Vector2(TileManager.TileSize) + new Vector2(TileManager.TileSize / 2), Pos, Color.White);
             }
 
             base.DrawSelected(spriteBatch, graphicsDevice, gameTime);

@@ -33,7 +33,7 @@ namespace Hivemind.Sprite
             if (Animations.ContainsKey(name) && CurrentAnimation != name)
             {
                 CurrentAnimation = name;
-                Animations[CurrentAnimation].DirtyTime = true;
+                Animations[CurrentAnimation].Restart();
             }
         }
 
@@ -42,6 +42,14 @@ namespace Hivemind.Sprite
             var a = Animations[CurrentAnimation];
 
             return a.GetFrame(gameTime);
+        }
+
+        public bool AnimationFinished
+        {
+            get
+            {
+                return Animations[CurrentAnimation].Finished;
+            }
         }
     }
 }

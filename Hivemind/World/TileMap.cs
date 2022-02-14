@@ -3,6 +3,7 @@ using Hivemind.Utility;
 using Hivemind.World.Colony;
 using Hivemind.World.Entity;
 using Hivemind.World.Entity.Moving;
+using Hivemind.World.Entity.Projectile;
 using Hivemind.World.Entity.Tile;
 using Hivemind.World.Generator;
 using Hivemind.World.Particle;
@@ -90,6 +91,7 @@ namespace Hivemind.World
         }
 
         private Tile[,] Tiles;
+        public List<BaseProjectile> Projectiles = new List<BaseProjectile>();
         public List<ParticleSource> ParticleSources = new List<ParticleSource>();
         public Dictionary<int, MovingEntity> Entities = new Dictionary<int, MovingEntity>();
         public Dictionary<Point, TileEntity> TileEntities = new Dictionary<Point, TileEntity>();
@@ -198,6 +200,24 @@ namespace Hivemind.World
                 }
             }
             SetTileEntity(new SpaseShip(new Point(32, 23)));
+        }
+
+        public void AddProjectile(BaseProjectile projectile)
+        {
+            Projectiles.Add(projectile);
+        }
+
+        public void RemoveProjectile(BaseProjectile projectile)
+        {
+            Projectiles.Remove(projectile);
+        }
+
+        public void UpdateProjectiles(GameTime gameTime)
+        {
+            foreach(BaseProjectile p in Projectiles)
+            {
+                p.Update(gameTime);
+            }
         }
 
         public void AddParticleSource(ParticleSource particleSource)
@@ -521,6 +541,11 @@ namespace Hivemind.World
                         e.Value.Updated = !e.Value.Updated;
                         e.Value.Update(gameTime);
                     }
+            }
+
+            for(int i = Projectiles.Count - 1; i >= 0; i--)
+            {
+                Projectiles[i].Update(gameTime);
             }
 
             UpdateFog();
@@ -983,7 +1008,7 @@ namespace Hivemind.World
             width *= TileManager.TileSize;
             height *= TileManager.TileSize;
 
-            
+            //Initialize all buffers
             if (FloorBuffer == null)
                 FloorBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents);
             if (RenderBuffer == null)
@@ -998,22 +1023,28 @@ namespace Hivemind.World
                 CableBuffer = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Vector4, DepthFormat.Depth24, 0, RenderTargetUsage.PreserveContents);
 
 
-
+            //Draw floor to buffer
             DateTime StartTime = DateTime.Now;
             DrawFloor(spriteBatch, graphicsDevice, gameTime);
             TimeFloor.Add((DateTime.Now - StartTime).TotalMilliseconds);
 
+            //Draw fog to buffer
             StartTime = DateTime.Now;
             DrawFog(spriteBatch, graphicsDevice, gameTime);
             TimeFog.Add((DateTime.Now - StartTime).TotalMilliseconds);
 
+            //Draw cables to buffer
             DrawCables(spriteBatch, graphicsDevice, gameTime);
 
+            
+            //Switch to main buffer
             graphicsDevice.SetRenderTarget(RenderTarget);
 
+            //Calculate required offset for buffer rendering
             Vector2 bufferpos = _buffer.BufferPosition.ToVector2();
             bufferpos -= new Vector2(bufferpos.X % _buffer.BufferSize.X, bufferpos.Y % _buffer.BufferSize.Y);
 
+            //Draw floor buffer
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             spriteBatch.Draw(FloorBuffer, bufferpos * TileManager.TileSize, Color.White);
             spriteBatch.Draw(FloorBuffer, bufferpos * TileManager.TileSize + new Vector2(FloorBuffer.Width, 0), Color.White);
@@ -1021,10 +1052,10 @@ namespace Hivemind.World
             spriteBatch.Draw(FloorBuffer, bufferpos * TileManager.TileSize + new Vector2(FloorBuffer.Width, FloorBuffer.Height), Color.White);
             spriteBatch.End();
 
-
-            //TODO: Render entities
+            //Required for proper rendering of tile entities TODO: change this to a better method
             Rendered = !Rendered;
 
+            //Calculate camera bounds for render culling
             var b = Cam.GetScaledBounds();
             Point p1 = GetTileCoords(new Point(b.Left, b.Top));
             Point p2 = GetTileCoords(new Point(b.Right, b.Bottom)) + new Point(2);
@@ -1048,6 +1079,7 @@ namespace Hivemind.World
 
             RenderBounds = new Rectangle(p1, p2);
 
+            //Draw floor holo tiles
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             for (int x = (int)p1.X; x < p2.X; x++)
             {
@@ -1063,8 +1095,8 @@ namespace Hivemind.World
             spriteBatch.End();
 
 
+            //Draw tile entities
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-
             for (int x = (int)p1.X; x < p2.X; x++)
             {
                 for (int y = (int)p1.Y; y < p2.Y; y++)
@@ -1081,12 +1113,13 @@ namespace Hivemind.World
                 }
             }
 
-
+            //Draw entities
             foreach (KeyValuePair<int, MovingEntity> e in Entities)
             {
                 e.Value.Draw(spriteBatch, gameTime);
             }
 
+            //Draw walls, holo walls, and holo wires
             StartTime = DateTime.Now;
             for (int x = (int)p1.X; x < p2.X; x++)
             {
@@ -1114,6 +1147,7 @@ namespace Hivemind.World
             spriteBatch.End();
             TimeWalls.Add((DateTime.Now - StartTime).TotalMilliseconds);
 
+            //Draw cables from buffer
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             spriteBatch.Draw(CableBuffer, bufferpos * TileManager.TileSize, Color.White);
             spriteBatch.Draw(CableBuffer, bufferpos * TileManager.TileSize + new Vector2(CableBuffer.Width, 0), Color.White);
@@ -1122,26 +1156,39 @@ namespace Hivemind.World
             spriteBatch.End();
 
 
-
+            //Draw selection rectangles
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             Selection.DrawSelectionRectangles(spriteBatch, graphicsDevice, gameTime);
             spriteBatch.End();
 
+
+            //Draw particles
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.NonPremultiplied);
             for (int i = ParticleSources.Count - 1; i >= 0; i--)
             {
                 if (ParticleSources[i].Draw(spriteBatch, gameTime))
                     ParticleSources.RemoveAt(i);
             }
+            
+            //Draw projectiles
+            foreach(BaseProjectile p in Projectiles)
+            {
+                p.Draw(spriteBatch, gameTime);
+            }
+            
             spriteBatch.End();
 
+
+            //Set target to backbuffer, clear
             graphicsDevice.SetRenderTarget(null);
             graphicsDevice.Clear(Color.Black);
 
+            //Draw main buffer to backbuffer with scale and offset
             spriteBatch.Begin(transformMatrix: Cam.ScaleOffset, samplerState: SamplerState.PointClamp);
             spriteBatch.Draw(RenderTarget, Vector2.Zero, Color.White);
             spriteBatch.End();
 
+            //Draw fog to buffer
             spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             spriteBatch.Draw(FogDrawn, Vector2.Zero, Color.White);
             spriteBatch.End();

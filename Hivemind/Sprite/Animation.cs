@@ -12,6 +12,8 @@ namespace Hivemind.Sprite
         public string Name;
         public float Speed;
 
+        private bool _finished = false;
+
         public Animation(string name, int[] frames, float speed, bool loops)
         {
             Name = name;
@@ -20,6 +22,13 @@ namespace Hivemind.Sprite
             Loops = loops;
             CurrentFrame = 0;
             LastKeyFrame = new TimeSpan();
+        }
+
+        public void Restart()
+        {
+            DirtyTime = true;
+            CurrentFrame = 0;
+            _finished = false;
         }
 
         public int GetFrame(GameTime gameTime)
@@ -43,11 +52,22 @@ namespace Hivemind.Sprite
                     if (Loops)
                         CurrentFrame = 0;
                     else
+                    {
                         CurrentFrame--;
+                        _finished = true;
+                    }
                 }
             }
 
             return Frames[CurrentFrame];
+        }
+
+        public bool Finished
+        {
+            get
+            {
+                return _finished;
+            }
         }
     }
 }

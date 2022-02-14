@@ -1,20 +1,19 @@
 ﻿using Hivemind.Utility;
+using Hivemind.World.Entity.Projectile;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Text;
-using static Hivemind.Utility.PowerNetwork;
 
 namespace Hivemind.World.Entity
 {
-    public class BasicGenerator : TileEntity, IPowerNode
+    public class GunTurret : TileEntity, IPowerNode
     {
-        public const string UType = "BasicGenerator";
+        public const string UType = "GunTurret";
         public override string Type => UType;
-        public const string UDescription = "Just a plain old basic generator.\nWhat is this doing on an alien planet?";
+        public const string UDescription = "A basic gun turret.\nHopefully this does more than piss them off";
         public override string Description => GetDescription();
         public readonly Point USize = new Point(1);
         public override Point Size => USize;
@@ -24,53 +23,40 @@ namespace Hivemind.World.Entity
         public override Texture2D SpriteSheet => USpriteSheet;
 
         public static NodeType NodeType = NodeType.PRODUCER;
-        public static float PowerOutput = 1000;
+        public static float PowerUsage = 100;
 
         public PowerNetwork PNetwork;
-        public BasicGenerator(Point position) : base(position)
-        {
 
-            Controller.AddAnimation("OFF", new[] { 0 }, 1, true);
-            Controller.AddAnimation("ON", new[] { 1 }, 1, true);
-            Controller.SetAnimation("OFF");
-        }
+        public TimeSpan LastShot;
 
-        public BasicGenerator(SerializationInfo info, StreamingContext context) : base(info, context)
+        public GunTurret(Point position) : base(position)
         {
+            
         }
 
         public NodeType GetNodeType()
         {
-            return NodeType;
+            throw new NotImplementedException();
         }
 
         public float GetPower()
         {
-            return PowerOutput;
-        }
-
-        public void OnNetworkJoin(PowerNetwork powerNetwork)
-        {
-            PNetwork = powerNetwork;
-        }
-
-        public void OnNetworkLeave()
-        {
-            PNetwork = null;
-        }
-
-        public void PowerOff()
-        {
-            Controller.SetAnimation("OFF");
-        }
-
-        public void PowerOn()
-        {
-            Controller.SetAnimation("ON");
+            return -PowerUsage;
         }
 
         public void UpdatePower()
         {
+            throw new NotImplementedException();
+        }
+
+        public void OnNetworkJoin(PowerNetwork powerNetwork)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnNetworkLeave()
+        {
+            throw new NotImplementedException();
         }
 
         public override void OnPlace()
@@ -85,34 +71,40 @@ namespace Hivemind.World.Entity
             }
         }
 
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+            if (LastShot == null)
+                LastShot = gameTime.TotalGameTime;
+            else if ((gameTime.TotalGameTime - LastShot).TotalMilliseconds > 1000)
+            {
+                LastShot = gameTime.TotalGameTime;
+                BulletProjectile p = new BulletProjectile(Pos * TileManager.TileSize + new Vector2(TileManager.TileSize / 2), new Vector2(1000), this);
+                TileMap.AddProjectile(p);
+            }
+        }
+
         public static void LoadAssets(ContentManager content)
         {
-            USpriteSheet = content.Load<Texture2D>("Entity/TileEntity/Mechanical/BasicGenerator");
+            USpriteSheet = content.Load<Texture2D>("Entity/TileEntity/Mechanical/GunTurret");
             UIcon = USpriteSheet;
 
             EntityManager.AddConstructor(UType, Constructor);
         }
-
         public static BaseEntity Constructor(Vector2 position)
         {
-            return new BasicGenerator(position.ToPoint());
+            return new GunTurret(position.ToPoint());
         }
 
         public string GetDescription()
         {
             string nodes = @"\c[Red]ERROR! " + "\n" + "Not connected to a power network!";
 
-            if(PNetwork != null)
+            if (PNetwork != null)
                 nodes = @"There are \c[Green]" + PNetwork.Nodes.Count + @"\c[White] nodes in this network.";
 
             return UDescription + "\n\n" + nodes;
-        }
-
-        public override void Destroy()
-        {
-            if (PNetwork != null)
-                PNetwork.RemoveNode(this);
-            base.Destroy();
         }
     }
 }

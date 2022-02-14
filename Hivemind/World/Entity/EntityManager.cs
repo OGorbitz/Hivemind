@@ -25,6 +25,7 @@ namespace Hivemind.World.Entity
 
             SpaseShip.LoadAssets(content);
             BasicGenerator.LoadAssets(content);
+            GunTurret.LoadAssets(content);
 
             Worker.LoadAssets(content);
             Nommer.LoadAssets(content);

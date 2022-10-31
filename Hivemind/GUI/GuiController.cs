@@ -84,7 +84,7 @@ namespace Hivemind.GUI
         {
             _desktop = new Desktop();
 
-            Autobus = new FontSystem(StbTrueTypeSharpFontLoader.Instance, graphicsDevice, strokeAmount: 1);
+            Autobus = new FontSystem();
             Autobus.AddFont(File.ReadAllBytes(@"Content\Fonts\Autobus.ttf"));
 
             ShapeSingle = content.Load<Texture2D>("GUI/ShapeSingle");
@@ -116,22 +116,22 @@ namespace Hivemind.GUI
                         switch (row)
                         {
                             case 0:
-                                line = String.Format(@"\c[#555555]Checking sector {0:X} RNN modules for corruption:", (int)(Helper.Random() * int.MaxValue));
+                                line = String.Format("/c[#555555]Checking sector {0:X} RNN modules for corruption:", (int)(Helper.Random() * int.MaxValue));
                                 break;
                             case 1:
-                                line = String.Format(@"\c[#555555]    Repairing block \c[#552200]{0}\c[#555555]:", (int)(Helper.Random() * 4096));
+                                line = String.Format("/c[#555555]    Repairing block /c[#552200]{0}/c[#555555]:", (int)(Helper.Random() * 4096));
                                 break;
                             case 2:
-                                line = String.Format(@"\c[#555555]        Refactoring RNN node \c[#552200]{0:X}\c[#555555] weight and bias values:", (int)(Helper.Random() * 65565));
+                                line = String.Format("/c[#555555]        Refactoring RNN node /c[#552200]{0:X}/c[#555555] weight and bias values:", (int)(Helper.Random() * 65565));
                                 break;
                             case 3:
-                                string working = @"\c[#225500]Nominal";
+                                string working = "/c[#225500]Nominal";
                                 float r = Helper.Random();
                                 if (r > 0.9f)
-                                    working = @"\c[#3A0000]Fault Detected - Exception: Corrupt weight value detected";
+                                    working = "/c[#3A0000]Fault Detected - Exception: Corrupt weight value detected";
                                 if (r > 0.95f)
-                                    working = @"\c[#3A0000]Fault Detected - Exception: Bias value out of bounds";
-                                line = String.Format(@"\c[#555555]            Sector \c[#555500]{0:X}\c[#555555]: " + working, (int)(Helper.Random() * 65565));
+                                    working = "/c[#3A0000]Fault Detected - Exception: Bias value out of bounds";
+                                line = String.Format("/c[#555555]            Sector /c[#555500]{0:X}/c[#555555]: " + working, (int)(Helper.Random() * 65565));
                                 break;
                             default:
                                 line = "\n";
@@ -467,7 +467,7 @@ namespace Hivemind.GUI
                 Text = "Hardware",
                 Font = AutobusSmall,
                 Padding = new Thickness(10),
-                PaddingBottom = 5,
+                //PaddingBottom = 5,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Border = new SolidBrush(buttonBorderColor),
@@ -481,7 +481,7 @@ namespace Hivemind.GUI
                 Text = "Tasks",
                 Font = AutobusSmall,
                 Padding = new Thickness(10),
-                PaddingBottom = 5,
+                //PaddingBottom = 5,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Border = new SolidBrush(buttonBorderColor),

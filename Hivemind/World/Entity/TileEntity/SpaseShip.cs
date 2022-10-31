@@ -66,10 +66,10 @@ namespace Hivemind.World.Entity.Tile
 
         public string GetDescription()
         {
-            string nodes = @"\c[Red]ERROR! " + "\n" + "Not connected to a power network!";
+            string nodes = "/c[Red]ERROR! " + "\n" + "Not connected to a power network!";
 
             if (PowerNetwork != null)
-                nodes = @"There are \c[Green]" + PowerNetwork.Nodes.Count + @"\c[White] nodes in this network.";
+                nodes = "There are /c[Green]" + PowerNetwork.Nodes.Count + "/c[White] nodes in this network.";
 
             return UDescription + "\n\n" + nodes;
         }

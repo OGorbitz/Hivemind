@@ -3,3 +3,6 @@
 ################################################################################
 
 /Hivemind/Content/bin/Windows/Content
+/Hivemind/bin/Debug
+/Hivemind/Content/obj
+/Hivemind/obj

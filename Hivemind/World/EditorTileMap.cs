@@ -159,7 +159,7 @@ namespace Hivemind.World
                 RenderBuffer = new RenderTarget2D(graphicsDevice, width, height);
             
             graphicsDevice.SetRenderTarget(RenderTarget);
-            graphicsDevice.Clear(Color.TransparentBlack);
+            graphicsDevice.Clear(Color.Transparent);
 
             spriteBatch.Begin(transformMatrix: Cam.Translate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             foreach (KeyValuePair<Point, Tile> pair in Tiles)

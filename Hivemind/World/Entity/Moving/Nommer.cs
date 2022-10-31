@@ -101,7 +101,7 @@ namespace Hivemind.World.Entity
 
             info = new Label()
             {
-                Text = @"\c[White]Current Action: \c[#663300]" + action,
+                Text = "/c[White]Current Action: /c[#663300]" + action,
                 Font = GuiController.AutobusSmaller,
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Left

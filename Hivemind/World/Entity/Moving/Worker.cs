@@ -116,8 +116,8 @@ namespace Hivemind.World.Entity
 
             info = new Label()
             {
-                Text = @"\c[White]Current Action: \c[#444444]" + action + "\n" +
-                @"\c[White]Carrying: \c[#444444](" + CarryAmount + ")\n",
+                Text = "/c[White]Current Action: /c[#444444]" + action + "\n" +
+                "/c[White]Carrying: /c[#444444](" + CarryAmount + ")\n",
                 Font = GuiController.AutobusSmaller,
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Left

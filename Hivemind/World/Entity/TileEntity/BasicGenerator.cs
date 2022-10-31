@@ -100,10 +100,10 @@ namespace Hivemind.World.Entity
 
         public string GetDescription()
         {
-            string nodes = @"\c[Red]ERROR! " + "\n" + "Not connected to a power network!";
+            string nodes = "/c[Red]ERROR! " + "\n" + "Not connected to a power network!";
 
             if(PNetwork != null)
-                nodes = @"There are \c[Green]" + PNetwork.Nodes.Count + @"\c[White] nodes in this network.";
+                nodes = "There are /c[Green]" + PNetwork.Nodes.Count + "/c[White] nodes in this network.";
 
             return UDescription + "\n\n" + nodes;
         }

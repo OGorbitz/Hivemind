@@ -101,8 +101,8 @@ namespace Hivemind.World.Entity.Moving
 
             info = new Label()
             {
-                Text = @"\c[White]Amount: \c[#444444](" + Amount + ")\n" +
-                @"\c[White]Room: \c[#444444](" + Room.Size + ")\n",
+                Text = "/c[White]Amount: /c[#444444](" + Amount + ")\n" +
+                "/c[White]Room: /c[#444444](" + Room.Size + ")\n",
                 Font = GuiController.AutobusSmaller,
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Left

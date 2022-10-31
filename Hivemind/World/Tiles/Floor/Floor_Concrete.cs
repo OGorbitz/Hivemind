@@ -17,7 +17,7 @@ namespace Hivemind.World.Tiles.Floor
         public new const Layer ULayer = Layer.FLOOR;
         public new const int URenderPriority = (int)FloorPriority.Floor_Concrete;
         public new const float UResistance = 1.5f;
-        private static Color UAverageColor = Color.Pink;
+        new private static Color UAverageColor = Color.Pink;
 
         public override string Name => UName;
         public override Layer Layer => ULayer;

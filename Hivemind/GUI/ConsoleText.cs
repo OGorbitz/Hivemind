@@ -35,7 +35,7 @@ namespace Hivemind.GUI
         public string GetLines(int num)
         {
             var gameTime = Hivemind.CurrentGameTime;
-            if (LastMark == null)
+            if (LastMark == TimeSpan.MinValue)
                 LastMark = gameTime.TotalGameTime;
 
             var result = "";

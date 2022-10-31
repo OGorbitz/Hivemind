@@ -20,12 +20,12 @@ namespace Hivemind.World.Entity
     [Serializable]
     public class Worker : MovingEntity, IControllable
     {
-        public const string UType = "SmallDrone";
-        public readonly Point USize = new Point(32);
-        public readonly Point USpriteSize = new Point(64);
+        new public const string UType = "SmallDrone";
+        new public readonly Point USize = new Point(32);
+        new public readonly Point USpriteSize = new Point(64);
         public const int USpeed = 200;
-        public const float USightDistance = 8;
-        public static Texture2D USpriteSheet;
+        new public const float USightDistance = 8;
+        new public static Texture2D USpriteSheet;
         public override Texture2D SpriteSheet => USpriteSheet;
         public static Texture2D UIcon;
 

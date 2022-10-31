@@ -12,13 +12,13 @@ namespace Hivemind.World.Entity
 {
     public class BasicGenerator : TileEntity, IPowerNode
     {
-        public const string UType = "BasicGenerator";
+        new public const string UType = "BasicGenerator";
         public override string Type => UType;
-        public const string UDescription = "Just a plain old basic generator.\nWhat is this doing on an alien planet?";
+        new public const string UDescription = "Just a plain old basic generator.\nWhat is this doing on an alien planet?";
         public override string Description => GetDescription();
-        public readonly Point USize = new Point(1);
+        new public readonly Point USize = new Point(1);
         public override Point Size => USize;
-        public static Texture2D USpriteSheet;
+        new public static Texture2D USpriteSheet;
 
         public static Texture2D UIcon;
         public override Texture2D SpriteSheet => USpriteSheet;
@@ -26,7 +26,7 @@ namespace Hivemind.World.Entity
         public static NodeType NodeType = NodeType.PRODUCER;
         public static float PowerOutput = 1000;
 
-        public PowerNetwork PNetwork;
+        public PowerNetwork PowerNetwork;
         public BasicGenerator(Point position) : base(position)
         {
 
@@ -51,12 +51,12 @@ namespace Hivemind.World.Entity
 
         public void OnNetworkJoin(PowerNetwork powerNetwork)
         {
-            PNetwork = powerNetwork;
+            PowerNetwork = powerNetwork;
         }
 
         public void OnNetworkLeave()
         {
-            PNetwork = null;
+            PowerNetwork = null;
         }
 
         public void PowerOff()
@@ -102,17 +102,41 @@ namespace Hivemind.World.Entity
         {
             string nodes = "/c[Red]ERROR! " + "\n" + "Not connected to a power network!";
 
-            if(PNetwork != null)
-                nodes = "There are /c[Green]" + PNetwork.Nodes.Count + "/c[White] nodes in this network.";
+            if(PowerNetwork != null)
+                nodes = "There are /c[Green]" + PowerNetwork.Nodes.Count + "/c[White] nodes in this network.";
 
             return UDescription + "\n\n" + nodes;
         }
 
         public override void Destroy()
         {
-            if (PNetwork != null)
-                PNetwork.RemoveNode(this);
+            if (PowerNetwork != null)
+                PowerNetwork.RemoveNode(this);
             base.Destroy();
+        }
+
+        public List<IPowerNode> GetConnections()
+        {
+            List<IPowerNode> nodes = new List<IPowerNode>();
+            
+            for (int i = (int)Pos.X; i < Pos.X + Size.X; i++)
+            {
+                for (int j = (int)Pos.Y; j < Pos.Y + Size.Y; j++)
+                {
+                    var t = TileMap.GetTile(new Point(i, j));
+                    if (t == null || t.PowerCable == null)
+                        continue;
+                    
+                    nodes.Add(t.PowerCable);
+                }
+            }
+            
+            return nodes;
+        }
+
+        public PowerNetwork GetPowerNetwork()
+        {
+            return PowerNetwork;
         }
     }
 }

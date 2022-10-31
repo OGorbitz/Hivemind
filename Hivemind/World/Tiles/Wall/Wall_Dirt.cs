@@ -11,10 +11,10 @@ namespace Hivemind.World.Tiles.Wall
     internal class Wall_Dirt : BaseWall
     {
         //Static variables
-        public const string UName = "Wall_Dirt";
-        public const Layer ULayer = Layer.WALL;
-        public const float UResistance = -1;
-        private static Color UAverageColor = Color.Magenta;
+        new public const string UName = "Wall_Dirt";
+        new public const Layer ULayer = Layer.WALL;
+        new public const float UResistance = -1;
+        new private static Color UAverageColor = Color.Magenta;
 
         public override string Name => UName;
         public override float Resistance => UResistance;

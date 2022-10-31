@@ -17,13 +17,13 @@ namespace Hivemind.World.Entity
     [Serializable]
     public class Nommer : MovingEntity
     {
-        public const string UType = "Nommer";
-        public readonly Point USize = new Point(48, 48);
-        public readonly Point USpriteSize = new Point(48, 48);
+        new public const string UType = "Nommer";
+        new public readonly Point USize = new Point(48, 48);
+        new public readonly Point USpriteSize = new Point(48, 48);
         public override Point Size => USize;
         public override Point SpriteSize => USpriteSize;
         public override string Type => UType;
-        public static Texture2D USpriteSheet;
+        new public static Texture2D USpriteSheet;
         public override Texture2D SpriteSheet => USpriteSheet;
 
         public const int USpeed = 50;
@@ -115,7 +115,7 @@ namespace Hivemind.World.Entity
             {
                 case NommerState.IDLE:
                     Controller.SetAnimation("IDLE");
-                    if (NextAction == null || NextAction == TimeSpan.Zero)
+                    if (NextAction == TimeSpan.MinValue)
                         NextAction = gameTime.TotalGameTime + new TimeSpan(0, 0, 0, 0, milliseconds: (int)(Helper.Random() * 2000 + 1000));
                     if (gameTime.TotalGameTime > NextAction)
                     {

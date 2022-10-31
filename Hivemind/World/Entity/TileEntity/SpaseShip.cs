@@ -11,14 +11,14 @@ namespace Hivemind.World.Entity.Tile
 {
     public class SpaseShip : TileEntity, IPowerNode
     {
-        public const string UType = "Entity_SpaseShip";
-        public readonly Point USize = new Point(3, 3);
+        new public const string UType = "Entity_SpaseShip";
+        new public readonly Point USize = new Point(3, 3);
         public Texture2D USPriteSheet;
         public override Texture2D SpriteSheet => USpriteSheet;
 
-        public static float USightDistance = 10f;
+        new public static float USightDistance = 10f;
         public override float SightDistance => USightDistance;
-        public static string UDescription = "Neural Network Core";
+        new public static string UDescription = "Neural Network Core";
         public override string Description => GetDescription();
 
         public override string Type => UType;
@@ -104,6 +104,30 @@ namespace Hivemind.World.Entity.Tile
         public void OnNetworkLeave()
         {
             
+        }
+
+        public List<IPowerNode> GetConnections()
+        {
+            List<IPowerNode> nodes = new List<IPowerNode>();
+
+            for (int i = (int)Pos.X; i < Pos.X + Size.X; i++)
+            {
+                for (int j = (int)Pos.Y; j < Pos.Y + Size.Y; j++)
+                {
+                    var t = TileMap.GetTile(new Point(i, j));
+                    if (t == null || t.PowerCable == null)
+                        continue;
+
+                    nodes.Add(t.PowerCable);
+                }
+            }
+
+            return nodes;
+        }
+
+        public PowerNetwork GetPowerNetwork()
+        {
+            return PowerNetwork;
         }
     }
 }

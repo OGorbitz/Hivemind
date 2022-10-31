@@ -49,7 +49,7 @@ namespace Hivemind.World.Tiles
         {
         }
 
-        public virtual void SetParent(Tile tile, ITileMap tileMap)
+        public virtual void SetTileMap(Tile tile, ITileMap tileMap)
         {
             Tile = tile;
             Parent = tileMap;
@@ -97,7 +97,7 @@ namespace Hivemind.World.Tiles
     {
         //Static variables
         public const int URenderPriority = -1;
-        public const float UResistance = 1;
+        new public const float UResistance = 1;
         public new const Layer ULayer = Layer.FLOOR;
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Hivemind.World.Tiles
     public abstract class BaseWall : BaseTile
     {
         //Static variables
-        public const float UResistance = 0;
+        new public const float UResistance = 0;
         public new const Layer ULayer = Layer.WALL;
 
         /// <summary>
@@ -211,8 +211,8 @@ namespace Hivemind.World.Tiles
 
         public static RenderTarget2D RenderTarget;
 
-        public const string UName = "HOLO-";
-        public static readonly Color UAverageColor = Color.DarkGreen;
+        new public const string UName = "HOLO-";
+        new public static readonly Color UAverageColor = Color.DarkGreen;
         public override float Resistance
         {
             get
@@ -237,7 +237,7 @@ namespace Hivemind.World.Tiles
             Child.IsHolo = true;
         }
 
-        public override void SetParent(Tile tile, ITileMap parent)
+        public override void SetTileMap(Tile tile, ITileMap parent)
         {
             Tile = tile;
             Child.Tile = tile;

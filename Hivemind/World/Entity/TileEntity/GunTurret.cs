@@ -11,13 +11,13 @@ namespace Hivemind.World.Entity
 {
     public class GunTurret : TileEntity, IPowerNode
     {
-        public const string UType = "GunTurret";
+        new public const string UType = "GunTurret";
         public override string Type => UType;
-        public const string UDescription = "A basic gun turret.\nHopefully this does more than piss them off";
+        new public const string UDescription = "A basic gun turret.\nHopefully this does more than piss them off";
         public override string Description => GetDescription();
-        public readonly Point USize = new Point(1);
+        new public readonly Point USize = new Point(1);
         public override Point Size => USize;
-        public static Texture2D USpriteSheet;
+        new public static Texture2D USpriteSheet;
 
         public static Texture2D UIcon;
         public override Texture2D SpriteSheet => USpriteSheet;
@@ -75,7 +75,7 @@ namespace Hivemind.World.Entity
         {
             base.Update(gameTime);
 
-            if (LastShot == null)
+            if (LastShot == TimeSpan.MinValue)
                 LastShot = gameTime.TotalGameTime;
             else if ((gameTime.TotalGameTime - LastShot).TotalMilliseconds > 1000)
             {
@@ -105,6 +105,16 @@ namespace Hivemind.World.Entity
                 nodes = "There are /c[Green]" + PNetwork.Nodes.Count + "/c[White] nodes in this network.";
 
             return UDescription + "\n\n" + nodes;
+        }
+
+        public List<IPowerNode> GetConnections()
+        {
+            throw new NotImplementedException();
+        }
+
+        public PowerNetwork GetPowerNetwork()
+        {
+            throw new NotImplementedException();
         }
     }
 }

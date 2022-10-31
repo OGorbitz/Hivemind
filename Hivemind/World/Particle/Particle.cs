@@ -82,9 +82,9 @@ namespace Hivemind.World.Particle
 
     public class SparkParticle : Particle
     {
-        public const float UDrag = 0.6f;
-        public const float UBounce = 0.7f;
-        public const float ULifeSpan = 1f;
+        new public const float UDrag = 0.6f;
+        new public const float UBounce = 0.7f;
+        new public const float ULifeSpan = 1f;
         public override float LifeSpan => ULifeSpan;
         public override float Drag => UDrag;
         public override float Bounce => UBounce;

@@ -28,7 +28,7 @@ namespace Hivemind.World.Entity.Moving
 
     public class DroppedMaterial : MovingEntity
     {
-        public readonly Point USize = new Point(32, 32);
+        new public readonly Point USize = new Point(32, 32);
         public override Point Size => USize;
         public override string Type => MaterialType.Name;
 

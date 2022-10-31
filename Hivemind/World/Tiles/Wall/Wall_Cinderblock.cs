@@ -12,12 +12,12 @@ namespace Hivemind.World.Tiles.Wall
     internal class Wall_Cinderblock : BaseWall
     {
         //Static variables
-        public const string UName = "WALL_CINDERBLOCK";
-        public const Layer ULayer = Layer.WALL;
-        public const float UResistance = -1;
-        public readonly Material[] UCostMaterials = { Material.CrushedRock };
-        public readonly float[] UCostAmounts = { 1000 };
-        private static Color UAverageColor;
+        new public const string UName = "WALL_CINDERBLOCK";
+        new public const Layer ULayer = Layer.WALL;
+        new public const float UResistance = -1;
+        new public readonly Material[] UCostMaterials = { Material.CrushedRock };
+        new public readonly float[] UCostAmounts = { 1000 };
+        new private static Color UAverageColor;
 
         public override string Name => UName;
         public override float Resistance => UResistance;

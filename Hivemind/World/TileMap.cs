@@ -119,7 +119,7 @@ namespace Hivemind.World
 
 
             Cam = new Camera(this);
-            Generator = new WorldGenerator(69l, this);
+            Generator = new WorldGenerator(69L, this);
             EntityHash = new SpacialHash<MovingEntity>(new Vector2(Size * TileManager.TileSize), new Vector2(TileManager.TileSize * 4));
 
             TaskManager = new TaskManager(this);
@@ -613,7 +613,7 @@ namespace Hivemind.World
                     //if point is in dirtypoints, needs to be updated, so ignore other continues
                     if (!DirtyPoints.Contains(new Point(x, y)))
                     {
-                        if (!ti.DirtyFog == null)
+                        if (!ti.DirtyFog)
                             continue;
                     }
 
@@ -1105,7 +1105,7 @@ namespace Hivemind.World
 
                     TileEntity e = GetTile(new Point(x, y)).TileEntity;
                     if (e != null)
-                        if (e.Rendered == null || e.Rendered == Rendered)
+                        if (e.Rendered == Rendered)
                         {
                             e.Rendered = !Rendered;
                             e.Draw(spriteBatch, gameTime);

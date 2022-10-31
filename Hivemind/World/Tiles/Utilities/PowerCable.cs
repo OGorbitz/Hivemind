@@ -11,9 +11,9 @@ namespace Hivemind.World.Tiles.Utilities
 {
     public class PowerCable : BaseTile, IPowerNode
     {
-        public static Layer ULayer = Layer.POWER;
+        new public static Layer ULayer = Layer.POWER;
         public override Layer Layer => ULayer;
-        public static string[] UName = { "PowerCableT1", "PowerCableT2" };
+        new public static string[] UName = { "PowerCableT1", "PowerCableT2" };
         public override string Name => UName[Tier];
 
         public static Texture2D[] UIcon;
@@ -22,12 +22,12 @@ namespace Hivemind.World.Tiles.Utilities
         public PowerNetwork PowerNetwork;
         public int Tier = 0;
 
-        public readonly int[,] neighbors =
+        public readonly Point[] neighbors =
         {
-            { -1, 0 },
-            { 0, -1 },
-            { 1, 0 },
-            { 0, 1 }
+            new Point(-1, 0),
+            new Point(0, -1),
+            new Point( 1, 0),
+            new Point( 0, 1)
         };
 
         public override void Destroy()
@@ -45,7 +45,7 @@ namespace Hivemind.World.Tiles.Utilities
 
                 for (int i = 0; i < 4; i++)
                 {
-                    Point p = Pos + new Point(neighbors[i, 0], neighbors[i, 1]);
+                    Point p = Pos + neighbors[i];
                     Tile n = Parent.GetTile(p);
                     if (n != null && n.PowerCable != null)
                     {
@@ -64,7 +64,7 @@ namespace Hivemind.World.Tiles.Utilities
 
             for (int i = 0; i < 4; i++)
             {
-                Point p = Pos + new Point(neighbors[i, 0], neighbors[i, 1]);
+                Point p = Pos + neighbors[i];
                 Tile n = Parent.GetTile(p);
                 if (n != null){
                     if (n.PowerCable != null)
@@ -228,6 +228,30 @@ namespace Hivemind.World.Tiles.Utilities
         public void OnNetworkLeave()
         {
             PowerNetwork = null;
+        }
+
+        public List<IPowerNode> GetConnections()
+        {
+            List<IPowerNode> connections = new List<IPowerNode>();
+
+            foreach (var p in neighbors)
+            {
+                var t = Tile.TileMap.GetTile(Pos + p);
+                if (t == null || t.PowerCable == null)
+                    continue;
+
+                connections.Add(t.PowerCable);
+            }
+
+            if (Tile.TileEntity != null && Tile.TileEntity is IPowerNode)
+                connections.Add(Tile.TileEntity as IPowerNode);
+            
+            return connections;
+        }
+
+        public PowerNetwork GetPowerNetwork()
+        {
+            return PowerNetwork;
         }
     }
 }

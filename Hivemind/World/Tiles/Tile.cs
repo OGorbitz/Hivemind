@@ -35,12 +35,12 @@ namespace Hivemind.World.Tiles
             {
                 _floor = value;
                 if(_floor != null)
-                    _floor.SetParent(this, Parent);
+                    _floor.SetTileMap(this, TileMap);
 
                 for (var i = 0; i < Neighbors.GetLength(0); i++)
                 {
                     Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
-                    Tile t = Parent.GetTile(v);
+                    Tile t = TileMap.GetTile(v);
                     if (t != null && t.Floor != null)
                         t.Floor.Dirty = true;
                 }
@@ -58,7 +58,7 @@ namespace Hivemind.World.Tiles
             {
                 _holoFloor = value;
                 if (value != null)
-                    _holoFloor.SetParent(this, Parent);
+                    _holoFloor.SetTileMap(this, TileMap);
             }
         }
 
@@ -73,16 +73,16 @@ namespace Hivemind.World.Tiles
             {
                 _wall = value;
                 if(_wall != null)
-                    _wall.SetParent(this, Parent);
+                    _wall.SetTileMap(this, TileMap);
                 for (var i = 0; i < 4; i++)
                 {
                     Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
-                    Tile t = Parent.GetTile(v);
+                    Tile t = TileMap.GetTile(v);
                     if (t != null && t.Wall != null)
                         t.Wall.Dirty = true;
                 }
 
-                if (Parent.GetType() == typeof(TileMap))
+                if (TileMap.GetType() == typeof(TileMap))
                 {
                     if (value == null)
                     {
@@ -92,7 +92,7 @@ namespace Hivemind.World.Tiles
                         for (int i = 0; i < 4; i++)
                         {
                             Point p = Pos + new Point(Neighbors[i, 0], Neighbors[i, 1]);
-                            Tile t = Parent.GetTile(p);
+                            Tile t = TileMap.GetTile(p);
                             if (t != null && t.Room != null)
                             {
                                 if (biggest == null)
@@ -117,7 +117,7 @@ namespace Hivemind.World.Tiles
                         }
                         else
                         {
-                            ((TileMap)Parent).CreateRoom(Pos);
+                            ((TileMap)TileMap).CreateRoom(Pos);
                         }
                     }
                     else
@@ -139,7 +139,7 @@ namespace Hivemind.World.Tiles
             {
                 _holoWall = value;
                 if(value != null)
-                    _holoWall.SetParent(this, Parent);
+                    _holoWall.SetTileMap(this, TileMap);
             }
         }
 
@@ -155,23 +155,21 @@ namespace Hivemind.World.Tiles
                 _powerCable = value;
                 DirtyCable = true;
 
-                if (value != null)
+                if (value == null)
+                    return;
+                
+                _powerCable.SetTileMap(this, TileMap);
+                
+                for (var i = 0; i < 4; i++)
                 {
-                    _powerCable.SetParent(this, Parent);
-
-                    for (var i = 0; i < 4; i++)
-                    {
-                        Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
-                        Tile t = Parent.GetTile(v);
-                        if (t != null)
-                        {
-                            t.DirtyCable = true;
-                            if(t.PowerCable != null && t.PowerCable.PowerNetwork != null)
-                            {
-                                t.PowerCable.PowerNetwork.Dirty = true;
-                            }
-                        }
-                    }
+                    Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
+                    Tile t = TileMap.GetTile(v);
+                    if (t == null)
+                        continue;
+                    
+                    t.DirtyCable = true;
+                    if (t.PowerCable != null && t.PowerCable.PowerNetwork != null)
+                        t.PowerCable.PowerNetwork.Dirty = true;
                 }
 
             }
@@ -188,7 +186,7 @@ namespace Hivemind.World.Tiles
             {
                 _holoPowerCable = value;
                 if (value != null)
-                    _holoPowerCable.SetParent(this, Parent);
+                    _holoPowerCable.SetTileMap(this, TileMap);
             }
         }
 
@@ -216,12 +214,14 @@ namespace Hivemind.World.Tiles
             set
             {
                 _tileEntity = value;
-                if(value != null && Parent.GetType() == typeof(TileMap))
-                    _tileEntity.TileMap = (TileMap)Parent;
+                if (value == null || TileMap.GetType() != typeof(TileMap))
+                    return;
+                
+                _tileEntity.TileMap = (TileMap)TileMap;
             }
         }
 
-        public ITileMap Parent;
+        public ITileMap TileMap;
 
         public readonly Point Pos;
 
@@ -246,13 +246,13 @@ namespace Hivemind.World.Tiles
             Real = real;
             Pos = pos;
             Visibility = Visibility.HIDDEN;
-            Parent = parent;
+            TileMap = parent;
         }
         public Tile(Point pos, ITileMap parent)
         {
             Pos = pos;
             Visibility = Visibility.HIDDEN;
-            Parent = parent;
+            TileMap = parent;
         }
 
         public void PushVisibility()
@@ -262,7 +262,7 @@ namespace Hivemind.World.Tiles
                 for (var i = 0; i < 9; i++)
                 {
                     Point v = new Point(Pos.X + Neighbors[i, 0], Pos.Y + Neighbors[i, 1]);
-                    Tile t = Parent.GetTile(v);
+                    Tile t = TileMap.GetTile(v);
                     if (t != null)
                         t.DirtyFog = true;
                 }

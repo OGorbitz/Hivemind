@@ -129,7 +129,7 @@ namespace Hivemind.World.Entity
     [Serializable]
     public class MovingEntity : BaseEntity
     {
-        public const string UType = "MovingEntity";
+        new public const string UType = "MovingEntity";
         public override string Type => UType;
 
         public readonly Point USize = new Point(TileManager.TileSize, TileManager.TileSize);
@@ -161,7 +161,7 @@ namespace Hivemind.World.Entity
             ID = info.GetInt32("ID");
         }
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        new public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("ID", ID);
         }
@@ -190,7 +190,7 @@ namespace Hivemind.World.Entity
             base.Update(gameTime);
         }
 
-        public virtual void Destroy()
+        new public virtual void Destroy()
         {
             TileMap.RemoveEntity(this);
 

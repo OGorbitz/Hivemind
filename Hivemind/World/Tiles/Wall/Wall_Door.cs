@@ -11,8 +11,8 @@ namespace Hivemind.World.Tiles.Wall
     public class Wall_Door : BaseWall
     {
         //Static variables
-        public const string UName = "Wall_Dirt";
-        public const Layer ULayer = Layer.WALL;
+        new public const string UName = "Wall_Dirt";
+        new public const Layer ULayer = Layer.WALL;
 
         public override string Name => UName;
         public override float Resistance => GetResistance();

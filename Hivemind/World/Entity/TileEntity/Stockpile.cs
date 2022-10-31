@@ -10,8 +10,8 @@ namespace Hivemind.World.Entity.Tile
 {
     public class Stockpile : TileEntity
     {
-        public const string UType = "Entity_Stockpile";
-        public readonly Point USize = new Point(3, 3);
+        new public const string UType = "Entity_Stockpile";
+        new public readonly Point USize = new Point(3, 3);
 
         public override string Type => UType;
         public override Point Size => USize;

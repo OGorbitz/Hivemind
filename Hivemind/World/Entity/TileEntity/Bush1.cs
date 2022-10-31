@@ -11,9 +11,9 @@ namespace Hivemind.World.Entity
     [Serializable]
     public class Bush1 : TileEntity
     {
-        public const string UType = "Entity_Bush1";
-        public readonly Point USize = new Point(1, 1);
-        public static Texture2D USpriteSheet;
+        new public const string UType = "Entity_Bush1";
+        new public readonly Point USize = new Point(1, 1);
+        new public static Texture2D USpriteSheet;
         public override Texture2D SpriteSheet => USpriteSheet;
         public override string Type => UType;
         public override Point Size => USize;

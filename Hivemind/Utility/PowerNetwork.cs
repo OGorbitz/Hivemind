@@ -113,10 +113,10 @@ namespace Hivemind.Utility
             CalculateNodes(Core, connectedNodes);
 
             //Check if each node in the powernetwork is in the newly calculated list of connected nodes. If not, remove it.
-            foreach(var node in Nodes)
+            for(int i = Nodes.Count - 1; i >= 0; i--)
             {
-                if (!connectedNodes.Contains(node))
-                    RemoveNode(node);
+                if (!connectedNodes.Contains(Nodes[i]))
+                    RemoveNode(Nodes[i]);
             }
 
             //Add each node in the newly calculated list to the network. It will fail the if check in AddNode() if it is already in.

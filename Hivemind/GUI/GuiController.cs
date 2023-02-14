@@ -407,8 +407,8 @@ namespace Hivemind.GUI
                 BorderThickness = new Thickness(4),
             };
             minimap.BeforeRender += (e) => {
-                minimap.Background = new TextureRegion(Minimap.RenderedMap);
                 Minimap.Redraw();
+                minimap.Background = new TextureRegion(Minimap.RenderedMap);
             };
 
             _tilemapHud.AddChild<Image>(minimap);
@@ -549,8 +549,11 @@ namespace Hivemind.GUI
             var shapeGrid = new Grid()
             {
                 HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Bottom,
                 Height = ShapeLine.Height * 3,
-                Left = -15
+                Left = -15,
+                Top = -buttonGrid.Bounds.Height - 15 - (SelectedShape.Height ?? 0),
+                Visible = false
             };
             shapeGrid.RowsProportions.Add(new Proportion());
             shapeGrid.RowsProportions.Add(new Proportion());
@@ -559,9 +562,12 @@ namespace Hivemind.GUI
 
             shapeGrid.BeforeRender += (s) =>
             {
-                Rectangle r = new Rectangle(shapeGrid.Bounds.Left - 50, shapeGrid.Bounds.Top - 50, shapeGrid.Bounds.Width + 50, shapeGrid.Bounds.Height + 200);
+                shapeGrid.Top = -buttonGrid.Bounds.Height - 15 - SelectedShape.Bounds.Height;
+                Rectangle r = new Rectangle(shapeGrid.ToGlobal(new Point(shapeGrid.Bounds.Left - 50, shapeGrid.Bounds.Top - 50)), new Point(shapeGrid.Bounds.Width + 50, shapeGrid.Bounds.Height + 200));
                 if (!r.Contains(_desktop.MousePosition) || !SelectedShape.Visible)
+                {
                     shapeGrid.Visible = false;
+                }
             };
 
             var shape = new ImageButton()
@@ -577,6 +583,7 @@ namespace Hivemind.GUI
             };
             shape.Click += (s, a) =>
             {
+                shapeGrid.Visible = false;
                 SelectedShape.Image = ((ImageButton)s).Image;
                 Editing.Shape = EditShape.SINGLE;
             };
@@ -595,6 +602,7 @@ namespace Hivemind.GUI
             };
             shape.Click += (s, a) =>
             {
+                shapeGrid.Visible = false;
                 SelectedShape.Image = ((ImageButton)s).Image;
                 Editing.Shape = EditShape.LINE;
             };
@@ -613,6 +621,7 @@ namespace Hivemind.GUI
             };
             shape.Click += (s, a) =>
             {
+                shapeGrid.Visible = false;
                 SelectedShape.Image = ((ImageButton)s).Image;
                 Editing.Shape = EditShape.RECTANGLE;
             };
@@ -624,7 +633,6 @@ namespace Hivemind.GUI
             SelectedShape.Click += (s, a) =>
             {
                 shapeGrid.Visible = !shapeGrid.Visible;
-                shapeGrid.Top = SelectedShape.Bounds.Top - shapeGrid.Bounds.Height;
             };
 
             Hardware.Click += (s, a) =>
